@@ -71,9 +71,13 @@ Gu by it's very design and architecture was constructed to be "Simple". It lacks
 
 Once these limitations are not a problem, I believe using the library should help in achieving the end product and design you wish to build.
 
-Last Note
+Contributions
 ---------
+Before contributing please do take the time to read this great guide which should help you alot. 
 
-*Contributions will be received with much fan fare and gratitude.*
+**[Contribution Guides](https://gist.github.com/Chaser324/ce0505fbed06b947d962)**.
 
-Please feel free to issue PR's and issues on suggestions, questions, changes, bugs or improvements for the library. They all will be gladly accepted and welcomed. God bless.
+Please feel free to make issues on suggestions, questions, changes, bugs or improvements for the library. 
+They all will be gladly gladly with much fan-fare. 
+
+God bless.

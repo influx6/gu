@@ -1,13 +1,13 @@
 DOM
 ===
 
-The virtual DOM in Gu is package which provides a similar but functional approach to define the representation of the expected DOM which must be rendered by the selected [Driver](./drivers.md).
+The virtual DOM in Gu is a package which provides a similar but functional approach to define the representation of the expected DOM which must be rendered by the selected [Driver](./drivers.md).
 
-Gu ensures to provide a comprehensive list of functions to generate and create different tags and attributes to fit the standard HTML/HTML5 DOM nodes and events.
+Gu provides a comprehensive list of functions to generate and create different tags and attributes to fit the standard HTML/HTML5 DOM nodes and events.
 
-Which then allows an expressive and functional style in creating contents for components, views and the central app.
+This provides an expressive and functional style when creating contents for components, views and the central app.
 
-Using the DOM packages requires the following packages, with each providing different portions of the HTML/HTML5 API:
+Using the DOM package requires the following packages, with each providing different portions of the HTML/HTML5 API:
 
 -	Trees Package(https://github.com/gu-io/gu/trees\) The `trees` package provides the central root structure for the GU DOM. The baseline package used in the creation of object instance to represent different tags, events, and attributes types.
 
@@ -66,7 +66,7 @@ func main(){
 }
 ```
 
-Although a trivial example has above, the code does demonstrate how the `trees` foundational structures help define and construct the content to be generated effectively and efficiently.
+Although the above example is trivial, the code does demonstrate how the `trees` foundational structures help define and construct the content to be generated effectively and efficiently.
 
 
 -	CSS Package(https://github.com/gu-io/gu/trees/css\) The `css` package provides a stylesheet formatter which underneat uses the a css tokenizer and parser and the Go's text template to create a robust and flexible way to include stylesheet rules targeting the `trees` package markup structures. This package can be freely used on it's own has it highly decouples and provides a clean API.
@@ -132,7 +132,7 @@ sheet.String();
 */
 ```
 
--	Elems Package(https://github.com/gu-io/gu/trees/elems\) The `elems` package provides is an auto-generated package which provides a functional style of calls to describing the structures of the HTML to be rendered and provides a more cleaner and easier use built on the foundation of the `trees` package.
+-	Elems Package(https://github.com/gu-io/gu/trees/elems\) The `elems` package provides is an auto-generated package which provides a functional style of calls to describe the structures of the HTML to be rendered and provides a cleaner and easier use built on the foundation of the `trees` package.
 
 ```go
 

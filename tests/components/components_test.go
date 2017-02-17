@@ -41,6 +41,13 @@ func TestComponent(t *testing.T) {
 		</div>
 	`)
 
+	// Component prints:
+	// <div data-gen="gu" class="bomb" data-field="lexus">
+	// 	<hello data-gen="gu">
+	// 		<div data-gen="gu">Welcome to the world "Alex Thunderbot"</div>
+	// 	</hello>
+	// </div>
+
 	if val := component.Render().HTML(); val != expected && val != expected2 {
 		t.Logf("\t\tRecieved: %q\n", val)
 		t.Logf("\t\tExpected: %q\n", expected)

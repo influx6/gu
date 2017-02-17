@@ -71,6 +71,11 @@ func (c *ComponentRegistry) Register(tagName string, maker ComponentMaker) {
 
 //================================================================================
 
+type attr struct {
+	Name string
+	Val  string
+}
+
 // Treeset defines a structure which builds it's markup from a set of internal
 // structures which returns a full complete markup including Components.
 type Treeset struct {
@@ -78,9 +83,9 @@ type Treeset struct {
 	DeferedTag    string
 	DeferTemplate string
 	Renderable    Renderable
+	Attr          []attr
 	Children      []*Treeset
 	Tree          *trees.Markup
-	Attr          map[string]string
 	Fields        map[string]string
 }
 
@@ -114,8 +119,8 @@ func (t *Treeset) Render() *trees.Markup {
 		base = t.Renderable.Render()
 	}
 
-	for name, val := range t.Attr {
-		trees.NewAttr(name, val).Apply(base)
+	for _, attr := range t.Attr {
+		trees.NewAttr(attr.Name, attr.Val).Apply(base)
 		base.UpdateHash()
 	}
 
@@ -198,7 +203,7 @@ func parseTokens(tokens *html.Tokenizer, parent *Treeset, registery *ComponentRe
 				continue
 			}
 
-			attrs := make(map[string]string)
+			attrs := make([]attr, 0)
 			fields := make(map[string]string)
 
 			if hasAttr {
@@ -214,7 +219,10 @@ func parseTokens(tokens *html.Tokenizer, parent *Treeset, registery *ComponentRe
 								continue
 							}
 
-							attrs[string(key)] = string(val)
+							attrs = append(attrs, attr{
+								Name: string(key),
+								Val:  string(val),
+							})
 						}
 
 						if !more {
@@ -237,8 +245,8 @@ func parseTokens(tokens *html.Tokenizer, parent *Treeset, registery *ComponentRe
 			} else {
 				elem := trees.NewMarkup(string(tagName), token == html.SelfClosingTagToken)
 
-				for name, val := range attrs {
-					trees.NewAttr(name, val).Apply(elem)
+				for _, attr := range attrs {
+					trees.NewAttr(attr.Name, attr.Val).Apply(elem)
 				}
 
 				for name, val := range fields {

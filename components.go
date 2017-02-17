@@ -7,27 +7,44 @@ import (
 	"golang.org/x/net/html"
 )
 
+// DefaultComponentMakers provides a set of default components makers which can be
+// readily used in creating markup.
+var DefaultComponentMakers = []ComponentItem{
+	{
+		TagName: "css",
+		Unwrap:  true,
+		Maker: func(fields map[string]string, template string) Renderable {
+			return Static(trees.CSSStylesheet(template, fields))
+		},
+	},
+}
+
 // ComponentMaker defines a function type which returns a Renderable based on
 // a series of provied attributes.
 type ComponentMaker func(fields map[string]string, template string) Renderable
 
-// componentItem defines a struct which contains the tagName and maker corresponding
+// ComponentItem defines a struct which contains the tagName and maker corresponding
 // to generating the giving tagName.
-type componentItem struct {
+type ComponentItem struct {
 	TagName string
 	Maker   ComponentMaker
+	Unwrap  bool
 }
 
 // ComponentRegistry defines a struct to manage all registered Component makers.
 type ComponentRegistry struct {
-	makers map[string]componentItem
+	makers map[string]ComponentItem
 }
 
 // NewComponentRegistry returns a new instance of a ComponentRegistry.
 func NewComponentRegistry() *ComponentRegistry {
-	return &ComponentRegistry{
-		makers: make(map[string]componentItem),
+	registry := &ComponentRegistry{
+		makers: make(map[string]ComponentItem),
 	}
+
+	registry.Add(DefaultComponentMakers)
+
+	return registry
 }
 
 // Generate returns a the component attribute with the provided markup as it's based.
@@ -42,6 +59,25 @@ func (c *ComponentRegistry) Parse(markup string) Renderable {
 	return ParseComponent(markup, c)
 }
 
+// Add adds the giving set of possible item/items of the Acceptable type into
+// the registry.
+func (c *ComponentRegistry) Add(item interface{}) {
+	switch realItem := item.(type) {
+	case ComponentItem:
+		realItem.TagName = strings.ToLower(realItem.TagName)
+		c.makers[realItem.TagName] = realItem
+	case []ComponentItem:
+		for _, item := range realItem {
+			item.TagName = strings.ToLower(item.TagName)
+			c.makers[item.TagName] = item
+		}
+	case map[string]ComponentMaker:
+		for name, item := range realItem {
+			c.Register(name, item, false)
+		}
+	}
+}
+
 // Has returns true/false if the giving tagName exists in the registry.
 func (c *ComponentRegistry) Has(tag string) bool {
 	tag = strings.ToLower(tag)
@@ -50,22 +86,28 @@ func (c *ComponentRegistry) Has(tag string) bool {
 }
 
 // ParseTag returns the giving Renderable for the giving markup.
-func (c *ComponentRegistry) ParseTag(tag string, fields map[string]string, template string) Renderable {
+func (c *ComponentRegistry) ParseTag(tag string, fields map[string]string, template string) (Renderable, bool) {
 	tag = strings.ToLower(tag)
 	cm, ok := c.makers[tag]
 	if !ok {
-		return nil
+		return nil, false
 	}
 
-	return cm.Maker(fields, template)
+	return cm.Maker(fields, template), cm.Unwrap
 }
 
 // Register adds the giving tagName which will be used to create a new Renderable
 // when found in the markup provided.
-func (c *ComponentRegistry) Register(tagName string, maker ComponentMaker) {
-	c.makers[strings.ToLower(tagName)] = componentItem{
+// Arguments:
+//  TagName - the tagname of the component to be searched for.
+//  Maker - the function which generates the Renderable
+//  Unwrap - Boolean indicating if the content alone to be rendered or else be wrapped
+//  					by the tag declared.
+func (c *ComponentRegistry) Register(tagName string, maker ComponentMaker, unwrap bool) {
+	c.makers[strings.ToLower(tagName)] = ComponentItem{
 		TagName: tagName,
 		Maker:   maker,
+		Unwrap:  unwrap,
 	}
 }
 
@@ -92,11 +134,17 @@ type Treeset struct {
 // initialize any internal defered tag and template.
 func (t *Treeset) init() {
 	if t.DeferedTag != "" && t.Renderable == nil {
-		t.Renderable = t.Registry.ParseTag(t.DeferedTag, t.Fields, t.DeferTemplate)
+		res, unwrap := t.Registry.ParseTag(t.DeferedTag, t.Fields, t.DeferTemplate)
+
+		t.Renderable = res
 		t.Registry = nil
 		t.Fields = nil
 		t.DeferedTag = ""
 		t.DeferTemplate = ""
+
+		if unwrap {
+			t.Tree = nil
+		}
 	}
 }
 
@@ -203,6 +251,8 @@ func parseTokens(tokens *html.Tokenizer, parent *Treeset, registery *ComponentRe
 				continue
 			}
 
+			var unwrap bool
+
 			attrs := make([]attr, 0)
 			fields := make(map[string]string)
 
@@ -211,6 +261,10 @@ func parseTokens(tokens *html.Tokenizer, parent *Treeset, registery *ComponentRe
 				attrLoop:
 					for {
 						key, val, more := tokens.TagAttr()
+
+						if string(key) == "unwrap" {
+							unwrap = true
+						}
 
 						if string(key) != "" {
 							keyName := strings.ToLower(string(key))
@@ -235,12 +289,18 @@ func parseTokens(tokens *html.Tokenizer, parent *Treeset, registery *ComponentRe
 			var set Treeset
 
 			if registery.Has(tag) {
+				var wrap *trees.Markup
+
+				if !unwrap {
+					wrap = trees.NewMarkup(string(tagName), token == html.SelfClosingTagToken)
+				}
+
 				set = Treeset{
 					Attr:       attrs,
 					Fields:     fields,
 					DeferedTag: tag,
 					Registry:   registery,
-					Tree:       trees.NewMarkup(string(tagName), token == html.SelfClosingTagToken),
+					Tree:       wrap,
 				}
 			} else {
 				elem := trees.NewMarkup(string(tagName), token == html.SelfClosingTagToken)

@@ -29,7 +29,7 @@ func TestComponent(t *testing.T) {
 	registry := gu.NewComponentRegistry()
 	registry.Register("hello", func(fields map[string]string, template string) gu.Renderable {
 		return &hello{Name: fields["name"], Template: template}
-	})
+	}, false)
 
 	component := registry.Parse(`
 		<div class="bomb" data-field="lexus">

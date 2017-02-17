@@ -42,12 +42,12 @@ func main() {
 				}
 
 				&{
-					width: 100%;
-					height: 100%;
-					padding: 10px;
-					margin: 0px auto;
 					color: #fff;
-					background: rgba(0,0,0,0.2);
+					width: 100%;
+					padding: 10px;
+					min-height: 100%;
+					margin: 0px auto;
+					background: rgba(0,0,0,0.4);
 				}
 
 				& h1{
@@ -60,17 +60,17 @@ func main() {
 					width: 90%;
 					height: auto;
 					margin: 30px auto;
+					padding-top: 100px;
 					text-align: center;
 				}
 
+
 				& .greeter-app .receiver{
-					margin-top: 20%;
 					font-size: 1.7em;
 				}
 
 				& .greeter-app .receiver input{
 					color: #fff !important;
-					background: rgba(255,255,255,0.2);
 				}
 		`, nil)),
 	})

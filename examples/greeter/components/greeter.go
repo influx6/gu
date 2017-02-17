@@ -2,6 +2,7 @@ package components
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/gu-io/gu"
 	"github.com/gu-io/gu/eventx"
@@ -10,6 +11,25 @@ import (
 	"github.com/gu-io/gu/trees/events"
 	"github.com/gu-io/gu/trees/property"
 )
+
+var endings = []string{
+	"Great Explorer",
+	"To the Frontier",
+	"Lets build the future",
+	"Planet Destroyer",
+	"Humans Only Hope",
+}
+
+func getRandomGreeting() string {
+	total := len(endings)
+	index := rand.Intn(total)
+
+	if index >= total {
+		index = rand.Intn((total - rand.Intn(4)))
+	}
+
+	return endings[index]
+}
 
 // Greeter defines a component which greets the name from a input event.
 type Greeter struct {
@@ -49,18 +69,22 @@ func (g *Greeter) Render() *trees.Markup {
 
 			& div.receiver{
 				width: 80%;
-				height: 40px;
 				padding: 10px;
+				margin: 0px auto;
+				min-height: 60px;
 				font-size: 1.0em;
 			}
 
 			& div.receiver input{
+				color: #fff;
+				width: 80%;
 				display: block;
 				padding: 10px;
 				border: none;
 				outline: none;
 				background: none;
-				border-bottom:5px solid rgba(255,255,255,0.3);
+				background: rgba(34, 44, 56, 0.48);
+				border-bottom:5px solid rgba(255,255,255,0.6);
 			}
 
 		`, nil),
@@ -71,7 +95,7 @@ func (g *Greeter) Render() *trees.Markup {
 				property.ClassAttr("person"),
 				trees.MarkupWhen(g.Name == "",
 					elems.SpaceCharacter(3),
-					elems.Text("%q, Great Explorer!", g.Name),
+					elems.Text("%q, %s!", g.Name, getRandomGreeting()),
 				),
 			),
 		),

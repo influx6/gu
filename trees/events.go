@@ -95,11 +95,11 @@ func (e *Event) ParentEventSelector() string {
 
 // EventSelector returns the selector for this events tree.
 func (e *Event) EventSelector() string {
-	if e.Tree != nil {
+	if e.Tree != nil && e.secTarget == "" {
 		return e.Tree.IDSelector(false)
 	}
 
-	return ""
+	return e.secTarget
 }
 
 // EventName returns the giving name of the event.

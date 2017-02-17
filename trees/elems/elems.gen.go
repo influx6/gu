@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/gu-io/gu/trees"
-	"github.com/gu-io/gu/trees/css"
 )
 
 // SpaceCharacter provides text markup which contains the `&nbsp` text for
@@ -143,18 +142,7 @@ func ParseIn(root string, markup string, mo ...trees.Appliable) *trees.Markup {
 // the provided element parent and is built on the gu/css package which collects
 // necessary details from its parent to only target where it gets mounted.
 func CSS(styles interface{}, bind interface{}) *trees.Markup {
-	var rs *css.Rule
-
-	switch so := styles.(type) {
-	case string:
-		rs = css.New(so)
-	case *css.Rule:
-		rs = so
-	default:
-		panic("Invalid Acceptable type for css: Only string or *css.Rule")
-	}
-
-	return trees.CSSStylesheet(rs, bind)
+	return trees.CSSStylesheet(styles, bind)
 }
 
 // SvgAnchor provides the following for SVG XML elements ->

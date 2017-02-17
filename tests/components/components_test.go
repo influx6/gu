@@ -32,14 +32,14 @@ func TestComponent(t *testing.T) {
 	})
 
 	component := registry.Parse(`
-    <div class="bomb" data-field="lexus">
-      <hello component-name="Alex Thunderbot">
+		<div class="bomb" data-field="lexus">
+			<hello component-name="Alex Thunderbot">
 				<root-template>
 					Welcome to the world %q
 				</root-template>
 			</hello>
-    </div>
-  `)
+		</div>
+	`)
 
 	if val := component.Render().HTML(); val != expected && val != expected2 {
 		t.Logf("\t\tRecieved: %q\n", val)

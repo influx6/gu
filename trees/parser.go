@@ -139,7 +139,9 @@ func pullNode(tokens *html.Tokenizer, root *Markup) {
 				for {
 					key, val, more := tokens.TagAttr()
 
-					NewAttr(string(key), string(val)).Apply(node)
+					if string(key) != "" {
+						NewAttr(string(key), string(val)).Apply(node)
+					}
 
 					if !more {
 						break attrLoop

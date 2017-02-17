@@ -55,15 +55,28 @@ func NewText(txt string, dl ...interface{}) *Markup {
 	return em
 }
 
-// CSSStylesheet returns a new instance of a CSSStylesheet.
-func CSSStylesheet(rule *css.Rule, bind interface{}) *Markup {
+// CSSStylesheet provides a function that takes style rules which returns a stylesheet embeded into
+// the provided element parent and is built on the gu/css package which collects
+// necessary details from its parent to only target where it gets mounted.
+func CSSStylesheet(styles interface{}, bind interface{}) *Markup {
+	var rs *css.Rule
+
+	switch so := styles.(type) {
+	case string:
+		rs = css.New(so)
+	case *css.Rule:
+		rs = so
+	default:
+		panic("Invalid Acceptable type for css: Only string or *css.Rule")
+	}
+
 	content := NewMarkup("style", false)
 	content.allowChildren = false
 	content.allowAttributes = false
 	content.allowStyles = false
 	content.allowEvents = false
 	content.textContentFn = func(owner *Markup) string {
-		sheet, err := rule.Stylesheet(bind, owner.IDSelector(true))
+		sheet, err := rs.Stylesheet(bind, owner.IDSelector(true))
 		if err != nil {
 			return err.Error()
 		}
@@ -588,6 +601,10 @@ func (e *Markup) Clone() *Markup {
 
 	//clone the internal attribute
 	for _, ao := range e.attrs {
+		if name, _ := ao.Render(); name == "data-gen" {
+			continue
+		}
+
 		ao.Clone().Apply(co)
 	}
 

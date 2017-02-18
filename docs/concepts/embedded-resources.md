@@ -3,16 +3,28 @@ Embedded Resources
 
 In using GU, there exists at times the need to use external resources. Understanding this need, Gu provides the ability to list resources for components which will be loaded on startup and based on when this components will be called. It allows the inclusion of different resources (e.g CSS, Javascript, Images), which are then  installed by custom hooks into the virtual DOM.
 
-Internally GU uses a two stage process. The First stage involves parsing the intended package for Resource meta-data declarations and produces a `manifest.json` file. This file will be automatically loaded on startup and hence requires the developer to expose the respective path of the generated manifest file to be accessible on the server. The Second stage is when the manifest file is parsed to retrieve all resources and loads those which are required by the components of a view or based if it's declared as a global resource.
+Internally GU uses a two stage process: 
 
-Additionally, the GU parser will search through all import paths to find additional resource declarations to be included for the calling package. Usually you only ever need to generate the `manifest.json` file for the package which will be executing. All resources declared by the application and it's imports will be included within that `manifest.json` file and will be loaded accordingly. This allows alot of simplication and provides a single source of truth for embeddable resources.
+- The First stage involves parsing the intended package for Resource meta-data declarations and produces a `manifest.json` file. This file will be automatically loaded on startup and hence requires the developer to expose the respective path of the generated manifest file to be accessible on the server. 
 
-*GU provides a CLI tool that is instaleld when you `go get`  the GU package. It helps in generating the manifest.json file and also optionally creates a virtual file system which can be loaded as a package for single binary deployments.*
+- The Second stage is when the manifest file is parsed to retrieve all resources and loads those which are required by a giving component or based on if the resource is declared as global.
+
+Additionally, the GU parser will search through all import paths to find additional resource declarations to be included for the calling package. 
+
+## When to Generate "manifest.json"
+
+Usually you only ever need to generate the `manifest.json` file for the package which will be executing your application. All resources declared by the application and it's imports will be included within that `manifest.json` file and will be loaded accordingly. This allows alot of simplication and provides a single source of truth for embeddable resources.
+
+*GU provides a CLI tool that is installd when you `go get`  the GU package. It helps in generating the manifest.json file and also optionally creates a virtual file system which can be loaded as a package for single binary deployments.*
 
 Declaring Resources
 -------------------
 
-Declaring resources to be embedded along with a component or package is easy. Gu uses the meta-data declarations (in the manifest of the golang code ?)  which will be scanned and pulled accordingly. Gu provides a set of fields usable when declaring a resource, as shown below.
+Declaring resources to be embedded along with a component or package is easy. Gu uses the meta-data declarations in the go code which declares the components, which will be scanned and pulled accordingly. 
+
+## Resource Meta-Data Fields
+
+Gu provides a set of fields for the declaration of a resourcs:
 
 ```go
 Resource {
@@ -46,11 +58,18 @@ Resource {
 
 The above fields define the behaviour and means by which a embedded resource should be processed and accessed by the Gu parser.
 
-When the GU parser finds field names which do not match this giving set (not sure what "giving set" means ??) , then these are extracted into a map as meta-details, which can then be used by the hooks as implemented to achieve desired resources or as decorations for a more detailed resource.
+When the Gu parser finds field names which do not match the above fields, then these are extracted into a map as meta-details, which can then be used by the hooks as implemented to retrieve the desired resources if needed.
 
--	Declaring Global Resource Generally when there exists resources which should be included on all views regardless of content, then the global resource declaration strategy should be used has it provides the capability to achieve this.
+## Examples of Resource Declarations
 
-By simply declaring the resource meta-data at the package declaration, the parser will mark these resources as global and will be used on every rendering of the application.
+### Global Resources
+
+Declaring global resources which should be included on all pages regardless of content requires declaring the resource marker `shell:component:global` before the package declaration, which then tells the parser that there exists resource declarations which should be treated as global. 
+
+*This declaration can not be used any where else and must be declared immediately after a package comments not after.*
+
+Below is an example of declaring embedded resources as part of a global resource set:
+
 
 ```go
 // Package component contains useful components built with Gu.
@@ -70,15 +89,13 @@ package components
 type Menu struct{}
 ```
 
-Global resources are marked by the `shell:component:global` marker and this is always required and must be declared first and separate from any package level comments. This marker will be used by the GU parser to identify resource declarations which are required globally.
+### Type based Resource Declarations
 
-**This declaration can not be used any where else and must be declared immediately after a package comments not after.**
+Declaring resources specific to the existence and initialization of specific exportable types, which will be used along in a component or are themselves components. This method allows condition loading of resources which must exists because this exportable types are in use. 
 
--	Declaring Component based Resources When declaring resources specific to the existence and initialization of specific components. The resource need to be declared after the said component's commentary.
+*These declarations must occur after the comments for the giving exportable type.*
 
-Gu uses a `shell:component` marker to site if a giving type declares resources which are required to be embedded. Also the Gu parser is wise enough to included meta details corresponding to a components internal component and declared types.
-
-These information then will be used to loaded addition resources which relate to those types when the giving component is being initialized.
+Gu uses the `shell:component` marker to identify types which have resource declarations to be processed at the use of the type. The Gu resource system is fully capable to only load such resources when such exportable types are in use. This information then will be used to loaded addition resources which relate to those types internals when the giving component is being initialized.
 
 ```go
 // Package component contains useful components built with Gu.

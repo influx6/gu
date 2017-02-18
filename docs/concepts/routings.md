@@ -1,11 +1,11 @@
 Routing
 =======
 
-Gu provides a simplified routing system, which does not provide many bells and whistles found in routing solution these days. This is intended has no major requirement are required for more complex system (Maybe you mena to say "This is intentional, as complex routing is not expected to be needed").
+Gu provides a simplified routing system, which does not provide many bells and whistles found in routing solution these days. This is intentional, as complex routing is not expected to be needed.
 
 Gu provides `Resolvers` which is part of the `routing` package.
 
-Gu's `Resolvers` combine a pubsub system and a pattern matcher, which checks the validity of a provided route and then notifies any registered callbacks ("callbacks" is too generic. might need a better word here...) of either the success or failure of the route matching. If the route passed the matcher, the callback receives a structure (might be better to say "data struct") which contains parameter information and other details as related to the route which was matched. This then allows components and views to react accordingly.
+Gu's `Resolvers` combine a pubsub system and a pattern matcher, which checks the validity of a provided route and then notifies any registered handlers of either the success or failure of the route matching. If the route passed the matcher, the callback receives a structure (might be better to say "data struct") which contains parameter information and other details as related to the route which was matched. This then allows components and views to react accordingly.
 
 Examples
 --------

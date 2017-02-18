@@ -58,8 +58,10 @@ In grasping the examples and approach Gu takes, there exists certain concepts wh
 
 -	[Embeddable Resource](./docs/concepts/embedded-resources.md)
 
--	[Contributions](./docs/concepts/contributing.md)
+How to Contribute
+-----------------
 
+Please read the contribution guidelines [Contribution Guidelines](./docs/concepts/contributing.md)
 
 Limitations
 -----------
@@ -77,7 +79,6 @@ Once these limitations are not a problem, I believe using the library should hel
 Last Note
 ---------
 
-Please feel free to make issues on suggestions, questions, changes, bugs or improvements for the library. 
-They all will be gladly gladly with much fan-fare. 
+Please feel free to make issues on suggestions, questions, changes, bugs or improvements for the library. They all will be gladly gladly with much fan-fare.
 
 God bless.

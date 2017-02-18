@@ -46,4 +46,4 @@ type Driver interface {
 
 It's job is to provide an interface by which it's selected platform renders out appropriately the designed application built using GU and to provide the flexibility of not being tied to a specific rendering endpoint. It also exposes means by which, requests for resources can be made through and caches by which response can be sorted to reduce network usage.
 
-Explore the [Driver](https://github.com/gu-io/gu/drivers/) package to see other driver implementations.
+Explore the [Driver](../../drivers/) package to see other driver implementations.

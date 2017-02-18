@@ -58,6 +58,9 @@ In grasping the examples and approach Gu takes, there exists certain concepts wh
 
 -	[Embeddable Resource](./docs/concepts/embedded-resources.md)
 
+-	[Contributions](./docs/concepts/contributing.md)
+
+
 Limitations
 -----------
 
@@ -71,11 +74,8 @@ Gu by it's very design and architecture was constructed to be "Simple". It lacks
 
 Once these limitations are not a problem, I believe using the library should help in achieving the end product and design you wish to build.
 
-Contributions
+Last Note
 ---------
-Before contributing please do take the time to read this great guide which should help you alot. 
-
-**[Contribution Guides](https://gist.github.com/Chaser324/ce0505fbed06b947d962)**.
 
 Please feel free to make issues on suggestions, questions, changes, bugs or improvements for the library. 
 They all will be gladly gladly with much fan-fare. 

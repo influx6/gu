@@ -3,7 +3,7 @@ Notifications
 
 In Gu there exists a central notification backbone package `notifications`, which exposes a system that allows registering specific functions of specific types of structures to be called when such structures are dispatched into the system to allow a decoupled form of communication.
 
-*This provide loose coupling as is needed.*
+*This provide loose coupling between components as is needed.*
 
 Using the `notifications` package is simple. By simply registering a function expecting a type, this sets up this function to be called once such type is seen.
 

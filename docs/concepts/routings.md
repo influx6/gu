@@ -1,18 +1,18 @@
 Routing
 =======
 
-Gu provides a rather simplified routing system, which does not provide a many bells and whistles found in routing solution these days. This is intended has no major requirement are required for more complex system.
+Gu provides a simplified routing system, which does not provide many bells and whistles found in routing solution these days. This is intentional, as complex routing is not expected to be needed.
 
 Gu provides `Resolvers` which is part of the `routing` package.
 
-Gu's `Resolvers` combined a pubsub system and a pattern matcher, which checks the validity of a provided route which then notifies any registered callbacks of either a successful or failure of the route matching. If the route passed the matcher, the callbacks receives a structure which contains parameter information and other details as related to the route which was matched, this then allows components and views to react accordingly.
+Gu's `Resolvers` combine a pubsub system and a pattern matcher, which checks the validity of a provided route and then notifies any registered handlers of either the success or failure of the route matching. If the route passed the matcher, the handler receives a data struct which contains parameter information and other details as related to the route which was matched. This then allows components and views to react accordingly.
 
 Examples
 --------
 
-Below are examples of using the `routing` package to create Resolvers and how multiple Resolvers can be used to create level routing where one level below another is another part of the expected route/path.
+Below are examples of using the `routing` package to create Resolvers and how multiple Resolvers can be used to create nested routing where one level is nested below another to form part of the expected route/path.
 
--	Simple Routes This example demonstrates the creation of a Resolver for a giving route and how path's can be tested against the resolver's internal matcher and also usage of the pubsub capability of a Resolver in resolving a route path structure called a `PushEvent`.
+-	Simple Routes. This example demonstrates the creation of a Resolver for a given route and how paths can be tested against the resolver's internal matcher. It also demonstrates the  usage of the pubsub capability of a Resolver in resolving a route path structure called a `PushEvent`.
 
 ```go
 
@@ -43,7 +43,8 @@ func main() {
 }
 ```
 
--	Level Routes This example demonstrates how two independent can be connected together to create a level routing where the first Resolver feeds the next registered Resolvers it's successfully matched `PushEvent` which then is passed with the `Remaining` path left of the successfully matched path.
+-	Level Routes.  
+Level Routes describes the dependence of one router to another router. Using this dependency approach, the second router is fed the events generated from the first where unless the first router matches the giving route, the second router will never be matched against. With this relationship, the first router removes any path that matches it's rules and then passes what is left to the second router, which provides a simple means of routing in a leveling manner(i.e stacked manner).
 
 ```go
 
@@ -97,4 +98,4 @@ func main() {
 Conclusion
 ----------
 
-By combining this simple concepts, this should allow flexible approach in routing for components, views and any other use case. As times does go by and more complex and complicated needs arise, the `router` package will be updated.
+By combining these simple concepts, it should provide a flexible approach in routing for components, views and any other use case. As times does go by and more complex and complicated needs arise, the `router` package will be updated.

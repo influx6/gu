@@ -1,20 +1,20 @@
 Components
 ==========
 
-Creating components is the core reason Gu exists as a package. It's major aim is to provide a base library that allows rendering these components easily and efficiently.
+Creating components is the core reason Gu exists as a package. It's primary aim is to provide a base library that allows rendering these components easily and efficiently.
 
-Gu takes a different approach to components and how they should work. Has Gu does not try to be a React version in Go, it takes advantage of the simple concepts that makes the Go language very powerful.
+Gu takes a different approach to components and how they should work. Gu does not try to be a React version in Go, but instead it takes advantage of the simple concepts that makes the Go language very powerful.
 
--	Composition over Inheritance Where components compose each other to create a larger component than using a form of inheritance or inter-logic where components are separately rendered and communicate with each other. Although such is possible, but when capable components are advised to let a root or parent component compose and initialize others and also handles the rendering of these components to it's view.
+-	Composition over Inheritance, where components compose each other to create larger components, rather than using a form of inheritance or inter-logic where components are separately rendered and communicate with each other. 
 
--	Interfaces compliance for upgrades By adopting the strategy and powerful concept of interfaces components can provide the capability to expose themselves to higher functionality or gain access to objects such has the internal caching and resource request `Fetch` objects. More so this system allows components to declare themselves reactive and notify themselves and their views of change to be updated by the driver.
+-	Interfaces compliance for upgrades, whereby components provide the capability to expose themselves to higher functionality or gain access to objects such has the internal caching and resource request `Fetch` objects. Additionally, this appraoch allows components to declare themselves reactive and notify themselves and their views of change to be updated by the driver.
 
-By sticking to such basic ideas and principles, it allows constructing components with the standard construct provided by the Go language to the maximum capability allowed.
+By sticking to such basic ideas and principles, it allows construction of components with the standard constructs provided by the Go language to the maximum capability allowed.
 
 Basics
 ------
 
-Creating a component is comparatively easy, has you are only required to meet a single interface by which the rendering markup for the component is retrieved.
+Creating a component is comparatively easy, in that you are only required to meet a single interface by which the rendering markup for the component is retrieved.
 
 Gu provides a `Renderable` interface which exposes a single method:
 
@@ -35,7 +35,7 @@ import (
 	"github.com/gu-io/gu/trees/property"
 )
 
-// Greeter takes a giving name and generates a greeting.
+// Greeter takes a name and generates a greeting.
 type Greeter struct {
 	Name string
 }
@@ -72,7 +72,7 @@ func (g *Greeting) Render() *trees.Markup {
 Composed Components
 -------------------
 
-Gu favors `Composition` over complex format by which two components provide their functionality to each other. In other words, if you have a two or more components which work as one, instead of rendering each individual within it's own view, it is far more preferable to compose the core types and let a master type handle their rendering calls. By following that basic principles, odd communication flow and functional flow can be simplified.
+Gu favors `Composition` over complexity. In other words, if you have a two or more components which work as one, instead of rendering each individually within it's own view, it is preferable to compose the core types and let a master type handle their rendering calls. By following this basic principle, communication flow and functional flow is simplified.
 
 As demonstrated by the example below:
 
@@ -83,7 +83,7 @@ import (
 	"github.com/gu-io/gu/trees/property"
 )
 
-// MenuItem defines a component which displays entry in a menu list.
+// MenuItem defines a component which displays an entry in a menu list.
 type MenuItem struct {
 	Name string
 	URI  string
@@ -114,12 +114,12 @@ func (m *Menu) Render() *trees.Markup {
 
 ```
 
-By having the Menu Component logically encapsulate/compose it's internal list of items, we can easily provide a simple approach to higher and more complex relationships between components. Though not all relationships fit this pattern but the majority can be found to match the pattern perfectly.
+By having the Menu Component logically encapsulate/compose it's internal list of items, we can easily provide a simple approach to higher and more complex relationships between components. Though not all relationships fit this pattern, the majority can be found to match the pattern perfectly.
 
 Reactive Components
 -------------------
 
-Since Gu heavily depends on interfaces as a means of extending capability of Component. By meeting the `Reactive` interface, a component type can be made reactive. Which allows the Gu view system to listen for update signals to update the rendered output.
+Gu heavily depends on interfaces as a means of extending the capability of Component. By meeting the `Reactive` interface, a component type can be made reactive, allowing the Gu view system to listen for update signals to update the rendered output.
 
 ```go
 
@@ -129,7 +129,7 @@ import (
 	"github.com/gu-io/gu/trees/property"
 )
 
-// Greeter takes a giving name and generates a greeting.
+// Greeter takes a name and generates a greeting.
 type Greeter struct {
 	gu.Reactive
 	Name string
@@ -175,9 +175,9 @@ func (g *Greeting) Render() *trees.Markup {
 Upgraded Components
 -------------------
 
-Since Gu heavily depends on interfaces as a means of extending functionality and also as a means of providing access to construct which are not naturally accessible as they are encapsulated within the core Gu `Views` and `Apps` structures.
+Since Gu heavily depends on interfaces as a means of extending functionality and also as a means of providing access to constructs which are not naturally accessible as they are encapsulated within the core Gu `Views` and `Apps` structures.
 
-Interface provide a awesome opportunity to allow components that desire access to this objects, the ability to declare methods that match specific interface which provides them immediate access to them at initialization.
+Interface provide a awesome opportunity to allow components that desire access to this objects, the ability to declare methods that match specific interfaces provides them immediate access to them at initialization.
 
 Such Interfaces include:
 

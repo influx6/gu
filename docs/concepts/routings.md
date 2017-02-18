@@ -5,7 +5,7 @@ Gu provides a simplified routing system, which does not provide many bells and w
 
 Gu provides `Resolvers` which is part of the `routing` package.
 
-Gu's `Resolvers` combine a pubsub system and a pattern matcher, which checks the validity of a provided route and then notifies any registered handlers of either the success or failure of the route matching. If the route passed the matcher, the callback receives a structure (might be better to say "data struct") which contains parameter information and other details as related to the route which was matched. This then allows components and views to react accordingly.
+Gu's `Resolvers` combine a pubsub system and a pattern matcher, which checks the validity of a provided route and then notifies any registered handlers of either the success or failure of the route matching. If the route passed the matcher, the handler receives a data struct which contains parameter information and other details as related to the route which was matched. This then allows components and views to react accordingly.
 
 Examples
 --------
@@ -43,7 +43,8 @@ func main() {
 }
 ```
 
--	Level Routes.  This example demonstrates how two independent routes can be connected together to create a level routing where the first Resolver feeds the next registered Resolvers it's successfully matched `PushEvent` which then is passed with the `Remaining` path left of the successfully matched path. (Huh ? This sentence is highly confusing ! )
+-	Level Routes.  
+Level Routes describes the dependence of one router to another router. Using this dependency approach, the second router is fed the events generated from the first where unless the first router matches the giving route, the second router will never be matched against. With this relationship, the first router removes any path that matches it's rules and then passes what is left to the second router, which provides a simple means of routing in a leveling manner(i.e stacked manner).
 
 ```go
 

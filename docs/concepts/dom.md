@@ -9,7 +9,7 @@ This provides an expressive and functional style when creating contents for comp
 
 Using the DOM package requires the following packages, with each providing different portions of the HTML/HTML5 API:
 
--	Trees Package(https://github.com/gu-io/gu/trees\) The `trees` package provides the central root structure for the GU DOM. The baseline package used in the creation of object instance to represent different tags, events, and attributes types.
+-	Trees Package(https://github.com/gu-io/gu/trees) The `trees` package provides the central root structure for the GU DOM. The baseline package used in the creation of object instance to represent different tags, events, and attributes types.
 
 ```go
 
@@ -68,8 +68,7 @@ func main(){
 
 Although the above example is trivial, the code does demonstrate how the `trees` foundational structures help define and construct the content to be generated effectively and efficiently.
 
-
--	CSS Package(https://github.com/gu-io/gu/trees/css\) The `css` package provides a stylesheet formatter which underneat uses the a css tokenizer and parser and the Go's text template to create a robust and flexible way to include stylesheet rules targeting the `trees` package markup structures. This package can be freely used on it's own has it highly decouples and provides a clean API.
+-	CSS Package(https://github.com/gu-io/gu/trees/css) The `css` package provides a stylesheet formatter which underneat uses the a css tokenizer and parser and the Go's text template to create a robust and flexible way to include stylesheet rules targeting the `trees` package markup structures. This package can be freely used on it's own has it highly decouples and provides a clean API.
 
 ```go
 import (
@@ -132,7 +131,7 @@ sheet.String();
 */
 ```
 
--	Elems Package(https://github.com/gu-io/gu/trees/elems\) The `elems` package provides is an auto-generated package which provides a functional style of calls to describe the structures of the HTML to be rendered and provides a cleaner and easier use built on the foundation of the `trees` package.
+-	Elems Package(https://github.com/gu-io/gu/trees/elems) The `elems` package provides is an auto-generated package which provides a functional style of calls to describe the structures of the HTML to be rendered and provides a cleaner and easier use built on the foundation of the `trees` package.
 
 ```go
 
@@ -170,7 +169,7 @@ func main(){
 
 By using a more functional declarative style, constructing complicated markup directives becomes easier and simpler.
 
--	Property Package(https://github.com/gu-io/gu/trees/property\) The `property` package follows in the style of the `elems` package to provide a functional and declarative approach in provided attributes and styles to the constructed elements. The `property` package differentiates attributes and styles by append a suffix of`Attr` to the name of the property if an attribute and a suffix of `Style` to a style property.
+-	Property Package(https://github.com/gu-io/gu/trees/property) The `property` package follows in the style of the `elems` package to provide a functional and declarative approach in provided attributes and styles to the constructed elements. The `property` package differentiates attributes and styles by append a suffix of`Attr` to the name of the property if an attribute and a suffix of `Style` to a style property.
 
 ```go
 
@@ -209,7 +208,7 @@ func main(){
 }
 ```
 
--	Events Package(https://github.com/gu-io/gu/trees/events\) The `events` package follows in the style of the `elems` package to provide a functional and declarative approach in defining the expected events which must occur on specific elements. The events are actually bound on the target where the giving DOM is mounted into but a checked is done to validate the real target of the event and if it matches the desired elements, this is handled by the driver used. This way we can easily declare and describe the behaviours we need for when events occur.
+-	Events Package(https://github.com/gu-io/gu/trees/events) The `events` package follows in the style of the `elems` package to provide a functional and declarative approach in defining the expected events which must occur on specific elements. The events are actually bound on the target where the giving DOM is mounted into but a checked is done to validate the real target of the event and if it matches the desired elements, this is handled by the driver used. This way we can easily declare and describe the behaviours we need for when events occur.
 
 ```go
 

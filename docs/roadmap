@@ -3,7 +3,7 @@
 1. Get QT Webview working with Greeter.  
 This is just to make sure we are good with building a very basic example. 
 - Not need to do anything else.
-- Intent is so that the exact same code for the Web target, also works with the QT WebView. If we find out that there are slight changes lets review if we fidn them.
+- Intent is so that the exact same code for the Web target, also works with the QT WebView. If we find out that there are slight changes lets review if we find them.
 - Base example is here: https://github.com/therecipe/qt/tree/master/internal/examples/qml/webview
 
 2. Get QT Greeter working on Win 10, OSX, Ubuntu & Android, IOS.   
@@ -58,11 +58,6 @@ Now on Web, Desktop and Mobiles these things need to behave a bit differently, b
  All we need to do is make an interface that all GU code users, and a slightly different implementation for each Target.
  On Andrpid and IOS the are expressed in the manifest file that is standard for apps.
  We can generate this, this is why intents are loosely coupled.
- 
- 
- 
- 
-
 
     
 Now this is enough. Lots of other things for later are in the gu-x repo.

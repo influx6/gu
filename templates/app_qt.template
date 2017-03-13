@@ -10,8 +10,11 @@ import (
 // driver.
 var AppSettings = gu.AppAttr{
 	InterceptRequests: true,
-	Name:              "{{ .Name }}",
+	Name:              "{{Name}}",
 	Mode:              gu.DevelopmentMode,
-	Title:             "{{ .Name }} Gu App",
+	Title:             "{{Name}} Gu App",
 	Manifests:         "assets/manifests.json",
 }
+
+
+

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,8 +21,10 @@ var (
 	defaultName = "manifests"
 	commands    = []*cli.Command{}
 
-	usage = `Provides a CLi tool which provides different commands to build and prepare 
-	Gu based projects for testing, deployment and push.`
+	namebytes = []byte("{{Name}}")
+	gupath    = "github.com/gu-io/gu"
+
+	usage = `Provides a CLi tool which allows deployment and generation of project files for use in development.`
 
 	aferoTemplate = `// Package %s is auto-generated and should not be modified by hand.
 // This package contains a virtual file system for generate resources which are not accessed
@@ -75,6 +78,157 @@ func generateAddFile(name string, content []byte) string {
 }
 
 func initCommands() {
+	commands = append(commands, &cli.Command{
+		Name:        "create",
+		Usage:       "gu create <PackageName>",
+		Description: "Generates a new package for a gu app",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "driver",
+				Aliases: []string{"dri"},
+				Usage:   "driver=js|qt",
+				Value:   "js",
+			},
+			&cli.StringFlag{
+				Name:  "dir",
+				Usage: "dir=path-to-dir",
+			},
+			&cli.StringFlag{
+				Name:    "packageName",
+				Aliases: []string{"pkg"},
+				Usage:   "pkg=hello",
+			},
+		},
+		Action: func(ctx *cli.Context) error {
+			gopath := os.Getenv("GOPATH")
+			gup := filepath.Join(gopath, "src", gupath)
+
+			cdir, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+
+			indir := ctx.String("dir")
+
+			if indir != "" {
+				if strings.HasPrefix(indir, ".") || !strings.HasPrefix(indir, "/") {
+					indir = filepath.Join(cdir, indir)
+				}
+			} else {
+				indir = cdir
+			}
+
+			packageName := ctx.String("packageName")
+			args := ctx.Args()
+
+			if packageName == "" && args.Len() > 0 {
+				packageName = args.First()
+			}
+
+			// Generate dirs for the project.
+			var dirs []string
+			dirs = append(dirs,
+				filepath.Join(indir, packageName),
+				filepath.Join(indir, packageName, "components"),
+				filepath.Join(indir, packageName, "assets"))
+
+			for _, dir := range dirs {
+				if err := os.MkdirAll(dir, 0777); err != nil && err != os.ErrExist {
+					return err
+				}
+			}
+
+			driver := ctx.String("driver")
+
+			fmt.Printf("Driver: %+q\n", driver)
+
+			// Generate files for the project.
+			switch driver {
+			case "js":
+				// read the full qt template and write into the file.
+				jsdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_js.template"))
+				if err != nil {
+					return err
+				}
+
+				jsdata = bytes.Replace(jsdata, namebytes, []byte(packageName), -1)
+
+				gtkdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_gtk.template"))
+				if err != nil {
+					return err
+				}
+
+				gtkdata = bytes.Replace(gtkdata, namebytes, []byte(packageName), -1)
+
+				macdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_mac.template"))
+				if err != nil {
+					return err
+				}
+
+				macdata = bytes.Replace(macdata, namebytes, []byte(packageName), -1)
+
+				windata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_win.template"))
+				if err != nil {
+					return err
+				}
+
+				windata = bytes.Replace(windata, namebytes, []byte(packageName), -1)
+
+				appdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app.template"))
+				if err != nil {
+					return err
+				}
+
+				appdata = bytes.Replace(appdata, namebytes, []byte(packageName), -1)
+
+				if err := writeFile(filepath.Join(indir, packageName, "app.go"), appdata); err != nil {
+					return err
+				}
+
+				if err := writeFile(filepath.Join(indir, packageName, "app_js.go"), jsdata); err != nil {
+					return err
+				}
+
+				if err := writeFile(filepath.Join(indir, packageName, "app_gtk.go"), gtkdata); err != nil {
+					return err
+				}
+
+				if err := writeFile(filepath.Join(indir, packageName, "app_mac.go"), macdata); err != nil {
+					return err
+				}
+
+				if err := writeFile(filepath.Join(indir, packageName, "app_win.go"), windata); err != nil {
+					return err
+				}
+
+			case "qt":
+				// read the full qt template and write into the file.
+				data, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_qt.template"))
+				if err != nil {
+					return err
+				}
+
+				data = bytes.Replace(data, namebytes, []byte(packageName), -1)
+
+				if err := writeFile(filepath.Join(indir, packageName, "app_qt.go"), data); err != nil {
+					return err
+				}
+
+				// read the full app main template and write into the file.
+				data, err = ioutil.ReadFile(filepath.Join(gup, "templates/app.template"))
+				if err != nil {
+					return err
+				}
+
+				if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+	})
+
 	commands = append(commands, &cli.Command{
 		Name:        "generate-vfs",
 		Usage:       "gu generate-vfs <PackageName>",
@@ -270,4 +424,19 @@ func initCommands() {
 			return nil
 		},
 	})
+}
+
+func writeFile(targetFile string, data []byte) error {
+	file, err := os.Create(targetFile)
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	if _, err := file.Write(data); err != nil {
+		return err
+	}
+
+	return nil
 }

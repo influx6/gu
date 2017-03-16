@@ -1,0 +1,32 @@
+package {{PKGNAME}}
+
+import (
+	"github.com/gu-io/gu"
+	"github.com/gu-io/gu/trees"
+	"github.com/gu-io/gu/trees/elems"
+	"github.com/gu-io/gu/trees/property"
+
+	componentsbase "{{PKG}}/components"
+)
+
+_ = componentsbase.Components.Register("{{Name_Lower}}", func(attr map[string]string, template string) gu.Renderable {
+	return New{{Name}}()
+}, false)
+
+
+// {{Name}} defines a component which implements the gu.Renderable interface.
+type {{Name}} struct{
+	gu.Reactive
+}
+
+// New{{Name}} returns a new instance of {{Name}} component.
+func New{{Name}}() *{{Name}} {
+  return &{{Name}}{
+  	Reactive: gu.NewReactive(),
+  }
+}
+
+// Render returns the markup for this {{Name}} component.
+func (c {{Name}}) Render() *trees.Markup {
+	return elems.Div(property.Class("component"))
+}

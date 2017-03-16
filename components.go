@@ -103,12 +103,14 @@ func (c *ComponentRegistry) ParseTag(tag string, fields map[string]string, templ
 //  Maker - the function which generates the Renderable
 //  Unwrap - Boolean indicating if the content alone to be rendered or else be wrapped
 //  					by the tag declared.
-func (c *ComponentRegistry) Register(tagName string, maker ComponentMaker, unwrap bool) {
+func (c *ComponentRegistry) Register(tagName string, maker ComponentMaker, unwrap bool) bool {
 	c.makers[strings.ToLower(tagName)] = ComponentItem{
 		TagName: tagName,
 		Maker:   maker,
 		Unwrap:  unwrap,
 	}
+
+	return true
 }
 
 //================================================================================

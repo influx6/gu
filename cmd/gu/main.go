@@ -8,12 +8,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/gu-io/gu/shell"
 	"github.com/gu-io/gu/shell/parse"
-
-	"gopkg.in/urfave/cli.v2"
+	cli "gopkg.in/urfave/cli.v2"
 )
 
 var (
@@ -21,8 +21,12 @@ var (
 	defaultName = "manifests"
 	commands    = []*cli.Command{}
 
-	namebytes = []byte("{{Name}}")
-	gupath    = "github.com/gu-io/gu"
+	namebytes      = []byte("{{Name}}")
+	pkgbytes       = []byte("{{PKG}}")
+	pkgNamebytes   = []byte("{{PKGNAME}}")
+	nameLowerbytes = []byte("{{Name_Lower}}")
+
+	gupath = "github.com/gu-io/gu"
 
 	usage = `Provides a CLi tool which allows deployment and generation of project files for use in development.`
 
@@ -77,7 +81,126 @@ func generateAddFile(name string, content []byte) string {
 `, name, content)
 }
 
+func capitalize(val string) string {
+	return strings.ToUpper(val[:1]) + val[1:]
+}
+
+var badSymbols = regexp.MustCompile("[(|\\-|_|\\W|\\d)+]")
+var notAllowed = regexp.MustCompile("[^(_|\\w|\\d)+]")
+var descore = regexp.MustCompile("-")
+
+func validateName(val string) bool {
+	if notAllowed.MatchString(val) {
+		return false
+	}
+
+	return true
+}
+
 func initCommands() {
+
+	commands = append(commands, &cli.Command{
+		Name:        "component-create",
+		Usage:       "gu component-create <component-name>",
+		Description: "Generates a new boiler code component file which can be set to be in it's own package or part of the component package ",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "flat",
+				Aliases: []string{"fl"},
+				Usage:   "flat=true",
+				Value:   false,
+			},
+			&cli.StringFlag{
+				Name:    "component",
+				Aliases: []string{"c"},
+				Usage:   "component=hello",
+			},
+		},
+		Action: func(ctx *cli.Context) error {
+			args := ctx.Args()
+			if args.Len() == 0 {
+				return nil
+			}
+
+			cdir, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+
+			flat := ctx.Bool("flat")
+			gopath := os.Getenv("GOPATH")
+			gup := filepath.Join(gopath, "src")
+			gupkg := filepath.Join(gopath, "src", gupath)
+			componentDir := filepath.Join(cdir, "components")
+
+			componentName := ctx.String("component")
+
+			if componentName == "" && args.Len() > 0 {
+				componentName = args.First()
+			}
+
+			componentStructName := descore.ReplaceAllString(componentName, "_")
+			if !validateName(componentStructName) {
+				return errors.New("ComponentName does not meet go struct naming standards")
+			}
+
+			componentNameCap := capitalize(componentStructName)
+			componentNameLower := strings.ToLower(componentStructName)
+
+			componentPkgName := badSymbols.ReplaceAllString(componentName, "")
+			newComponentDir := filepath.Join(componentDir, componentPkgName)
+
+			packagePath, err := filepath.Rel(gup, cdir)
+			if err != nil {
+				return err
+			}
+
+			if flat {
+				cpdata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/component.template"))
+				if err != nil {
+					return err
+				}
+
+				cpdata = bytes.Replace(cpdata, namebytes, []byte(componentNameCap), -1)
+				cpdata = bytes.Replace(cpdata, nameLowerbytes, []byte(componentNameLower), -1)
+
+				componentFileName := fmt.Sprintf("%s.go", componentNameLower)
+				cmdir := filepath.Join(componentDir, componentFileName)
+				if err := writeFile(cmdir, cpdata); err != nil {
+					return err
+				}
+
+				fmt.Printf("- Adding project file: %q\n", filepath.Join("components", componentFileName))
+				return nil
+			}
+
+			if err := os.MkdirAll(newComponentDir, 0777); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project package: %q\n", filepath.Join("components", componentPkgName))
+
+			cpdata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/pkgcomponent.template"))
+			if err != nil {
+				return err
+			}
+
+			cpdata = bytes.Replace(cpdata, pkgNamebytes, []byte(componentPkgName), -1)
+			cpdata = bytes.Replace(cpdata, pkgbytes, []byte(packagePath), -1)
+			cpdata = bytes.Replace(cpdata, namebytes, []byte(componentNameCap), -1)
+			cpdata = bytes.Replace(cpdata, nameLowerbytes, []byte(componentNameLower), -1)
+
+			componentFileName := fmt.Sprintf("%s.go", componentNameLower)
+			cmdir := filepath.Join(newComponentDir, componentFileName)
+			if err := writeFile(cmdir, cpdata); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project file: %q\n", filepath.Join("components", componentPkgName, componentFileName))
+			return nil
+		},
+	})
+
 	commands = append(commands, &cli.Command{
 		Name:        "create",
 		Usage:       "gu create <PackageName>",
@@ -125,22 +248,47 @@ func initCommands() {
 				packageName = args.First()
 			}
 
+			driver := ctx.String("driver")
+			appDir := filepath.Join(indir, packageName)
+
+			fmt.Printf("- Creating new project: %q\n", packageName)
+			fmt.Printf("- Using driver template: %q\n", driver)
+
 			// Generate dirs for the project.
 			var dirs []string
 			dirs = append(dirs,
-				filepath.Join(indir, packageName),
-				filepath.Join(indir, packageName, "components"),
-				filepath.Join(indir, packageName, "assets"))
+				appDir,
+				filepath.Join(appDir, "components"),
+				filepath.Join(appDir, "assets"))
 
-			for _, dir := range dirs {
-				if err := os.MkdirAll(dir, 0777); err != nil && err != os.ErrExist {
-					return err
-				}
+			if err := os.MkdirAll(appDir, 0777); err != nil && err != os.ErrExist {
+				return err
 			}
 
-			driver := ctx.String("driver")
+			fmt.Printf("\t- Creating project directory: %q\n", packageName)
 
-			fmt.Printf("Driver: %+q\n", driver)
+			if err := os.MkdirAll(filepath.Join(appDir, "components"), 0777); err != nil && err != os.ErrExist {
+				return err
+			}
+
+			fmt.Printf("\t- Creating project directory: %q\n", filepath.Join(packageName, "components"))
+
+			if err := os.MkdirAll(filepath.Join(appDir, "assets"), 0777); err != nil && err != os.ErrExist {
+				return err
+			}
+
+			fmt.Printf("\t- Creating project directory: %q\n", filepath.Join(packageName, "assets"))
+
+			registrydata, err := ioutil.ReadFile(filepath.Join(gup, "templates/registry.template"))
+			if err != nil {
+				return err
+			}
+
+			if err := writeFile(filepath.Join(indir, packageName, "components/components.go"), registrydata); err != nil {
+				return err
+			}
+
+			fmt.Printf("\t- Adding project file: %q\n", "components/components.go")
 
 			// Generate files for the project.
 			switch driver {
@@ -185,21 +333,31 @@ func initCommands() {
 					return err
 				}
 
+				fmt.Printf("\t- Adding project file: %q\n", "app.go")
+
 				if err := writeFile(filepath.Join(indir, packageName, "app_js.go"), jsdata); err != nil {
 					return err
 				}
+
+				fmt.Printf("\t- Adding project file: %q\n", "app_js.go")
 
 				if err := writeFile(filepath.Join(indir, packageName, "app_gtk.go"), gtkdata); err != nil {
 					return err
 				}
 
+				fmt.Printf("\t- Adding project file: %q\n", "app_gtk.go")
+
 				if err := writeFile(filepath.Join(indir, packageName, "app_mac.go"), macdata); err != nil {
 					return err
 				}
 
+				fmt.Printf("\t- Adding project file: %q\n", "app_mac.go")
+
 				if err := writeFile(filepath.Join(indir, packageName, "app_win.go"), windata); err != nil {
 					return err
 				}
+
+				fmt.Printf("\t- Adding project file: %q\n", "app_mac.go")
 
 			case "qt":
 				// read the full qt template and write into the file.
@@ -214,6 +372,8 @@ func initCommands() {
 					return err
 				}
 
+				fmt.Printf("\t- Adding project file: %q\n", "app_qt.go")
+
 				// read the full app main template and write into the file.
 				data, err = ioutil.ReadFile(filepath.Join(gup, "templates/app.template"))
 				if err != nil {
@@ -223,6 +383,8 @@ func initCommands() {
 				if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
 					return err
 				}
+
+				fmt.Printf("\t- Adding project file: %q\n", "app.go")
 			}
 
 			return nil

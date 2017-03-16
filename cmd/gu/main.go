@@ -387,6 +387,11 @@ func initCommands() {
 				fmt.Printf("\t- Adding project file: %q\n", "app.go")
 			}
 
+			// Change to new app directory.
+			if err := os.Chdir(filepath.Join(indir, packageName)); err != nil {
+				return nil
+			}
+
 			return nil
 		},
 	})

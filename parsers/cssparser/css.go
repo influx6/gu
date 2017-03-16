@@ -17,6 +17,67 @@ type CSSItems struct {
 	Dirs    map[string][]int `json:"dirs"`
 }
 
+// Generate returns a new CSSItems if it exists for the provided address.
+func (c *CSSItems) Generate() []map[string]interface{} {
+	var sets []map[string]interface{}
+
+	for _, style := range c.Styles {
+		var before, after []int
+
+		for _, include := range style.Includes {
+			var addr, hook string
+
+			splits := strings.Split(include, ":")
+			if len(splits) > 1 {
+				addr = splits[0]
+				hook = strings.ToLower(splits[1])
+			} else {
+				addr = splits[0]
+			}
+
+			if strings.HasSuffix(addr, "/*") {
+				addr = strings.TrimSuffix(addr, "/*")
+
+				dirs := c.Dirs[addr]
+
+				switch hook {
+				case "after":
+					after = append(after, dirs...)
+				case "before":
+					before = append(before, dirs...)
+				default:
+					before = append(before, dirs...)
+				}
+
+				continue
+			}
+
+			index, ok := c.Indexes[addr]
+			if !ok {
+				continue
+			}
+
+			switch hook {
+			case "after":
+				after = append(after, index)
+			case "before":
+				before = append(before, index)
+			default:
+				before = append(before, index)
+			}
+		}
+
+		sets = append(sets, map[string]interface{}{
+			"path":   style.Path,
+			"after":  after,
+			"before": before,
+			"rule":   style.Content,
+		})
+	}
+
+	return sets
+}
+
 // CSSItem defines a struct which is returned when passing a directories of css files
 // marked by .css extensions. It gleens out inclusion directives by scanner the top of
 // the files data for any '/* #include "boxer.css",...,"[relative_file_paths]" */', which
@@ -24,7 +85,7 @@ type CSSItems struct {
 type CSSItem struct {
 	Dir      string   `json:"dir"`
 	Path     string   `json:"path"`
-	Content  []byte   `json:"content"`
+	Content  string   `json:"content"`
 	Includes []string `json:"includes"`
 }
 
@@ -115,7 +176,7 @@ func walkDir(items *CSSItems, root string, path string, info os.FileInfo, err er
 	var item CSSItem
 	item.Path = rel
 	item.Dir = filepath.Dir(rel)
-	item.Content = data
+	item.Content = string(data)
 
 	reader := bytes.NewReader(data)
 	bufReader := bufio.NewReader(reader)

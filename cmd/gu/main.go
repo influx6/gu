@@ -21,10 +21,11 @@ var (
 	defaultName = "manifests"
 	commands    = []*cli.Command{}
 
-	namebytes      = []byte("{{Name}}")
-	pkgbytes       = []byte("{{PKG}}")
-	pkgNamebytes   = []byte("{{PKGNAME}}")
-	nameLowerbytes = []byte("{{Name_Lower}}")
+	namebytes       = []byte("{{Name}}")
+	pkgbytes        = []byte("{{PKG}}")
+	pkgContentbytes = []byte("{{PKG_CONTENT}}")
+	pkgNamebytes    = []byte("{{PKGNAME}}")
+	nameLowerbytes  = []byte("{{Name_Lower}}")
 
 	gupath = "github.com/gu-io/gu"
 
@@ -125,18 +126,46 @@ func initCommands() {
 				cssDirName = args.First()
 			}
 
+			if cssDirName == "" && args.Len() == 0 {
+				cssDirName = "gcss"
+			}
+
 			gopath := os.Getenv("GOPATH")
 			gup := filepath.Join(gopath, "src")
-			gupkg := filepath.Join(gopath, "src", gupath)
+			gupkg := filepath.Join(gup, gupath)
 			cssDirPath := filepath.Join(cdir, cssDirName)
 
-			packagePath, err := filepath.Rel(gup, cdir)
+			// packagePath, err := filepath.Rel(gup, cdir)
+			// if err != nil {
+			// 	return err
+			// }
+
+			if err := os.MkdirAll(cssDirPath, 0777); err != nil {
+				return err
+			}
+
+			if err := os.MkdirAll(filepath.Join(cssDirPath, "css"), 0777); err != nil {
+				return err
+			}
+
+			gendata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/css.template"))
 			if err != nil {
 				return err
 			}
 
-			_ = cssDirPath
-			_ = gupkg
+			cssgendata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/cssgenerate.template"))
+			if err != nil {
+				return err
+			}
+
+			gendata = []byte(fmt.Sprintf("%q", gendata))
+
+			cssgendata = bytes.Replace(cssgendata, pkgContentbytes, gendata, 1)
+			cssgendata = bytes.Replace(cssgendata, pkgNamebytes, []byte("\""+cssDirName+"\""), 1)
+
+			if err := writeFile(filepath.Join(cssDirPath, "generate.go"), cssgendata); err != nil {
+				return err
+			}
 
 			return nil
 		},

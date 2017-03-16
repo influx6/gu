@@ -27,5 +27,12 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("CSS: %+s\n", jd)
+	fmt.Printf("Items: %+s\n", jd)
+
+	rd, err := json.MarshalIndent(items.Generate(), "", "\t")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("CSS: %+s\n", rd)
 }

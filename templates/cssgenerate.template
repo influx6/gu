@@ -1,19 +1,46 @@
 // +build ignore
 
-// This package is automatically generated and should not be modified by hand. 
-// It provides a source which is used to build all css packages into a css.go 
-// file which contains each allocated by name.
-
 package main
 
 import (
-	"github.com/gu-io/gu/trees/css"
+	"encoding/json"
+	"fmt"
+	"os"
+	"strings"
+	"path/filepath"
+
+	"github.com/gu-io/gu/parsers/cssparser"
 )
 
-// CSSFiles defines all available css files from the giving {{DIR}}.
-var CSSFiles = make(map[string]*css.Rule)
+var pkgName = {{PKGNAME}}
+var pkg = {{PKG_CONTENT}}
+
+func main() {
+	cdir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	items, err := cssparser.ParseDir(filepath.Join(cdir, "./"))
+	if err != nil {
+		panic(err)
+	}
+
+	rd, err := json.MarshalIndent(items.Generate(), "", "\t")
+	if err != nil {
+		panic(err)
+	}
 
 
-func init(){
-{{CSSFileLists}}
+	file, err := os.Create(filepath.Join(cdir, "css.go"))
+	if err != nil {
+		panic(err)
+	}
+
+	defer file.Close()
+
+	pkg = strings.Replace(pkg,"{{PKG}}", pkgName, -1)
+	pkg = strings.Replace(pkg,"{{STYLES}}", string(rd), -1)
+
+	file.Write([]byte(pkg))
 }

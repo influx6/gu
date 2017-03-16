@@ -98,6 +98,49 @@ func validateName(val string) bool {
 }
 
 func initCommands() {
+	commands = append(commands, &cli.Command{
+		Name:        "css",
+		Usage:       "gu css <css-dir-name>",
+		Description: "Generates a package which builds all internal css files into a central go file",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "name",
+				Aliases: []string{"n"},
+				Usage:   "name=hello",
+			},
+		},
+		Action: func(ctx *cli.Context) error {
+			args := ctx.Args()
+			if args.Len() == 0 {
+				return nil
+			}
+
+			cdir, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+
+			cssDirName := ctx.String("name")
+			if cssDirName == "" && args.Len() > 0 {
+				cssDirName = args.First()
+			}
+
+			gopath := os.Getenv("GOPATH")
+			gup := filepath.Join(gopath, "src")
+			gupkg := filepath.Join(gopath, "src", gupath)
+			cssDirPath := filepath.Join(cdir, cssDirName)
+
+			packagePath, err := filepath.Rel(gup, cdir)
+			if err != nil {
+				return err
+			}
+
+			_ = cssDirPath
+			_ = gupkg
+
+			return nil
+		},
+	})
 
 	commands = append(commands, &cli.Command{
 		Name:        "component-create",

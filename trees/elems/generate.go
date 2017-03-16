@@ -1,6 +1,6 @@
 // +build ignore
 // Credit to Richard Musiol (https://github.com/neelance/dom)
-// His code was crafted to fit haiku's use
+// His code was crafted to fit gu's use
 
 package main
 

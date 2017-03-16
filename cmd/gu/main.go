@@ -139,7 +139,8 @@ func initCommands() {
 				componentName = args.First()
 			}
 
-			componentStructName := descore.ReplaceAllString(componentName, "_")
+			// componentStructName := descore.ReplaceAllString(componentName, "_")
+			componentStructName := badSymbols.ReplaceAllString(componentName, "")
 			if !validateName(componentStructName) {
 				return errors.New("ComponentName does not meet go struct naming standards")
 			}

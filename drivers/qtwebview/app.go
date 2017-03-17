@@ -22,7 +22,7 @@ type QTAttr struct {
 // the provided gu.NApp.
 type QTApp struct {
 	attr    QTAttr
-	baseURL *core.QURL
+	baseURL *core.QUrl
 	window  *widgets.QMainWindow
 	fm      *widgets.QWidget
 	view    *webengine.QWebEngineView

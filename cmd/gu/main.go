@@ -332,6 +332,11 @@ func initCommands() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+			args := ctx.Args()
+			if args.Len() == 0 {
+				return nil
+			}
+
 			gopath := os.Getenv("GOPATH")
 			gup := filepath.Join(gopath, "src", gupath)
 
@@ -351,7 +356,6 @@ func initCommands() {
 			}
 
 			packageName := ctx.String("packageName")
-			args := ctx.Args()
 
 			if packageName == "" && args.Len() > 0 {
 				packageName = args.First()
@@ -514,6 +518,10 @@ func initCommands() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+			args := ctx.Args()
+			if args.Len() == 0 {
+				return nil
+			}
 			cdir, err := os.Getwd()
 			if err != nil {
 				return err

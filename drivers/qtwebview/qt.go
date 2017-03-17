@@ -1,3 +1,5 @@
+// Package qtwebview implements the gu.Driver interface to provide rendering using the
+// qt5 cross-platform GUI library and platform.
 package qtwebview
 
 import (
@@ -9,6 +11,13 @@ import (
 // WebviewDriver provides a concrete implementation of the Gu.Driver interface.
 type WebviewDriver struct {
 	readyHandlers []func()
+}
+
+// NewWebviewDriver returns a new instance of the qt WebviewDriver.
+func NewWebviewDriver() *WebviewDriver {
+	var driver WebviewDriver
+
+	return &driver
 }
 
 // Name returns the name of the driver.

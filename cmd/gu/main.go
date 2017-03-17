@@ -482,18 +482,6 @@ func initCommands() {
 				}
 
 				fmt.Printf("\t- Adding project file: %q\n", "app_qt.go")
-
-				// read the full app main template and write into the file.
-				data, err = ioutil.ReadFile(filepath.Join(gup, "templates/app.template"))
-				if err != nil {
-					return err
-				}
-
-				if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
-					return err
-				}
-
-				fmt.Printf("\t- Adding project file: %q\n", "app.go")
 			}
 
 			// Change to new app directory.

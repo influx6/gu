@@ -1,20 +1,40 @@
-// +build !js
-
 package main
 
 import (
 	"github.com/gu-io/gu"
+	"github.com/gu-io/gu/drivers/qtwebview"
 )
 
-// AppSettings defines the attributes for the app for using the GopherJS
-// driver.
-var AppSettings = gu.AppAttr{
-	InterceptRequests: true,
-	Name:              "{{Name}}",
-	Mode:              gu.DevelopmentMode,
-	Title:             "{{Name}} Gu App",
-	Manifests:         "assets/manifests.json",
+func registerViews(app *gu.NApp){
+	
+	app.View(gu.ViewAttr{
+		Name:  "View.Index",
+        Route: "/*",
+    })
+
 }
 
+func main() {
 
+	// Initialize QT window processes.
+	qtwebview.InitQTApplication()
 
+	qtapp := qtwebview.NewQTApp(qtwebview.QTAttr{
+		URL: "/",
+		Width: 600,
+		Height: 600,
+	})
+
+	app := gu.App(gu.AppAttr{
+		InterceptRequests: true,
+		Name:              "{{Name}}",
+		Mode:              gu.DevelopmentMode,
+		Title:             "{{Name}} Gu App",
+		Manifests:         "assets/manifests.json",
+	})
+
+	registerViews(app)
+
+	qtapp.Init()
+	qtapp.Run()
+}

@@ -25,6 +25,7 @@ var (
 	pkgbytes        = []byte("{{PKG}}")
 	pkgContentbytes = []byte("{{PKG_CONTENT}}")
 	pkgNamebytes    = []byte("{{PKGNAME}}")
+	dirNamebytes    = []byte("{{DIRNAME}}")
 	nameLowerbytes  = []byte("{{Name_Lower}}")
 
 	gupath = "github.com/gu-io/gu"
@@ -99,10 +100,12 @@ func validateName(val string) bool {
 }
 
 func initCommands() {
-	commands = append(commands, &cli.Command{
+	var subcommands []*cli.Command
+
+	subcommands = append(subcommands, &cli.Command{
 		Name:        "css",
 		Usage:       "gu css <css-dir-name>",
-		Description: "Generates a package which builds all internal css files into a central go file",
+		Description: "Generates a styles package which builds all internal css files into a central go file",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "name",
@@ -135,11 +138,6 @@ func initCommands() {
 			gupkg := filepath.Join(gup, gupath)
 			cssDirPath := filepath.Join(cdir, cssDirName)
 
-			// packagePath, err := filepath.Rel(gup, cdir)
-			// if err != nil {
-			// 	return err
-			// }
-
 			if err := os.MkdirAll(cssDirPath, 0777); err != nil {
 				return err
 			}
@@ -159,8 +157,8 @@ func initCommands() {
 			}
 
 			gendata = []byte(fmt.Sprintf("%q", gendata))
-
 			cssgendata = bytes.Replace(cssgendata, pkgContentbytes, gendata, 1)
+			cssgendata = bytes.Replace(cssgendata, dirNamebytes, []byte("css"), 1)
 			cssgendata = bytes.Replace(cssgendata, pkgNamebytes, []byte("\""+cssDirName+"\""), 1)
 
 			if err := writeFile(filepath.Join(cssDirPath, "generate.go"), cssgendata); err != nil {
@@ -171,9 +169,9 @@ func initCommands() {
 		},
 	})
 
-	commands = append(commands, &cli.Command{
-		Name:        "component-create",
-		Usage:       "gu component-create <component-name>",
+	subcommands = append(subcommands, &cli.Command{
+		Name:        "create",
+		Usage:       "gu create <component-name>",
 		Description: "Generates a new boiler code component file which can be set to be in it's own package or part of the component package ",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
@@ -223,6 +221,10 @@ func initCommands() {
 			componentPkgName := badSymbols.ReplaceAllString(componentName, "")
 			newComponentDir := filepath.Join(componentDir, componentPkgName)
 
+			cssDirName := "styles"
+			newComponentCSSDir := filepath.Join(newComponentDir, cssDirName)
+			newComponentCSSFilesDir := filepath.Join(newComponentCSSDir, "css")
+
 			packagePath, err := filepath.Rel(gup, cdir)
 			if err != nil {
 				return err
@@ -251,7 +253,34 @@ func initCommands() {
 				return err
 			}
 
+			if err := os.MkdirAll(newComponentCSSFilesDir, 0777); err != nil {
+				return err
+			}
+
 			fmt.Printf("- Adding project package: %q\n", filepath.Join("components", componentPkgName))
+			fmt.Printf("- Adding project directory: %q\n", filepath.Join("components", componentPkgName, cssDirName))
+			fmt.Printf("- Adding project directory: %q\n", filepath.Join("components", componentPkgName, cssDirName, "css"))
+
+			cssbeforegendata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/css.template"))
+			if err != nil {
+				return err
+			}
+
+			cssgendata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/cssgenerate.template"))
+			if err != nil {
+				return err
+			}
+
+			cssbeforegendata = []byte(fmt.Sprintf("%q", cssbeforegendata))
+			cssgendata = bytes.Replace(cssgendata, pkgContentbytes, cssbeforegendata, 1)
+			cssgendata = bytes.Replace(cssgendata, dirNamebytes, []byte("css"), 1)
+			cssgendata = bytes.Replace(cssgendata, pkgNamebytes, []byte("\""+cssDirName+"\""), 1)
+
+			if err := writeFile(filepath.Join(newComponentCSSDir, "generate.go"), cssgendata); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project file: %q\n", filepath.Join("components", componentPkgName, "styles", "generate.go"))
 
 			cpdata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/pkgcomponent.template"))
 			if err != nil {
@@ -272,6 +301,13 @@ func initCommands() {
 			fmt.Printf("- Adding project file: %q\n", filepath.Join("components", componentPkgName, componentFileName))
 			return nil
 		},
+	})
+
+	commands = append(commands, &cli.Command{
+		Name:        "components",
+		Usage:       "gu components <sub-comand>",
+		Description: "This provides subcommands which are used in the development of components",
+		Subcommands: subcommands,
 	})
 
 	commands = append(commands, &cli.Command{

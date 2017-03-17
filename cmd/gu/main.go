@@ -170,8 +170,8 @@ func initCommands() {
 	})
 
 	subcommands = append(subcommands, &cli.Command{
-		Name:        "create",
-		Usage:       "gu create <component-name>",
+		Name:        "new",
+		Usage:       "gu new <component-name>",
 		Description: "Generates a new boiler code component file which can be set to be in it's own package or part of the component package ",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
@@ -311,9 +311,9 @@ func initCommands() {
 	})
 
 	commands = append(commands, &cli.Command{
-		Name:        "create",
-		Usage:       "gu create <PackageName>",
-		Description: "Generates a new package for a gu app",
+		Name:        "new",
+		Usage:       "gu new <PackageName>",
+		Description: "Generates a new gu component package for a gu app",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "driver",

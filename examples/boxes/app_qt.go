@@ -38,9 +38,9 @@ func main() {
 
 	app := gu.App(gu.AppAttr{
 		InterceptRequests: true,
-		Name:              "{{Name}}",
+		Name:              "boxes",
 		Mode:              gu.DevelopmentMode,
-		Title:             "{{Name}} Gu App",
+		Title:             "boxes Gu App",
 		Manifests: 			manifestURL,
 		Driver: 			driver,
 	})

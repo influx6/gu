@@ -3,6 +3,7 @@
 package qtwebview
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -31,7 +32,7 @@ func NewWebviewDriver(attr QTAttr) *WebviewDriver {
 
 	if attr.Manifest != "" {
 		if err := driver.loadManifest(); err != nil {
-			panic("Error failed Loading manifest data: " + err.Error())
+			fmt.Printf("Error failed Loading manifest data: %q \n", err.Error())
 		}
 	}
 

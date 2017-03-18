@@ -15,12 +15,12 @@ import (
 // file will be located
 var manifestURL = "assets/manifests.json"
 
-func registerViews(app *gu.NApp){
-	
+func registerViews(app *gu.NApp) {
+
 	app.View(gu.ViewAttr{
 		Name:  "View.Index",
-        Route: "/*",
-    })
+		Route: "/*",
+	})
 
 }
 
@@ -30,10 +30,10 @@ func main() {
 	qtwebview.InitQTApplication()
 
 	driver := qtwebview.NewWebviewDriver(qtwebview.QTAttr{
-		URL: "",
-		MinWidth: 800,
+		URL:       "",
+		MinWidth:  800,
 		MinHeight: 640,
-		Manifest: manifestURL,
+		Manifest:  manifestURL,
 	})
 
 	app := gu.App(gu.AppAttr{
@@ -41,8 +41,8 @@ func main() {
 		Name:              "boxes",
 		Mode:              gu.DevelopmentMode,
 		Title:             "boxes Gu App",
-		Manifests: 			manifestURL,
-		Driver: 			driver,
+		Manifests:         manifestURL,
+		Driver:            driver,
 	})
 
 	registerViews(app)

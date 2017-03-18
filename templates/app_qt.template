@@ -19,8 +19,8 @@ func registerViews(app *gu.NApp){
 	
 	app.View(gu.ViewAttr{
 		Name:  "View.Index",
-        Route: "/*",
-    })
+		Route: "/*",
+	})
 
 }
 

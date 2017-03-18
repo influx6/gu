@@ -498,8 +498,8 @@ func initCommands() {
 	})
 
 	commands = append(commands, &cli.Command{
-		Name:        "generate-vfs",
-		Usage:       "gu generate-vfs <PackageName>",
+		Name:        "gen-vfs",
+		Usage:       "gu gen-vfs <PackageName>",
 		Description: "Generate-VFS generates a new package which loads the resources loaded from the package, creating a new package which can be loaded and used to virtually serve the resources through a virtual filesystem",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -612,8 +612,8 @@ func initCommands() {
 	})
 
 	commands = append(commands, &cli.Command{
-		Name:        "generate",
-		Usage:       "gu generate",
+		Name:        "gen-manifest",
+		Usage:       "gu gen-manifest",
 		Description: "Generate parses the current directory which it assumes is a Go pkg directory and creates a manifest.json file to contain all generated resources from the meta comments within the package and it's imports",
 		Flags: []cli.Flag{
 			&cli.StringFlag{

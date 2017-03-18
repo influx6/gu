@@ -1,9 +1,15 @@
+// Package main defines the main method which creates the qt window and loads the app.
+
 package main
 
 import (
 	"github.com/gu-io/gu"
 	"github.com/gu-io/gu/drivers/qtwebview"
 )
+
+// manifestURL defines the URL where the manifest
+// file will be located
+var manifestURL = "assets/manifests.json"
 
 func registerViews(app *gu.NApp){
 	
@@ -19,10 +25,11 @@ func main() {
 	// Initialize QT window processes.
 	qtwebview.InitQTApplication()
 
-	qtapp := qtwebview.NewQTApp(qtwebview.QTAttr{
-		URL: "/",
-		Width: 600,
-		Height: 600,
+	driver := qtwebview.NewWebviewDriver(qtwebview.QTAttr{
+		URL: "",
+		MinWidth: 800,
+		MinHeight: 640,
+		Manifest: manifestURL,
 	})
 
 	app := gu.App(gu.AppAttr{
@@ -30,11 +37,11 @@ func main() {
 		Name:              "{{Name}}",
 		Mode:              gu.DevelopmentMode,
 		Title:             "{{Name}} Gu App",
-		Manifests:         "assets/manifests.json",
+		Manifest: 			manifestURL,
+		Driver: 			driver,
 	})
 
 	registerViews(app)
 
-	qtapp.Init()
-	qtapp.Run()
+	driver.Run()
 }

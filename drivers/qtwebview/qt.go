@@ -6,18 +6,30 @@ import (
 	"github.com/gu-io/gu"
 	"github.com/gu-io/gu/router"
 	"github.com/gu-io/gu/shell"
+	"github.com/gu-io/gu/shell/cache/memorycache"
 )
 
 // WebviewDriver provides a concrete implementation of the Gu.Driver interface.
 type WebviewDriver struct {
+	*QTApp
+	attr          *QTAttr
 	readyHandlers []func()
 }
 
 // NewWebviewDriver returns a new instance of the qt WebviewDriver.
-func NewWebviewDriver() *WebviewDriver {
+func NewWebviewDriver(attr *QTAttr) *WebviewDriver {
 	var driver WebviewDriver
+	driver.attr = attr
+
+	driver.QTApp = NewQTApp(attr)
 
 	return &driver
+}
+
+// Ready tells the driver to initialize its operations has
+// the registered app is ready for rendering.
+func (wd WebviewDriver) Ready() {
+	wd.QTApp.Init()
 }
 
 // Name returns the name of the driver.
@@ -63,5 +75,8 @@ func (WebviewDriver) Update(app *gu.NApp, view *gu.NView) {
 // Services returns the Fetcher and Cache associated with the provided cacheName.
 // Intercepting requests for usage.
 func (WebviewDriver) Services(cacheName string, intercept bool) (shell.Fetch, shell.Cache) {
-	return nil, nil
+	inMemoryCache := memorycache.New(cacheName)
+	fetcher := fetch.New(inMemoryCache)
+
+	return fetcher, inMemoryCache
 }

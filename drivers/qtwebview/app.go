@@ -13,14 +13,18 @@ import (
 // QTAttr defines a attribute struct which provides specific configurations
 // for a QTApp.
 type QTAttr struct {
-	URL    string
-	Width  int
-	Height int
+	URL       string
+	MinWidth  int
+	MinHeight int
+	MaxWidth  int
+	MaxHeight int
+	Manifest  string
 }
 
 // QTApp defines a struct which creates a QTWindow with a QTWebkit for loading singularly
 // the provided gu.NApp.
 type QTApp struct {
+	ready   bool
 	attr    QTAttr
 	baseURL *core.QUrl
 	window  *widgets.QMainWindow
@@ -39,16 +43,27 @@ func NewQTApp(attr QTAttr) *QTApp {
 // Init initializes the QTWindow and sets the desired
 // widgets and webview.
 func (qt *QTApp) Init() {
+	if qt.ready {
+		return
+	}
 
 	// Create a new widget window.
 	qt.window = widgets.NewQMainWindow(nil, 0)
 
-	if qt.attr.Width > 0 {
-		qt.window.SetMinimumWidth(qt.attr.Width)
+	if qt.attr.MinWidth > 0 {
+		qt.window.SetMinimumWidth(qt.attr.MinWidth)
 	}
 
-	if qt.attr.Height > 0 {
-		qt.window.SetMaximumHeight(qt.attr.Height)
+	if qt.attr.MinHeight > 0 {
+		qt.window.SetMinimumHeight(qt.attr.MinHeight)
+	}
+
+	if qt.attr.MaxWidth > 0 {
+		qt.window.SetMaximumWidth(qt.attr.MaxWidth)
+	}
+
+	if qt.attr.MaxHeight > 0 {
+		qt.window.SetMaximumHeight(qt.attr.MaxHeight)
 	}
 
 	// create a widget group later.
@@ -61,6 +76,8 @@ func (qt *QTApp) Init() {
 
 	// Add widget to the window.
 	qt.window.SetCentralWidget(qt.fm)
+
+	qt.ready = true
 }
 
 // URI returns the QTApp internal URL.

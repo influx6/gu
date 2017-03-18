@@ -614,7 +614,7 @@ func initCommands() {
 	commands = append(commands, &cli.Command{
 		Name:        "gen-manifest",
 		Usage:       "gu gen-manifest",
-		Description: "Generate parses the current directory which it assumes is a Go pkg directory and creates a manifest.json file to contain all generated resources from the meta comments within the package and it's imports",
+		Description: "Generate a manifest.json file that contains all resources from meta-comments within the package to be embedded",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "input-dir",

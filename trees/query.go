@@ -970,19 +970,23 @@ func (queryCtrl) tagFor(target *Markup, tag string) bool {
 }
 
 func (queryCtrl) classFor(target *Markup, class string) bool {
-	if attr, err := GetAttr(target, "class"); err == nil {
-		_, val := attr.Render()
-		return strings.Contains(val, class)
+	attr, err := GetAttr(target, "class")
+	if err != nil {
+		return false
 	}
 
-	return false
+	_, val := attr.Render()
+	return strings.Contains(val, class)
 }
 
 func (queryCtrl) idFor(target *Markup, id string) bool {
-	if attr, err := GetAttr(target, "id"); err == nil {
-		if _, val := attr.Render(); val == id {
-			return true
-		}
+	attr, err := GetAttr(target, "id")
+	if err != nil {
+		return false
+	}
+
+	if _, val := attr.Render(); val == id {
+		return true
 	}
 
 	return false

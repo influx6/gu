@@ -3,6 +3,8 @@ package memorycache
 import (
 	"encoding/json"
 	"errors"
+
+	"github.com/gu-io/gu/shell"
 )
 
 // API defines a structure which implements the shell.Cache interface.
@@ -55,8 +57,6 @@ func (a *API) Put(req shell.WebRequest, res shell.WebResponse) error {
 		Request:  req,
 		Response: res,
 	})
-
-	a.sync()
 
 	return nil
 }

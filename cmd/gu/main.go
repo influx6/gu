@@ -87,16 +87,12 @@ func capitalize(val string) string {
 	return strings.ToUpper(val[:1]) + val[1:]
 }
 
-var badSymbols = regexp.MustCompile("[(|\\-|_|\\W|\\d)+]")
-var notAllowed = regexp.MustCompile("[^(_|\\w|\\d)+]")
+var badSymbols = regexp.MustCompile(`[(|\-|_|\W|\d)+]`)
+var notAllowed = regexp.MustCompile(`[^(_|\w|\d)+]`)
 var descore = regexp.MustCompile("-")
 
 func validateName(val string) bool {
-	if notAllowed.MatchString(val) {
-		return false
-	}
-
-	return true
+	return notAllowed.MatchString(val)
 }
 
 func initCommands() {
@@ -138,11 +134,11 @@ func initCommands() {
 			gupkg := filepath.Join(gup, gupath)
 			cssDirPath := filepath.Join(cdir, cssDirName)
 
-			if err := os.MkdirAll(cssDirPath, 0777); err != nil {
+			if err = os.MkdirAll(cssDirPath, 0777); err != nil {
 				return err
 			}
 
-			if err := os.MkdirAll(filepath.Join(cssDirPath, "css"), 0777); err != nil {
+			if err = os.MkdirAll(filepath.Join(cssDirPath, "css"), 0777); err != nil {
 				return err
 			}
 
@@ -231,9 +227,9 @@ func initCommands() {
 			}
 
 			if flat {
-				cpdata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/component.template"))
-				if err != nil {
-					return err
+				cpdata, cerr := ioutil.ReadFile(filepath.Join(gupkg, "templates/component.template"))
+				if cerr != nil {
+					return cerr
 				}
 
 				cpdata = bytes.Replace(cpdata, namebytes, []byte(componentNameCap), -1)
@@ -249,11 +245,11 @@ func initCommands() {
 				return nil
 			}
 
-			if err := os.MkdirAll(newComponentDir, 0777); err != nil {
+			if err = os.MkdirAll(newComponentDir, 0777); err != nil {
 				return err
 			}
 
-			if err := os.MkdirAll(newComponentCSSFilesDir, 0777); err != nil {
+			if err = os.MkdirAll(newComponentCSSFilesDir, 0777); err != nil {
 				return err
 			}
 
@@ -261,14 +257,14 @@ func initCommands() {
 			fmt.Printf("- Adding project directory: %q\n", filepath.Join("components", componentPkgName, cssDirName))
 			fmt.Printf("- Adding project directory: %q\n", filepath.Join("components", componentPkgName, cssDirName, "css"))
 
-			cssbeforegendata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/css.template"))
-			if err != nil {
-				return err
+			cssbeforegendata, cerr := ioutil.ReadFile(filepath.Join(gupkg, "templates/css.template"))
+			if cerr != nil {
+				return cerr
 			}
 
-			cssgendata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/cssgenerate.template"))
-			if err != nil {
-				return err
+			cssgendata, merr := ioutil.ReadFile(filepath.Join(gupkg, "templates/cssgenerate.template"))
+			if merr != nil {
+				return merr
 			}
 
 			cssbeforegendata = []byte(fmt.Sprintf("%q", cssbeforegendata))
@@ -276,15 +272,15 @@ func initCommands() {
 			cssgendata = bytes.Replace(cssgendata, dirNamebytes, []byte("css"), 1)
 			cssgendata = bytes.Replace(cssgendata, pkgNamebytes, []byte("\""+cssDirName+"\""), 1)
 
-			if err := writeFile(filepath.Join(newComponentCSSDir, "generate.go"), cssgendata); err != nil {
+			if err = writeFile(filepath.Join(newComponentCSSDir, "generate.go"), cssgendata); err != nil {
 				return err
 			}
 
 			fmt.Printf("- Adding project file: %q\n", filepath.Join("components", componentPkgName, "styles", "generate.go"))
 
-			cpdata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/pkgcomponent.template"))
-			if err != nil {
-				return err
+			cpdata, cperr := ioutil.ReadFile(filepath.Join(gupkg, "templates/pkgcomponent.template"))
+			if cperr != nil {
+				return cperr
 			}
 
 			cpdata = bytes.Replace(cpdata, pkgNamebytes, []byte(componentPkgName), -1)
@@ -294,7 +290,8 @@ func initCommands() {
 
 			componentFileName := fmt.Sprintf("%s.go", componentNameLower)
 			cmdir := filepath.Join(newComponentDir, componentFileName)
-			if err := writeFile(cmdir, cpdata); err != nil {
+
+			if err = writeFile(cmdir, cpdata); err != nil {
 				return err
 			}
 
@@ -368,36 +365,30 @@ func initCommands() {
 			fmt.Printf("- Using driver template: %q\n", driver)
 
 			// Generate dirs for the project.
-			var dirs []string
-			dirs = append(dirs,
-				appDir,
-				filepath.Join(appDir, "components"),
-				filepath.Join(appDir, "assets"))
-
-			if err := os.MkdirAll(appDir, 0777); err != nil && err != os.ErrExist {
+			if err = os.MkdirAll(appDir, 0777); err != nil && err != os.ErrExist {
 				return err
 			}
 
 			fmt.Printf("\t- Creating project directory: %q\n", packageName)
 
-			if err := os.MkdirAll(filepath.Join(appDir, "components"), 0777); err != nil && err != os.ErrExist {
+			if err = os.MkdirAll(filepath.Join(appDir, "components"), 0777); err != nil && err != os.ErrExist {
 				return err
 			}
 
 			fmt.Printf("\t- Creating project directory: %q\n", filepath.Join(packageName, "components"))
 
-			if err := os.MkdirAll(filepath.Join(appDir, "assets"), 0777); err != nil && err != os.ErrExist {
+			if err = os.MkdirAll(filepath.Join(appDir, "assets"), 0777); err != nil && err != os.ErrExist {
 				return err
 			}
 
 			fmt.Printf("\t- Creating project directory: %q\n", filepath.Join(packageName, "assets"))
 
-			registrydata, err := ioutil.ReadFile(filepath.Join(gup, "templates/registry.template"))
-			if err != nil {
-				return err
+			registrydata, rerr := ioutil.ReadFile(filepath.Join(gup, "templates/registry.template"))
+			if rerr != nil {
+				return rerr
 			}
 
-			if err := writeFile(filepath.Join(indir, packageName, "components/components.go"), registrydata); err != nil {
+			if err = writeFile(filepath.Join(indir, packageName, "components/components.go"), registrydata); err != nil {
 				return err
 			}
 

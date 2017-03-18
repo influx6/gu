@@ -3,7 +3,7 @@ package core
 import (
 	"encoding/json"
 
-	"github.com/gu-io/gu/events"
+	events "github.com/gu-io/gu/eventx"
 	"github.com/gu-io/gu/notifications/mque"
 )
 

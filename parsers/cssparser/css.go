@@ -97,14 +97,14 @@ func ParseDir(dir string) (*CSSItems, error) {
 	items.Indexes = make(map[string]int)
 
 	// Walk directory pulling contents into css items.
-	if err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	if cerr := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err := walkDir(&items, dir, path, info, err); err != nil {
 			return err
 		}
 
 		return nil
-	}); err != nil {
-		return nil, err
+	}); cerr != nil {
+		return nil, cerr
 	}
 
 	// Run through all dirs and find related subdirectories.

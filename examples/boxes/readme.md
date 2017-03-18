@@ -6,8 +6,8 @@ Boxes demonstrates a gu app built to render with the Qt driver.
 ## Building
 Before attempting to build, certain criterias need to be met:
 
-- Ensure to have QT 5.8 installed, preferably through the QT installer from [QT.io](https://qt.io)
-- Ensure to have [therecipe/qt](https://github.com/therecipe/qt) installed
+- Ensure to have QT 5.8 installed, preferably through the QT installer from [qt.io](https://www.qt.io)
+- Ensure to have [therecipe/qt](https://github.com/therecipe/qt) installed and following instructions detailed there.
 
 
 Once all this are installed and set, to build the project, simply run the following in your terminal/shell:

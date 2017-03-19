@@ -245,7 +245,7 @@ func initCommands() {
 				return nil
 			}
 
-			if err = os.MkdirAll(newComponentDir, 0777); err != nil {
+			if err = os.Mkdir(newComponentDir, 0777); err != nil {
 				return err
 			}
 

@@ -52,6 +52,9 @@ func (wd WebviewDriver) Ready() {
 
 	})
 
+	for _, ready := range wd.readyHandlers {
+		ready()
+	}
 }
 
 // Name returns the name of the driver.
@@ -68,6 +71,8 @@ func (wd WebviewDriver) OnReady(handle func()) {
 // Location returns the current location of the browser.
 func (wd WebviewDriver) Location() router.PushEvent {
 	var route router.PushEvent
+	route.To = "/"
+	route.Path = "/"
 
 	// loc := wd.QTApp.view.Url()
 
@@ -88,7 +93,7 @@ func (wd WebviewDriver) OnRoute(app *gu.NApp) {
 // Render issues a clean rendering of all content clearing out the current content
 // of the browser to the one provided by the appliation.
 func (wd WebviewDriver) Render(app *gu.NApp) {
-
+	qt.view.SetHtml(app.Render(nil).HTML(), qt.baseURL)
 }
 
 // Update updates a giving view portion of a giving App within the designated

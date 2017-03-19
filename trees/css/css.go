@@ -3,6 +3,7 @@ package css
 import (
 	"bytes"
 	"strings"
+	"sync"
 	"text/template"
 
 	bcss "github.com/aymerick/douceur/css"
@@ -13,6 +14,7 @@ import (
 // converted into a usable stylesheet during rendering.
 type Rule struct {
 	template *template.Template
+	rx       sync.RWMutex
 	depends  []*Rule
 }
 
@@ -30,19 +32,34 @@ func New(rules string, rs ...*Rule) *Rule {
 	}
 }
 
+// AddRoot adds the giving Rule as a style which this Rule depends on.
+func (r *Rule) AddRoot(rx *Rule) *Rule {
+	r.rx.Lock()
+	{
+		r.depends = append(r.depends, rx)
+	}
+	r.rx.Unlock()
+
+	return r
+}
+
 // Stylesheet returns the provided styles using the binding as the argument for the
 // provided css template.
 func (r *Rule) Stylesheet(bind interface{}, parentNode string) (*bcss.Stylesheet, error) {
 	var stylesheet bcss.Stylesheet
 
-	for _, rule := range r.depends {
-		sheet, err := rule.Stylesheet(bind, parentNode)
-		if err != nil {
-			return nil, err
-		}
+	r.rx.RLock()
+	{
+		for _, rule := range r.depends {
+			sheet, err := rule.Stylesheet(bind, parentNode)
+			if err != nil {
+				return nil, err
+			}
 
-		stylesheet.Rules = append(stylesheet.Rules, sheet.Rules...)
+			stylesheet.Rules = append(stylesheet.Rules, sheet.Rules...)
+		}
 	}
+	r.rx.RUnlock()
 
 	var content bytes.Buffer
 	if err := r.template.Execute(&content, bind); err != nil {

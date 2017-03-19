@@ -1,11 +1,11 @@
-// Package {{PKG}} defines a package which embeds all css files into a go file.
-// This package is automatically generated and should not be modified by hand. 
-// It provides a source which is used to build all css packages into a css.go 
+// Package styles defines a package which embeds all css files into a go file.
+// This package is automatically generated and should not be modified by hand.
+// It provides a source which is used to build all css packages into a css.go
 // file which contains each allocated by name.
 
 //go:generate go run generate.go
 
-package {{PKG}}
+package styles
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ import (
 	"github.com/gu-io/gu/trees/css"
 )
 
-var rules cssstyles
+var rules styles
 
 // Get returns the giving rules from the provided
 func Get(dir string) *css.Rule {
@@ -36,10 +36,10 @@ func Get(dir string) *css.Rule {
 	return target.Rule(rules)
 }
 
-type cssstyles []cssstyle
+type styles []style
 
 // style defines a giving struct which contain the giving property style and dependencies.
-type cssstyle struct {
+type style struct {
 	Rule   string `json:"rule"`
 	Path   string `json:"path"`
 	Before []int  `json:"before"`
@@ -47,7 +47,7 @@ type cssstyle struct {
 }
 
 // Rule retrieves the giving set of rules pertaining the giving style.
-func (s *cssstyle) Rule(root []cssstyle) *css.Rule {
+func (s *style) Rule(root []styles) *css.Rule {
 	var befores []*css.Rule
 
 	for _, before := range s.Before {
@@ -63,8 +63,8 @@ func (s *cssstyle) Rule(root []cssstyle) *css.Rule {
 	return self
 }
 
-func init (){
-  if err := json.Unmarshal(&rules, {{STYLES}}); err != nil {
-  	fmt.Printf("Failed to unmarshal styles: %+q\n", err)
-  }
+func init() {
+	if err := json.Unmarshal(&rules, "null"); err != nil {
+		fmt.Printf("Failed to unmarshal styles: %+q\n", err)
+	}
 }

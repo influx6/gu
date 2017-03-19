@@ -1,3 +1,7 @@
+// Package main generates the gopherjs output for the app into the assets directory of this app.
+
+//go:generate gopherjs build -o assets/{{Name}}.js 
+
 package main
 
 import (

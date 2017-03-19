@@ -48,6 +48,7 @@ It offers a driver based system which allows the package to be used to render to
 
 In grasping the examples and approach Gu takes, there exists certain concepts which need be introduced and you can quickly run down through them, has each concept tries to be short but informative about how that part of the Gu library works.
 
+
 -	[Virtual DOM](./docs/concepts/dom.md)
 
 -	[Notifications](./docs/concepts/notifications.md)
@@ -56,12 +57,20 @@ In grasping the examples and approach Gu takes, there exists certain concepts wh
 
 -	[Components](./docs/concepts/components.md)
 
+-	[Drivers](./docs/concepts/drivers.md)
+
+-	[App, Views, Component](./docs/concepts/app.md)
+
 -	[Embeddable Resource](./docs/concepts/embedded-resources.md)
+
+-	[Notifications](./docs/concepts/notifications.md)
+
 
 How to Contribute
 -----------------
 
 Please read the contribution guidelines [Contribution Guidelines](./docs/concepts/contributing.md)
+
 
 Limitations
 -----------

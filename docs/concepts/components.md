@@ -196,4 +196,4 @@ This removes the need for global context and unideal approaches and also permits
 Complex Components
 ------------------
 
-More complex components can be found in the [Examples](../../examples) directory and other packages which demonstrate different structures and design to achieve the component's functionality.
+More complex components can be found in the [Examples](https://github.com/gu-io/examples) directory and other packages which demonstrate different structures and design to achieve the component's functionality.

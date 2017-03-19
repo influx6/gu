@@ -397,36 +397,7 @@ func initCommands() {
 			// Generate files for the project.
 			switch driver {
 			case "js":
-				// read the full qt template and write into the file.
-				jsdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_js.template"))
-				if err != nil {
-					return err
-				}
-
-				jsdata = bytes.Replace(jsdata, namebytes, []byte(packageName), -1)
-
-				gtkdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_gtk.template"))
-				if err != nil {
-					return err
-				}
-
-				gtkdata = bytes.Replace(gtkdata, namebytes, []byte(packageName), -1)
-
-				macdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_mac.template"))
-				if err != nil {
-					return err
-				}
-
-				macdata = bytes.Replace(macdata, namebytes, []byte(packageName), -1)
-
-				windata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_win.template"))
-				if err != nil {
-					return err
-				}
-
-				windata = bytes.Replace(windata, namebytes, []byte(packageName), -1)
-
-				appdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app.template"))
+				appdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_js.template"))
 				if err != nil {
 					return err
 				}
@@ -439,29 +410,50 @@ func initCommands() {
 
 				fmt.Printf("\t- Adding project file: %q\n", "app.go")
 
-				if err := writeFile(filepath.Join(indir, packageName, "app_js.go"), jsdata); err != nil {
+			case "osx":
+				// read the full qt template and write into the file.
+				data, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_osx.template"))
+				if err != nil {
 					return err
 				}
 
-				fmt.Printf("\t- Adding project file: %q\n", "app_js.go")
+				data = bytes.Replace(data, namebytes, []byte(packageName), -1)
 
-				if err := writeFile(filepath.Join(indir, packageName, "app_gtk.go"), gtkdata); err != nil {
+				if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
 					return err
 				}
 
-				fmt.Printf("\t- Adding project file: %q\n", "app_gtk.go")
+				fmt.Printf("\t- Adding project file: %q\n", "app.go")
 
-				if err := writeFile(filepath.Join(indir, packageName, "app_mac.go"), macdata); err != nil {
+			case "win", "edge":
+				// read the full qt template and write into the file.
+				data, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_win.template"))
+				if err != nil {
 					return err
 				}
 
-				fmt.Printf("\t- Adding project file: %q\n", "app_mac.go")
+				data = bytes.Replace(data, namebytes, []byte(packageName), -1)
 
-				if err := writeFile(filepath.Join(indir, packageName, "app_win.go"), windata); err != nil {
+				if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
 					return err
 				}
 
-				fmt.Printf("\t- Adding project file: %q\n", "app_mac.go")
+				fmt.Printf("\t- Adding project file: %q\n", "app.go")
+
+			case "linux", "gtk":
+				// read the full qt template and write into the file.
+				data, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_gtk.template"))
+				if err != nil {
+					return err
+				}
+
+				data = bytes.Replace(data, namebytes, []byte(packageName), -1)
+
+				if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
+					return err
+				}
+
+				fmt.Printf("\t- Adding project file: %q\n", "app.go")
 
 			case "qt":
 				// read the full qt template and write into the file.
@@ -472,11 +464,11 @@ func initCommands() {
 
 				data = bytes.Replace(data, namebytes, []byte(packageName), -1)
 
-				if err := writeFile(filepath.Join(indir, packageName, "app_qt.go"), data); err != nil {
+				if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
 					return err
 				}
 
-				fmt.Printf("\t- Adding project file: %q\n", "app_qt.go")
+				fmt.Printf("\t- Adding project file: %q\n", "app.go")
 			}
 
 			// Change to new app directory.

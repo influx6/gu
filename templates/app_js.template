@@ -1,5 +1,3 @@
-// +build js
-
 package main
 
 import (
@@ -16,4 +14,13 @@ var AppSettings = gu.AppAttr{
 	Title:             "{{Name}} Gu App",
 	Manifests:         "assets/manifests.json",
 	Driver:            gopherjs.NewJSDriver(),
+}
+
+func main() {
+	app := gu.App(AppSettings)
+
+	app.View(gu.ViewAttr{
+		Name:  "View.Index",
+        Route: "/*",
+    })
 }

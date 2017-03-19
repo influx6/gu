@@ -8,7 +8,7 @@ package main
 
 import (
 	"github.com/gu-io/gu"
-	"github.com/gu-io/gu/drivers/qtwebview"
+	"github.com/gu-io/qt"
 )
 
 // manifestURL defines the URL where the manifest
@@ -27,9 +27,9 @@ func registerViews(app *gu.NApp){
 func main() {
 
 	// Initialize QT window processes.
-	qtwebview.InitQTApplication()
+	qt.InitQTApplication()
 
-	driver := qtwebview.NewWebviewDriver(qtwebview.QTAttr{
+	driver := qt.New(qtwebview.QTAttr{
 		URL: "",
 		MinWidth: 800,
 		MinHeight: 640,
@@ -37,7 +37,6 @@ func main() {
 	})
 
 	app := gu.App(gu.AppAttr{
-		InterceptRequests: true,
 		Name:              "{{Name}}",
 		Mode:              gu.DevelopmentMode,
 		Title:             "{{Name}} Gu App",

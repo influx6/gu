@@ -1,9 +1,8 @@
-// +build !js, darwin, !linux
-
 package main
 
 import (
 	"github.com/gu-io/gu"
+	"github.com/gu-io/gopherjs"
 )
 
 // AppSettings defines the attributes for the app for using the GopherJS
@@ -14,5 +13,14 @@ var AppSettings = gu.AppAttr{
 	Mode:              gu.DevelopmentMode,
 	Title:             "{{Name}} Gu App",
 	Manifests:         "assets/manifests.json",
+	Driver:            gopherjs.NewJSDriver(),
 }
 
+func main() {
+	app := gu.App(AppSettings)
+
+	app.View(gu.ViewAttr{
+		Name:  "View.Index",
+        Route: "/*",
+    })
+}

@@ -18,9 +18,9 @@ var rules cssstyles
 
 // Get returns the giving rules from the provided
 func Get(dir string) *css.Rule {
-	var target *style
+	var target *cssstyle
 
-	for _, item := range styles {
+	for _, item := range rules {
 		if item.Path != dir {
 			continue
 		}
@@ -40,7 +40,7 @@ type cssstyles []cssstyle
 
 // style defines a giving struct which contain the giving property style and dependencies.
 type cssstyle struct {
-	Rule   string `json:"rule"`
+	Style  string `json:"style"`
 	Path   string `json:"path"`
 	Before []int  `json:"before"`
 	After  []int  `json:"after"`
@@ -54,7 +54,7 @@ func (s *cssstyle) Rule(root []cssstyle) *css.Rule {
 		befores = append(befores, root[before].Rule(root))
 	}
 
-	self := css.New(s.Rule, befores...)
+	self := css.New(s.Style, befores...)
 
 	for _, after := range s.After {
 		self = (root[after]).Rule(root).AddRoot(self)
@@ -64,7 +64,7 @@ func (s *cssstyle) Rule(root []cssstyle) *css.Rule {
 }
 
 func init (){
-  if err := json.Unmarshal(&rules, {{STYLES}}); err != nil {
+  if err := json.Unmarshal([]byte({{STYLES}}),&rules); err != nil {
   	fmt.Printf("Failed to unmarshal styles: %+q\n", err)
   }
 }

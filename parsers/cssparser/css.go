@@ -71,7 +71,7 @@ func (c *CSSItems) Generate() []map[string]interface{} {
 			"path":   style.Path,
 			"after":  after,
 			"before": before,
-			"rule":   style.Content,
+			"style":  style.Content,
 		})
 	}
 

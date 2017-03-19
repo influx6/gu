@@ -13,7 +13,6 @@ import (
 // QTAttr defines a attribute struct which provides specific configurations
 // for a QTApp.
 type QTAttr struct {
-	URL       string
 	MinWidth  int
 	MinHeight int
 	MaxWidth  int
@@ -24,19 +23,17 @@ type QTAttr struct {
 // QTApp defines a struct which creates a QTWindow with a QTWebkit for loading singularly
 // the provided gu.NApp.
 type QTApp struct {
-	ready   bool
-	attr    QTAttr
-	baseURL *core.QUrl
-	window  *widgets.QMainWindow
-	fm      *widgets.QWidget
-	view    *webengine.QWebEngineView
+	ready  bool
+	attr   QTAttr
+	window *widgets.QMainWindow
+	fm     *widgets.QWidget
+	view   *webengine.QWebEngineView
 }
 
 // NewQTApp returns a new instance of the QTApp.
 func NewQTApp(attr QTAttr) *QTApp {
 	var app QTApp
 	app.attr = attr
-	app.baseURL = core.NewQUrl3(attr.URL, core.QUrl__DecodedMode)
 	return &app
 }
 
@@ -80,11 +77,6 @@ func (qt *QTApp) Init() {
 	qt.ready = true
 }
 
-// URI returns the QTApp internal URL.
-func (qt *QTApp) URI() *core.QUrl {
-	return qt.baseURL
-}
-
 // View returns the underline webview for the view.
 func (qt *QTApp) View() *webengine.QWebEngineView {
 	return qt.view
@@ -95,7 +87,7 @@ func (qt *QTApp) View() *webengine.QWebEngineView {
 func (qt *QTApp) Run() {
 
 	// Set the base view for the webview.
-	qt.view.SetHtml("", qt.baseURL)
+	qt.view.SetHtml("", core.NewQUrl())
 
 	// Ask the window to show.
 	qt.window.Show()

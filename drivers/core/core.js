@@ -1,29 +1,31 @@
 // Package core.js provides javascript functions which provide similar functionalities
 // to allow patching provided virtual DOM and query events and dom nodes as needed.
 
-// GuJS provides the central object which is used to holds the handle for
-// all gujs properties.
-var GuJS = {};
 
 // Annonymouse function that initializes all properties on the root.
-(function(){
+function GuClient(onMessages, SendChannel){
+
+	// GuJS provides the central object which is used to holds the handle for
+	// all gujs properties.
+	var GuJS = {};
+
 
 	// unwanted defines specific object functions we dont want passed in during
 	// collection of object property names.
 	var unwanted = {"constructor": true,"toString": true};
 
-	this.eventsCore = {};
-	this.currentAppID = null;
+	GuJS.eventsCore = {};
+	GuJS.currentAppID = null;
 
 	// GuJS.Dispatch defines a function which dispatches event object to the external
 	// API.
-	this.Dispatch = function(model, meta){
-
+	GuJS.Dispatch = function(name, model, meta){
+		SendChannel({"type": name, "meta": meta, "data": model});
 	};
 
 	// GuJS.MakeEventCallback defines a function to generate a callback for an event
 	// meta provided
-	this.MakeEventCallback = function(target, eventMeta){
+	GuJS.MakeEventCallback = function(target, eventMeta){
 		return function(eventObj){
 
 			// Do we match the event and possible targets for the event
@@ -52,7 +54,7 @@ var GuJS = {};
 
 
 	// GuJS.ExecuteCommand executes the provided command received.
-	this.ExecuteCommand = function(co){
+	GuJS.ExecuteCommand = function(co){
 		if(co == null || co  === undefined){
 			return
 		}
@@ -273,7 +275,7 @@ var GuJS = {};
 	// GuJS.PatchDOM patches the provided elements into the target from the current DOM.
 	// It crawls a liveDOM version of the DOM, removing, replacing and adding node
 	// changes as needed, until the dom resembles it's shadow/fragmentDOM.
-	this.PatchDOM = function(fragmentDOM, liveDOM, replace){
+	GuJS.PatchDOM = function(fragmentDOM, liveDOM, replace){
 		if(!liveDOM.hasChildNodes()){
 			liveDOM.appendChild(fragmentDOM)
 			return
@@ -383,7 +385,7 @@ var GuJS = {};
 	// addIfNoEqual adds a giving node into the target if its not found to match any
 	// child nodes of the target and if one is found then that is replaced with the
 	// provided new node.
-	this.addIfNoEqual = function(target, node){
+	GuJS.addIfNoEqual = function(target, node){
 		var list = target.childNodes
 		for(var i = 0; i < list.length; i++){
 			var against = list[i]
@@ -397,7 +399,7 @@ var GuJS = {};
 	}
 
 	// isEmptyTextNode returns true/false if the node is an empty text node.
-	this.isEmptyTextNode = function(node){
+	GuJS.isEmptyTextNode = function(node){
 		if(node.nodeType !== 3){
 			return false
 		}
@@ -406,7 +408,7 @@ var GuJS = {};
 	}
 
 	// removeAllTextNodes removes all residing textnodes in the provided node.
-	this.removeAllTextNodes = function(parent){
+	GuJS.removeAllTextNodes = function(parent){
 		var list = parent.childNodes
 
 		for(var i = 0; i < list.length; i++){
@@ -418,7 +420,7 @@ var GuJS = {};
 	}
 
 	// createDOMFragment creates a DocumentFragment from the provided HTML.
-	this.createDOMFragment = function(elemString){
+	GuJS.createDOMFragment = function(elemString){
 		var div  = document.createElement("div")
 		div.innerHTML = elemString
 
@@ -438,7 +440,7 @@ var GuJS = {};
 
 	// GetEvent returns the event as a object which can be jsonified and
 	// sent over the pipeline.
-	this.GetEvent = function(ev){
+	GuJS.GetEvent = function(ev){
 		var eventObj
 
 		var c = ev.constructor
@@ -477,14 +479,14 @@ var GuJS = {};
 	}
 
 	// GuJS.Type returns the type of the native constructor of the passed in object.
-	this.Type = function(item){
+	GuJS.Type = function(item){
 		if(item !== undefined && item != null) {
 			return (item.constructor.toString().match(/function (.*)\(/)[1])
 		}
 	}
 
 	// filters out the giving items not matching the provided function.
-	this.filter = function(item, fn){
+	GuJS.filter = function(item, fn){
 		var filtered = []
 
 		for(key in item){
@@ -496,8 +498,8 @@ var GuJS = {};
 		return filtered
 	}
 
-	// GuJS.map maps new values throug the provided this.skipping null returns.
-	this.map = function(item, fn){
+	// GuJS.map maps new values throug the provided GuJS.skipping null returns.
+	GuJS.map = function(item, fn){
 		var mapped = []
 
 		for(key in item){
@@ -511,7 +513,7 @@ var GuJS = {};
 	}
 
 	// each runs through all items in the provided list.
-	this.each = function(list, fn){
+	GuJS.each = function(list, fn){
 		if('length' in list){
 			for(var i = 0; i < list.length; i++){
 				fn(list[i], i, list)
@@ -526,7 +528,7 @@ var GuJS = {};
 	}
 
 	// GuJS.reverse returns the list reversed in order.
-	this.reverse = function(list){
+	GuJS.reverse = function(list){
 		var reversed = []
 
 		for(var i = list.length - 1; i > 0; i--){
@@ -536,8 +538,8 @@ var GuJS = {};
 		return reversed
 	}
 
-	// GuJS.mapFlattern maps new values throug the provided this.skipping null returns.
-	this.mapFlattern = function(item, fn){
+	// GuJS.mapFlattern maps new values throug the provided GuJS.skipping null returns.
+	GuJS.mapFlattern = function(item, fn){
 		var mapped = []
 
 		for(key in item){
@@ -559,7 +561,7 @@ var GuJS = {};
 	}
 
 	// GuJS.capitalize returns a capitalized string.
-	this.capitalize = function(val){
+	GuJS.capitalize = function(val){
 		if(val !== ""){
 			var newVal = [val[0].toUpperCase()]
 			newVal.push(val.substring(1))
@@ -570,19 +572,19 @@ var GuJS = {};
 	}
 
 	// GuJS.isUpperCase returns true/false if the string is in uppercase.
-	this.isUpperCase = function(val){
+	GuJS.isUpperCase = function(val){
 		return val.toUpperCase() === val
 	}
 
 	// GuJS.Keys returns the constructor keys for the giving object.
-	this.Keys = function(item){
-		// If we can use the getOwnPropertyNames this.in ES5 then use this has
+	GuJS.Keys = function(item){
+		// If we can use the getOwnPropertyNames GuJS.in ES5 then use this has
 		// inherited properties are desired as well.
 		if("getOwnPropertyNames" in Object){
 			return Object.getOwnPropertyNames(item)
 		}
 
-		// If we can use the Object.keys this.in ES5 then use this has
+		// If we can use the Object.keys GuJS.in ES5 then use this has
 		// we can manage with the provided set.
 		if("keys" in Object){
 			return Object.keys(item)
@@ -645,7 +647,7 @@ var GuJS = {};
 	// GuJS.DeepClone clones all internal properties of the provided object, re-creating
 	// internal key-value pairs accessible to the object even in prototype inheritance.
 	// Functions are not runned except for custom types which are checked accordingly.
-	this.DeepClone = function(item, options){
+	GuJS.DeepClone = function(item, options){
 		if(item === undefined || item == null){
 			return item
 		}
@@ -797,14 +799,14 @@ var GuJS = {};
 	}
 
 	// GuJS.StringifyHTML returns the html of the element and it's content.
-	this.StringifyHTML = function(elem, deep) {
+	GuJS.StringifyHTML = function(elem, deep) {
 		var div = document.createElement("div")
 		div.appendChild(elem.cloneNode(deep))
 		return div.innerHTML
 	}
 
 	// GuJS.GetRoots retrieves all root properties for which the element runs down.
-	this.GetRoots = function(o) {
+	GuJS.GetRoots = function(o) {
 		var roots = []
 		var found = {}
 
@@ -831,7 +833,7 @@ var GuJS = {};
 	}
 
 	// GuJS.fromBlob transform the providded Object blob into a byte slice.
-	this.fromBlob = function(o) {
+	GuJS.fromBlob = function(o) {
 		if(o == null || o == undefined){
 			return
 		}
@@ -849,7 +851,7 @@ var GuJS = {};
 	}
 
 	// GuJS.fromFile transform the providded Object blob into a byte slice.
-	this.fromFile = function(o) {
+	GuJS.fromFile = function(o) {
 		if(o == null || o == undefined){
 			return
 		}
@@ -867,7 +869,7 @@ var GuJS = {};
 	}
 
 	// toInputSourceCapability returns the events.InputDeviceCapabilities from the object.
-	this.toInputSourceCapability = function(o) {
+	GuJS.toInputSourceCapability = function(o) {
 		if(o == null || o == undefined){
 			return
 		}
@@ -878,7 +880,7 @@ var GuJS = {};
 	}
 
 	// GuJS.toMotionData returns a motionData object from the Object.
-	this.toMotionData = function(o)  {
+	GuJS.toMotionData = function(o)  {
 		var md = {X:0.0, Y: 0.0, Z: 0.0}
 
 		if(o == null || o == undefined){
@@ -892,7 +894,7 @@ var GuJS = {};
 	}
 
 	// GuJS.toRotationData returns a RotationData object from the Object.
-	this.toRotationData = function(o)  {
+	GuJS.toRotationData = function(o)  {
 		if(o == null || o == undefined){
 			return
 		}
@@ -904,7 +906,7 @@ var GuJS = {};
 	}
 
 	// GuJS.toMediaStream returns a events.MediaStream object.
-	this.toMediaStream = function(o) {
+	GuJS.toMediaStream = function(o) {
 		if(o == null || o == undefined){
 			return
 		}
@@ -977,7 +979,7 @@ var GuJS = {};
 		return stream
 	}
 
-	this.toTouches = function(o) {
+	GuJS.toTouches = function(o) {
 		if(o == null || o == undefined){
 			return
 		}
@@ -1004,7 +1006,7 @@ var GuJS = {};
 	}
 
 	// toGamepad returns a Gamepad struct from the js object.
-	this.toGamepad = function(o) {
+	GuJS.toGamepad = function(o) {
 		var pad = {}
 
 		if(o == null || o == undefined){
@@ -1042,7 +1044,7 @@ var GuJS = {};
 	}
 
 	// toDataTransfer returns a transfer object from the Object.
-	this.toDataTransfer = function(o) {
+	GuJS.toDataTransfer = function(o) {
 		if(o == null || o == undefined){
 			return
 		}
@@ -1084,4 +1086,6 @@ var GuJS = {};
 		return dt
 	}
 
-}).call(GuJS)
+
+	onMessages(GuJS.ExecuteCommand)
+}

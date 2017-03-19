@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/gu-io/gu"
-	"github.com/gu-io/gu/drivers/gopherjs"
+	"github.com/gu-io/gopherjs"
 )
 
 // AppSettings defines the attributes for the app for using the GopherJS

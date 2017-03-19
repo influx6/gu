@@ -11,51 +11,66 @@
     </div>
     <script type="text/javascript" src="../core.js"></script>
     <script type="text/javascript">
+      var listeners = [];
+
+      function Send(data){
+        for(var i in listeners){
+          listeners[i](data)
+        }
+      };
+
+      var instance = GuClient(function(subscriber){
+        listeners.push(subscriber)
+      }, function(data){
+        console.log("Delivery: ", data)
+      })
+
       setTimeout(function(){
-        GuJS.ExecuteCommand({
-          Command: "RenderApp",
-          App:{
-            AppID:"34334343434334",
-        	Name:"boolllla",
-        	Title: "Demify",
-        	Body:[
-            {
+        Send({
+            Command: "RenderApp",
+            App:{
               AppID:"34334343434334",
-          	  ViewID:"767676767676",
-          	  Tree: { Events:[], TreeID:"ddfd45445454", Markup:"<h1 uid='UY7' hash='bob89'>Welcome</h1>"}
-          	},
-            {
-              AppID:"34334343434334",
-          	  ViewID:"7433434",
-          	  Tree: { Events:[], TreeID:"576676776", Markup:'<div class="root" data-name="corejs"> <h1>Basic Core.js Usage</h1> <p> This is a test page to validate the validity of the core.js sample code in use</p> </div>'}
-          	},
-          ],
-        	Head:[],
-        	HeadResources:[],
-        	BodyResources:[],
-          },
+          	Name:"boolllla",
+          	Title: "Demify",
+          	Body:[
+              {
+                AppID:"34334343434334",
+            	  ViewID:"767676767676",
+            	  Tree: { Events:[], TreeID:"ddfd45445454", Markup:"<h1 uid='UY7' hash='bob89'>Welcome</h1>"}
+            	},
+              {
+                AppID:"34334343434334",
+            	  ViewID:"7433434",
+            	  Tree: { Events:[], TreeID:"576676776", Markup:'<div class="root" data-name="corejs"> <h1>Basic Core.js Usage</h1> <p> This is a test page to validate the validity of the core.js sample code in use</p> </div>'}
+            	},
+            ],
+          	Head:[],
+          	HeadResources:[],
+          	BodyResources:[],
+            },
         })
       }, 1000)
 
       setTimeout(function(){
-        GuJS.ExecuteCommand({
-          Command: "RenderView",
-          View: {
-              AppID:"34334343434334",
-        	  ViewID:"767676767676",
-        	  Tree: { Events:[], TreeID:"ddfd45445454", Markup:"<h1 uid='UY7' hash='bob189'>Welcome Bob</h1>"}
-        	},
+        Send({
+            Command: "RenderView",
+            View: {
+                AppID:"34334343434334",
+              ViewID:"767676767676",
+              Tree: { Events:[], TreeID:"ddfd45445454", Markup:"<h1 uid='UY7' hash='bob189'>Welcome Bob</h1>"}
+            },
         })
       }, 2500)
 
       setTimeout(function(){
-        GuJS.ExecuteCommand({
-          Command: "RenderView",
-          View: {
-              AppID:"34334343434334",
-        	  ViewID:"767676767676",
-        	  Tree: { Events:[], TreeID:"ddfd45445454", Markup:"<h1 uid='UY7' hash='bob1879'>Hello World Bob!</h1>"}
-        	},
+        Send({
+            Command: "RenderView",
+            View: {
+                AppID:"34334343434334",
+                ViewID:"767676767676",
+                Tree: { Events:[], TreeID:"ddfd45445454", Markup:"<h1 uid='UY7' hash='bob1879'>Hello World Bob!</h1>"
+              },
+            },
         })
       }, 3500)
     </script>

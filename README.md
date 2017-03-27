@@ -92,9 +92,7 @@ Advantages
 Examples
 --------
 
-Included with the Gu package are [Examples](https://github.com/gu-io/examples), which demonstrate different examples of using Gu to create web components. Each example attempts to present different areas which are usually general tasks when creating a web application.
-
-I hope they help in understanding and developing your own application.
+The github repo [Examples](https://github.com/gu-io/examples), provides examples demonstrating the usage of the Gu library in building applications.
 
 Documentation
 -------------
@@ -144,6 +142,6 @@ Once these limitations are not a problem, I believe using the library should hel
 Last Note
 ---------
 
-Please feel free to make issues on suggestions, questions, changes, bugs or improvements for the library. They all will be gladly gladly with much fan-fare.
+Please feel free to make issues on suggestions, questions, changes, bugs or improvements for the library. They all will be gladly received with much fan-fare.
 
 God bless.

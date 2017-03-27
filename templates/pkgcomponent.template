@@ -6,10 +6,10 @@ import (
 	"github.com/gu-io/gu/trees/elems"
 	"github.com/gu-io/gu/trees/property"
 
-	componentsbase "{{PKG}}/components"
+	"{{PKG}}/components"
 )
 
-_ = componentsbase.Components.Register("{{Name_Lower}}", func(attr map[string]string, template string) gu.Renderable {
+var _ = components.Components.Register("{{Name_Lower}}", func(attr map[string]string, template string) gu.Renderable {
 	return New{{Name}}()
 }, false)
 
@@ -28,5 +28,5 @@ func New{{Name}}() *{{Name}} {
 
 // Render returns the markup for this {{Name}} component.
 func (c {{Name}}) Render() *trees.Markup {
-	return elems.Div(property.Class("component"))
+	return elems.Div(property.ClassAttr("component"))
 }

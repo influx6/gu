@@ -10,6 +10,56 @@ Install
 go install github.com/gu-io/gu/...
 ```
 
+Gu Cli
+------
+
+Gu provides an cli tooling which is installed when `go get` is done for this package, the tooling provides easier means of generating a project and components using the gu project, among other features. It is provided to both improve the workflow of the user but also provide quick setup of your project. We will delve into simple commands which allows us create a simple project with a series of components for development.
+
+-	Creating a gu golang project using the [GopherJS](https://github.com/gu-io/gopherjs) driver
+
+```bash
+> gu new --driver=js sonar
+- Creating new project: "sonar"
+- Using driver template: "js"
+	- Creating project directory: "sonar"
+	- Creating project directory: "sonar/components"
+	- Creating project directory: "sonar/assets"
+	- Adding project file: "components/components.go"
+	- Adding project file: "app.go"
+```
+
+-	Creating a component with it's assets for a project as a unique package.
+
+*Continuing from the command above*
+
+```bash
+> cd sonar
+> gu components new tableui
+- Adding project package: "components/tableui"
+- Adding project directory: "components/tableui/styles"
+- Adding project directory: "components/tableui/styles/css"
+- Adding project file: "components/tableui/styles/generate.go"
+- Adding project file: "components/tableui/tableui.go"
+
+```
+
+-	Creating a component file as part of a giving component package.
+
+```bash
+> cd sonar
+> cd components/tableui/
+> gu components new --flat=true --base=false tables
+- Adding project file: "tableui/tables.go"
+```
+
+-	Creating a component file as part of a base components package.
+
+```bash
+> cd sonar
+>  gu components new --flat=true menubar
+- Adding project file: "components/menubar.go"
+```
+
 Goals
 -----
 
@@ -31,7 +81,7 @@ Advantages
 Examples
 --------
 
-Included with the Gu package are [Examples](./examples/), which demonstrate different examples of using Gu to create web components. Each example attempts to present different areas which are usually general tasks when creating a web application.
+Included with the Gu package are [Examples](https://github.com/gu-io/examples), which demonstrate different examples of using Gu to create web components. Each example attempts to present different areas which are usually general tasks when creating a web application.
 
 I hope they help in understanding and developing your own application.
 
@@ -48,7 +98,6 @@ It offers a driver based system which allows the package to be used to render to
 
 In grasping the examples and approach Gu takes, there exists certain concepts which need be introduced and you can quickly run down through them, has each concept tries to be short but informative about how that part of the Gu library works.
 
-
 -	[Virtual DOM](./docs/concepts/dom.md)
 
 -	[Notifications](./docs/concepts/notifications.md)
@@ -63,12 +112,10 @@ In grasping the examples and approach Gu takes, there exists certain concepts wh
 
 -	[Embeddable Resource](./docs/concepts/embedded-resources.md)
 
-
 How to Contribute
 -----------------
 
 Please read the contribution guidelines [Contribution Guidelines](./docs/concepts/contributing.md)
-
 
 Limitations
 -----------

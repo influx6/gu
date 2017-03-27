@@ -171,6 +171,12 @@ func initCommands() {
 		Description: "Generates a new boiler code component file which can be set to be in it's own package or part of the component package ",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
+				Name:    "base",
+				Aliases: []string{"bs"},
+				Usage:   "base=true",
+				Value:   true,
+			},
+			&cli.BoolFlag{
 				Name:    "flat",
 				Aliases: []string{"fl"},
 				Usage:   "flat=true",
@@ -194,6 +200,8 @@ func initCommands() {
 			}
 
 			flat := ctx.Bool("flat")
+			base := ctx.Bool("base")
+
 			gopath := os.Getenv("GOPATH")
 			gup := filepath.Join(gopath, "src")
 			gupkg := filepath.Join(gopath, "src", gupath)
@@ -207,8 +215,8 @@ func initCommands() {
 
 			// componentStructName := descore.ReplaceAllString(componentName, "_")
 			componentStructName := badSymbols.ReplaceAllString(componentName, "")
-			if !validateName(componentStructName) {
-				return errors.New("ComponentName does not meet go struct naming standards")
+			if validateName(componentStructName) {
+				return errors.New("ComponentName does not meet go struct naming standards: " + componentStructName)
 			}
 
 			componentNameCap := capitalize(componentStructName)
@@ -226,8 +234,10 @@ func initCommands() {
 				return err
 			}
 
-			if flat {
-				cpdata, cerr := ioutil.ReadFile(filepath.Join(gupkg, "templates/component.template"))
+			if flat && base {
+				baseDir := filepath.Base(componentDir)
+
+				cpdata, cerr := ioutil.ReadFile(filepath.Join(gupkg, "templates/component-base.template"))
 				if cerr != nil {
 					return cerr
 				}
@@ -236,12 +246,52 @@ func initCommands() {
 				cpdata = bytes.Replace(cpdata, nameLowerbytes, []byte(componentNameLower), -1)
 
 				componentFileName := fmt.Sprintf("%s.go", componentNameLower)
-				cmdir := filepath.Join(componentDir, componentFileName)
-				if err := writeFile(cmdir, cpdata); err != nil {
-					return err
+
+				if _, merr := os.Stat(componentDir); merr != nil {
+					componentDir, err = findLower(packagePath, "components")
+					if err != nil {
+						return err
+					}
+
+					componentDir = filepath.Join(gup, componentDir)
 				}
 
-				fmt.Printf("- Adding project file: %q\n", filepath.Join("components", componentFileName))
+				cmdir := filepath.Join(componentDir, componentFileName)
+				if cerr := writeFile(cmdir, cpdata); cerr != nil {
+					return cerr
+				}
+
+				fmt.Printf("- Adding project file: %q\n", filepath.Join(baseDir, componentFileName))
+				return nil
+			}
+
+			if flat && !base {
+				baseDir := filepath.Base(cdir)
+
+				cpdata, cerr := ioutil.ReadFile(filepath.Join(gupkg, "templates/component.template"))
+				if cerr != nil {
+					return cerr
+				}
+
+				componentsPackagePath, coerr := findLower(packagePath, "components")
+				if coerr != nil {
+					return coerr
+				}
+
+				cpdata = bytes.Replace(cpdata, pkgNamebytes, []byte(baseDir), -1)
+				cpdata = bytes.Replace(cpdata, pkgbytes, []byte(componentsPackagePath), -1)
+				cpdata = bytes.Replace(cpdata, namebytes, []byte(componentNameCap), -1)
+				cpdata = bytes.Replace(cpdata, nameLowerbytes, []byte(componentNameLower), -1)
+
+				componentFileName := fmt.Sprintf("%s.go", componentNameLower)
+
+				cmdir := filepath.Join(cdir, componentFileName)
+				if cerr := writeFile(cmdir, cpdata); cerr != nil {
+					return cerr
+				}
+
+				fmt.Printf("- Adding project file: %q\n", filepath.Join(baseDir, componentFileName))
+
 				return nil
 			}
 
@@ -679,6 +729,22 @@ func initCommands() {
 			return nil
 		},
 	})
+}
+
+// Searches the path line down until it's roots to find the directory with the giving
+// dirName matching else returns an error.
+func findLower(path string, dirName string) (string, error) {
+	path = filepath.Clean(path)
+
+	if path == "." {
+		return "", errors.New("'" + dirName + "' path not found")
+	}
+
+	if filepath.Base(path) == dirName {
+		return path, nil
+	}
+
+	return findLower(filepath.Join(path, ".."), dirName)
 }
 
 func writeFile(targetFile string, data []byte) error {

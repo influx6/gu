@@ -9,16 +9,18 @@ By easily abstracting out the rendering details for each platform and making the
 
 *We hope that developers will take this and push the boundaries further to allow easy deployment of Gu apps to other platforms e.g QT, Android, iOS,...etc*
 
-## Examples of Drivers:
-Below are the list of drivers being actively developed or usable. We hope this list can increase the more.
+Examples of Drivers:
+--------------------
 
--	GopherJS Driver(https://github.com/gu-io/gopherjs)
--	QT Driver(https://github.com/gu-io/gopherjs) (Experiemental)
+Below are the list of drivers being actively developed or are already usable. We hope this list can increase the more.
 
+-	GopherJS Driver(https://github.com/gu-io/gopherjs/) (Stable)
+-	QT Driver(https://github.com/gu-io/qt) (Experiemental)
 
-## Gu's Driver Interface
+Gu's Driver Interface
+---------------------
+
 This is the interface which all `Drivers` implementation must match and through this, Gu can easily be rendered to the target platform.
-
 
 ```go
 
@@ -56,4 +58,3 @@ type Driver interface {
 ```
 
 It's job is to provide an interface by which it's selected platform renders out appropriately the designed application built using GU and to provide the flexibility of not being tied to a specific rendering endpoint. It also exposes means by which, requests for resources can be made through and caches by which response can be sorted to reduce network usage.
-

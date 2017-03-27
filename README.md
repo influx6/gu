@@ -97,7 +97,7 @@ The github repo [Examples](https://github.com/gu-io/examples), provides examples
 Concepts
 --------
 
-Gu is fundamentally a library built to provide a rendering capabilities with simple principles in building components that make up your application. There exists certain concepts which should be grasped due to the architecture and these do make it easier to reason and thinking when using the library. To fully grasp these concept, there is set below a series of short explanations about the different core pieces that make up the libray and I hope these will help in the use of this libray and it's examples.
+Gu is fundamentally a library built to provide rendering capabilities with simple principles in building components that make up your application. There exists certain concepts which should be grasped due to the architecture and these do make it easier to reason and thinking when using the library. To fully grasp these concept, there is set below a series of short explanations about the different core pieces that make up the libray and I hope these will help in the use of this libray and it's examples.
 
 -	[Virtual DOM](./docs/concepts/dom.md)
 

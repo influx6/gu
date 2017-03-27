@@ -63,8 +63,6 @@ In grasping the examples and approach Gu takes, there exists certain concepts wh
 
 -	[Embeddable Resource](./docs/concepts/embedded-resources.md)
 
--	[Notifications](./docs/concepts/notifications.md)
-
 
 How to Contribute
 -----------------

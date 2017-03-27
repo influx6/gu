@@ -45,6 +45,18 @@
 			"revisionTime": "2017-03-14T19:30:28Z"
 		},
 		{
+			"checksumSHA1": "lBehULzb2/kIK3wZ0gz2yNmHq9s=",
+			"path": "github.com/spf13/afero",
+			"revision": "9be650865eab0c12963d8753212f4f9c66cdcf12",
+			"revisionTime": "2017-02-17T16:41:46Z"
+		},
+		{
+			"checksumSHA1": "5KRbEQ28dDaQmKwAYTD0if/aEvg=",
+			"path": "github.com/spf13/afero/mem",
+			"revision": "9be650865eab0c12963d8753212f4f9c66cdcf12",
+			"revisionTime": "2017-02-17T16:41:46Z"
+		},
+		{
 			"checksumSHA1": "vqc3a+oTUGX8PmD0TS+qQ7gmN8I=",
 			"path": "golang.org/x/net/html",
 			"revision": "61557ac0112b576429a0df080e1c2cef5dfbb642",
@@ -55,6 +67,18 @@
 			"path": "golang.org/x/net/html/atom",
 			"revision": "61557ac0112b576429a0df080e1c2cef5dfbb642",
 			"revisionTime": "2017-01-26T11:54:58Z"
+		},
+		{
+			"checksumSHA1": "ziMb9+ANGRJSSIuxYdRbA+cDRBQ=",
+			"path": "golang.org/x/text/transform",
+			"revision": "fd889fe3a20f4878f5f47672fd3ca5b86db005e2",
+			"revisionTime": "2016-12-29T10:55:49Z"
+		},
+		{
+			"checksumSHA1": "Vircurgvsnt4k26havmxPM67PUA=",
+			"path": "golang.org/x/text/unicode/norm",
+			"revision": "fd889fe3a20f4878f5f47672fd3ca5b86db005e2",
+			"revisionTime": "2016-12-29T10:55:49Z"
 		},
 		{
 			"checksumSHA1": "exMnsyei9H9PgttMUskof6S2554=",

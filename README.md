@@ -94,18 +94,10 @@ Examples
 
 The github repo [Examples](https://github.com/gu-io/examples), provides examples demonstrating the usage of the Gu library in building applications.
 
-Documentation
--------------
+Concepts
+--------
 
-Gu is fundamentally a library built to provide a component rendering package which exposes the means to effectively and efficiently render HTML/HTML5 content as needed. It provides different concepts and packages which help fulfill this in the most idiomatic form possible. It was built with the philosophy that simplicity is far better than complexity, and carries this principle in the way it's structures are built.
-
-It offers a driver based system which allows the package to be used to render to different output system (e.g Browser , Headless Webkit system, ...etc). Though some of these features and drivers are still in works, Gu currently provides a [GopherJS](https://github.com/gopherjs) driver that showcases the possibility of the provided system.
-
-*Gu is in no way a Flux-like framework. It is just a library that simply provides a baseline to render the desire output and gives the freedom for the developer to determine how their application data flow should works.*
-
-### The Concepts
-
-In grasping the examples and approach Gu takes, there exists certain concepts which need be introduced and you can quickly run down through them, has each concept tries to be short but informative about how that part of the Gu library works.
+Gu is fundamentally a library built to provide a rendering capabilities with simple principles in building components that make up your application. There exists certain concepts which should be grasped due to the architecture and these do make it easier to reason and thinking when using the library. To fully grasp these concept, there is set below a series of short explanations about the different core pieces that make up the libray and I hope these will help in the use of this libray and it's examples.
 
 -	[Virtual DOM](./docs/concepts/dom.md)
 
@@ -129,11 +121,11 @@ Please read the contribution guidelines [Contribution Guidelines](./docs/concept
 Limitations
 -----------
 
-Gu by it's very design and architecture was constructed to be "Simple". It lacks the bells and whistles of similar frameworks and libraries. It's geared to solve your rendering needs and due to this, certain limitations exists with it.
+Gu by it's very design and architecture is "Simple". It lacks the bells and whistles of similar frameworks and libraries. It's geared to solve your rendering needs and due to this, certain limitations exists with it.
 
 -	Gu provides no react like flux structure.
 
--	Gu only focuses on providing you sets of structures able to work on the client and server for HTML/HTML5 rendering.
+-	Gu only focuses on providing you sets of structures able to work on the client and server for HTML/HTML5 rendering markup rendering with diffing support.
 
 -	Gu component are simply Go types that implements Gu's set of interfaces and nothing else.
 

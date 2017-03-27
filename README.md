@@ -23,11 +23,11 @@ It is provided to both improve the workflow of the user, as well as to provide q
 > gu new --driver=js sonar
 - Creating new project: "sonar"
 - Using driver template: "js"
-	- Creating project directory: "sonar"
-	- Creating project directory: "sonar/components"
-	- Creating project directory: "sonar/assets"
-	- Adding project file: "components/components.go"
-	- Adding project file: "app.go"
+- Creating project directory: "sonar"
+- Creating project directory: "sonar/components"
+- Creating project directory: "sonar/assets"
+- Adding project file: "components/components.go"
+- Adding project file: "app.go"
 ```
 
 -	Creating a component with it's assets for a project as a unique package.

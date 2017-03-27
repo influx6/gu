@@ -15,7 +15,7 @@ CLI
 
 Gu provides an cli tooling which is installed when `go get` is done for this package, the tooling provides easier means of generating a project and components using the gu project, among other features.
 
-It is provided to both improve the workflow of the user, as well as to provide quick setup of your project. Provided below are examples of working flow and tasks which are generally done when developing with Gu.
+It is provided to both improve the workflow of the user, as well as to provide quick setup of your project. Provided below are examples of workflows which are generally done when developing with Gu.
 
 -	Creating a gu golang project using the [GopherJS](https://github.com/gu-io/gopherjs) driver
 

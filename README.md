@@ -52,7 +52,7 @@ Gu provides an cli tooling which is installed when `go get` is done for this pac
 - Adding project file: "tableui/tables.go"
 ```
 
--	Creating a component file as part of a base components package.
+-	Creating a component file as part of the base components package.
 
 ```bash
 > cd sonar

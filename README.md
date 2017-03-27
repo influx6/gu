@@ -30,7 +30,7 @@ Gu provides an cli tooling which is installed when `go get` is done for this pac
 
 -	Creating a component with it's assets for a project as a unique package.
 
-*Continuing from the command above*
+	*Continuing from the command above*
 
 ```bash
 > cd sonar

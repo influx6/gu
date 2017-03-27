@@ -419,19 +419,19 @@ func initCommands() {
 				return err
 			}
 
-			fmt.Printf("\t- Creating project directory: %q\n", packageName)
+			fmt.Printf("- Creating project directory: %q\n", packageName)
 
 			if err = os.MkdirAll(filepath.Join(appDir, "components"), 0777); err != nil && err != os.ErrExist {
 				return err
 			}
 
-			fmt.Printf("\t- Creating project directory: %q\n", filepath.Join(packageName, "components"))
+			fmt.Printf("- Creating project directory: %q\n", filepath.Join(packageName, "components"))
 
 			if err = os.MkdirAll(filepath.Join(appDir, "assets"), 0777); err != nil && err != os.ErrExist {
 				return err
 			}
 
-			fmt.Printf("\t- Creating project directory: %q\n", filepath.Join(packageName, "assets"))
+			fmt.Printf("- Creating project directory: %q\n", filepath.Join(packageName, "assets"))
 
 			registrydata, rerr := ioutil.ReadFile(filepath.Join(gup, "templates/registry.template"))
 			if rerr != nil {
@@ -442,7 +442,7 @@ func initCommands() {
 				return err
 			}
 
-			fmt.Printf("\t- Adding project file: %q\n", "components/components.go")
+			fmt.Printf("- Adding project file: %q\n", "components/components.go")
 
 			// Generate files for the project.
 			switch driver {
@@ -458,7 +458,7 @@ func initCommands() {
 					return err
 				}
 
-				fmt.Printf("\t- Adding project file: %q\n", "app.go")
+				fmt.Printf("- Adding project file: %q\n", "app.go")
 
 			case "osx":
 				// read the full qt template and write into the file.
@@ -473,7 +473,7 @@ func initCommands() {
 					return err
 				}
 
-				fmt.Printf("\t- Adding project file: %q\n", "app.go")
+				fmt.Printf("- Adding project file: %q\n", "app.go")
 
 			case "win", "edge":
 				// read the full qt template and write into the file.
@@ -488,7 +488,7 @@ func initCommands() {
 					return err
 				}
 
-				fmt.Printf("\t- Adding project file: %q\n", "app.go")
+				fmt.Printf("- Adding project file: %q\n", "app.go")
 
 			case "linux", "gtk":
 				// read the full qt template and write into the file.
@@ -503,7 +503,7 @@ func initCommands() {
 					return err
 				}
 
-				fmt.Printf("\t- Adding project file: %q\n", "app.go")
+				fmt.Printf("- Adding project file: %q\n", "app.go")
 
 			case "qt":
 				// read the full qt template and write into the file.
@@ -518,7 +518,7 @@ func initCommands() {
 					return err
 				}
 
-				fmt.Printf("\t- Adding project file: %q\n", "app.go")
+				fmt.Printf("- Adding project file: %q\n", "app.go")
 			}
 
 			// Change to new app directory.

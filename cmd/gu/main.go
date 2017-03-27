@@ -138,9 +138,13 @@ func initCommands() {
 				return err
 			}
 
+			fmt.Printf("- Adding project directory: %q\n", filepath.Base(cssDirPath))
+
 			if err = os.MkdirAll(filepath.Join(cssDirPath, "css"), 0777); err != nil {
 				return err
 			}
+
+			fmt.Printf("- Adding project directory: %q\n", filepath.Join(filepath.Base(cssDirPath), "css"))
 
 			gendata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/css.template"))
 			if err != nil {
@@ -160,6 +164,8 @@ func initCommands() {
 			if err := writeFile(filepath.Join(cssDirPath, "generate.go"), cssgendata); err != nil {
 				return err
 			}
+
+			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(cssDirPath), "generate.go"))
 
 			return nil
 		},

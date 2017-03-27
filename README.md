@@ -60,6 +60,17 @@ Gu provides an cli tooling which is installed when `go get` is done for this pac
 - Adding project file: "components/menubar.go"
 ```
 
+-	Adding css go package to turn css files into a go file into any directory.
+
+```bash
+> cd sonar
+> cd sonar/components
+>  gu components css menucss
+- Adding project directory: "menucss"
+- Adding project directory: "menucss/css"
+- Adding project file: "menucss/generate.go"
+```
+
 Goals
 -----
 

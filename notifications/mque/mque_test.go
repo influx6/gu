@@ -3,7 +3,7 @@ package mque_test
 import (
 	"testing"
 
-	"github.com/gu-io/gu/dispatch/mque"
+	"github.com/gu-io/gu/notifications/mque"
 )
 
 // failedMark is the Unicode codepoint for an X mark.

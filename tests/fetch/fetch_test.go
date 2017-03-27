@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	"github.com/gu-io/gu/shell"
-	"github.com/gu-io/gu/shell/cache"
+	"github.com/gu-io/gu/shell/cache/localcache"
 	"github.com/gu-io/gu/shell/fetch"
 	"github.com/gu-io/gu/tests"
 )
 
 func TestFetch(t *testing.T) {
-	ft := fetch.New(cache.New("test.v1"))
+	ft := fetch.New(localcache.New("test.v1"))
 
 	_, _, err := ft.Get("http://google.com", shell.DefaultStrategy)
 	if err != nil {

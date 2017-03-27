@@ -4,7 +4,7 @@ services:
   - docker
 
 before_install:
-  - docker build -f test.Dockerfile -t gu-io/gu-build 
+  - docker build -f test.Dockerfile -t gu-io/gu-build ./
 
 env:
   - GIMME_OS=linux GIMME_ARCH=amd64

@@ -69,6 +69,12 @@
 			"revisionTime": "2017-01-14T14:07:08Z"
 		},
 		{
+			"checksumSHA1": "O6s1g7eHCXK+h7dLgpHUdQHWSd8=",
+			"path": "github.com/influx6/faux/tests",
+			"revision": "d956f1012d971bd8151ee7815da39653e9b9b705",
+			"revisionTime": "2017-03-14T19:30:28Z"
+		},
+		{
 			"checksumSHA1": "wb74Q+l2zo0uZh5ie40NOIJJMz0=",
 			"path": "github.com/influx6/fractals",
 			"revision": "f85c7aba69871b094bffd96feca174b4efa73bbd",

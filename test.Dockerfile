@@ -4,6 +4,9 @@ ADD . /go/src/github.com/gu-io/gu
 
 WORKDIR /go/src/github.com/gu-io/gu
 
+# Run go get
+RUN go get -v 
+
 # Install gometalinter
 RUN go get -u -v github.com/alecthomas/gometalinter
 

@@ -45,7 +45,7 @@ It is provided to both improve the workflow of the user, as well as to provide q
 
 ```
 
--	Creating a component file as part of a giving component package.
+-	Creating a new component as part of a existing package.
 
 ```bash
 > cd sonar
@@ -54,7 +54,7 @@ It is provided to both improve the workflow of the user, as well as to provide q
 - Adding project file: "tableui/tables.go"
 ```
 
--	Creating a component file as part of the base components package.
+-	Creating a component as part of the main components package for a project.
 
 ```bash
 > cd sonar
@@ -62,7 +62,7 @@ It is provided to both improve the workflow of the user, as well as to provide q
 - Adding project file: "components/menubar.go"
 ```
 
--	Adding css go package to turn css files into a go file into any directory.
+-	Add a css package which internal will generate a new go file containing all css files in it.
 
 ```bash
 > cd sonar

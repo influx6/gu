@@ -23,6 +23,7 @@ var (
 
 	namebytes       = []byte("{{Name}}")
 	pkgbytes        = []byte("{{PKG}}")
+	goPathbytes     = []byte("{{GOPATH}}")
 	pkgContentbytes = []byte("{{PKG_CONTENT}}")
 	pkgNamebytes    = []byte("{{PKGNAME}}")
 	dirNamebytes    = []byte("{{DIRNAME}}")
@@ -458,13 +459,26 @@ func initCommands() {
 					return err
 				}
 
+				apphtmldata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_js_html.template"))
+				if err != nil {
+					return err
+				}
+
+				appdata = bytes.Replace(appdata, goPathbytes, []byte(gopath), -1)
 				appdata = bytes.Replace(appdata, namebytes, []byte(packageName), -1)
+				apphtmldata = bytes.Replace(apphtmldata, namebytes, []byte(packageName), -1)
 
 				if err := writeFile(filepath.Join(indir, packageName, "app.go"), appdata); err != nil {
 					return err
 				}
 
 				fmt.Printf("- Adding project file: %q\n", "app.go")
+
+				if err := writeFile(filepath.Join(indir, packageName, "index.html"), apphtmldata); err != nil {
+					return err
+				}
+
+				fmt.Printf("- Adding project file: %q\n", "index.html")
 
 			case "osx":
 				// read the full qt template and write into the file.

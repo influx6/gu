@@ -1,0 +1,95 @@
+{
+    "memo": "8bcaac3430d96c70880309c1ddfcf42878c2fd5655db6eaeac97963a19578de0",
+    "projects": [
+        {
+            "name": "github.com/PuerkitoBio/goquery",
+            "version": "v1.1.0",
+            "revision": "e1271ee34c6a305e38566ecd27ae374944907ee9",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/andybalholm/cascadia",
+            "branch": "master",
+            "revision": "349dd0209470eabd9514242c688c403c0926d266",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/aymerick/douceur",
+            "branch": "master",
+            "revision": "7176f146738114e7386d4f915a0bbf55945e22c9",
+            "packages": [
+                "css",
+                "parser"
+            ]
+        },
+        {
+            "name": "github.com/gopherjs/gopherjs",
+            "branch": "master",
+            "revision": "3496c6f94e1b945f3fc9580f6982675c0a74cd6c",
+            "packages": [
+                "js"
+            ]
+        },
+        {
+            "name": "github.com/gorilla/css",
+            "branch": "master",
+            "revision": "67c8b4bb0798a7db705fc51a78814aca3c944316",
+            "packages": [
+                "scanner"
+            ]
+        },
+        {
+            "name": "github.com/influx6/faux",
+            "branch": "master",
+            "revision": "d956f1012d971bd8151ee7815da39653e9b9b705",
+            "packages": [
+                "pattern",
+                "reflection",
+                "tests"
+            ]
+        },
+        {
+            "name": "github.com/spf13/afero",
+            "branch": "master",
+            "revision": "9be650865eab0c12963d8753212f4f9c66cdcf12",
+            "packages": [
+                ".",
+                "mem"
+            ]
+        },
+        {
+            "name": "golang.org/x/net",
+            "branch": "master",
+            "revision": "61557ac0112b576429a0df080e1c2cef5dfbb642",
+            "packages": [
+                "html",
+                "html/atom"
+            ]
+        },
+        {
+            "name": "golang.org/x/text",
+            "branch": "master",
+            "revision": "fd889fe3a20f4878f5f47672fd3ca5b86db005e2",
+            "packages": [
+                "internal/gen",
+                "internal/triegen",
+                "internal/ucd",
+                "transform",
+                "unicode/cldr",
+                "unicode/norm"
+            ]
+        },
+        {
+            "name": "gopkg.in/urfave/cli.v2",
+            "branch": "v2",
+            "revision": "e485446237011b8abac93919242e6f059ad56c87",
+            "packages": [
+                "."
+            ]
+        }
+    ]
+}

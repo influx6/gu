@@ -1,0 +1,22 @@
+{
+    "dependencies": {
+        "github.com/aymerick/douceur": {
+            "branch": "master"
+        },
+        "github.com/gopherjs/gopherjs": {
+            "branch": "master"
+        },
+        "github.com/influx6/faux": {
+            "branch": "master"
+        },
+        "github.com/spf13/afero": {
+            "branch": "master"
+        },
+        "golang.org/x/net": {
+            "branch": "master"
+        },
+        "gopkg.in/urfave/cli.v2": {
+            "branch": "v2"
+        }
+    }
+}

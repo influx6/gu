@@ -98,8 +98,8 @@ func ParseDir(dir string) (*CSSItems, error) {
 
 	// Walk directory pulling contents into css items.
 	if cerr := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err := walkDir(&items, dir, path, info, err); err != nil {
-			return err
+		if cerr := walkDir(&items, dir, path, info, err); cerr != nil {
+			return cerr
 		}
 
 		return nil

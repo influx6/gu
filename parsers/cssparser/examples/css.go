@@ -1,6 +1,6 @@
 // Package examples defines a package which embeds all css files into a go file.
-// This package is automatically generated and should not be modified by hand. 
-// It provides a source which is used to build all css packages into a css.go 
+// This package is automatically generated and should not be modified by hand.
+// It provides a source which is used to build all css packages into a css.go
 // file which contains each allocated by name.
 
 //go:generate go run generate.go
@@ -63,8 +63,8 @@ func (s *cssstyle) Rule(root []cssstyle) *css.Rule {
 	return self
 }
 
-func init (){
-  if err := json.Unmarshal([]byte("[\n\t{\n\t\t\"after\": null,\n\t\t\"before\": null,\n\t\t\"path\": \"base/base.css\",\n\t\t\"style\": \".base-component {\\n\\twidth: 100px;\\n}\"\n\t},\n\t{\n\t\t\"after\": null,\n\t\t\"before\": null,\n\t\t\"path\": \"base/ui/base-ui.css\",\n\t\t\"style\": \".base-ui{\\n\\tfont-size: 40px;\\n}\"\n\t},\n\t{\n\t\t\"after\": [\n\t\t\t1\n\t\t],\n\t\t\"before\": [\n\t\t\t3,\n\t\t\t4,\n\t\t\t0\n\t\t],\n\t\t\"path\": \"examples.css\",\n\t\t\"style\": \"/* #include ui/*:before, base/ui/base-ui.css:after, base/base.css */\\n\\n.examples {\\n\\twidth: 100px;\\n\\theight: 200px;\\n}\"\n\t},\n\t{\n\t\t\"after\": null,\n\t\t\"before\": null,\n\t\t\"path\": \"ui/button.css\",\n\t\t\"style\": \".ui-button {\\n\\tcolor: black;\\n}\"\n\t},\n\t{\n\t\t\"after\": null,\n\t\t\"before\": null,\n\t\t\"path\": \"ui/ui.css\",\n\t\t\"style\": \".ui {\\n\\tfont-family: Lato, Helvetica, sans-serif;\\n}\"\n\t}\n]"),&rules); err != nil {
-  	fmt.Printf("Failed to unmarshal styles: %+q\n", err)
-  }
+func init() {
+	if err := json.Unmarshal([]byte("[\n\t{\n\t\t\"after\": null,\n\t\t\"before\": null,\n\t\t\"path\": \"base/base.css\",\n\t\t\"style\": \".base-component {\\n\\twidth: 100px;\\n}\"\n\t},\n\t{\n\t\t\"after\": null,\n\t\t\"before\": null,\n\t\t\"path\": \"base/ui/base-ui.css\",\n\t\t\"style\": \".base-ui{\\n\\tfont-size: 40px;\\n}\"\n\t},\n\t{\n\t\t\"after\": [\n\t\t\t1\n\t\t],\n\t\t\"before\": [\n\t\t\t3,\n\t\t\t4,\n\t\t\t0\n\t\t],\n\t\t\"path\": \"examples.css\",\n\t\t\"style\": \"/* #include ui/*:before, base/ui/base-ui.css:after, base/base.css */\\n\\n.examples {\\n\\twidth: 100px;\\n\\theight: 200px;\\n}\"\n\t},\n\t{\n\t\t\"after\": null,\n\t\t\"before\": null,\n\t\t\"path\": \"ui/button.css\",\n\t\t\"style\": \".ui-button {\\n\\tcolor: black;\\n}\"\n\t},\n\t{\n\t\t\"after\": null,\n\t\t\"before\": null,\n\t\t\"path\": \"ui/ui.css\",\n\t\t\"style\": \".ui {\\n\\tfont-family: Lato, Helvetica, sans-serif;\\n}\"\n\t}\n]"), &rules); err != nil {
+		fmt.Printf("Failed to unmarshal styles: %+q\n", err)
+	}
 }

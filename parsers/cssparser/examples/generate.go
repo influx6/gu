@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"path/filepath"
+	"strings"
 
 	"github.com/gu-io/gu/parsers/cssparser"
 )
@@ -23,25 +23,24 @@ func main() {
 
 	items, err := cssparser.ParseDir(filepath.Join(cdir, "css"))
 	if err != nil {
-		panic("Failed to walk CSS directories: "+ err.Error())
+		panic("Failed to walk CSS directories: " + err.Error())
 	}
 
 	rd, err := json.MarshalIndent(items.Generate(), "", "\t")
 	if err != nil {
-		panic("Failed to Marshal CSS File struct: "+ err.Error())
+		panic("Failed to Marshal CSS File struct: " + err.Error())
 	}
-
 
 	file, err := os.Create(filepath.Join(cdir, "css.go"))
 	if err != nil {
-		panic("Failed to create css pkg file: "+ err.Error())
+		panic("Failed to create css pkg file: " + err.Error())
 	}
 
 	defer file.Close()
 
 	quoted := fmt.Sprintf("%+q", rd)
-	pkg = strings.Replace(pkg,"{{PKG}}", pkgName, -1)
-	pkg = strings.Replace(pkg,"{{STYLES}}", quoted, -1)
+	pkg = strings.Replace(pkg, "{{PKG}}", pkgName, -1)
+	pkg = strings.Replace(pkg, "{{STYLES}}", quoted, -1)
 
 	file.Write([]byte(pkg))
 }

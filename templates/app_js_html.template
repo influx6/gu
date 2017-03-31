@@ -44,7 +44,7 @@
           margin-bottom: auto;
           border-radius: 50%;
         }
-      </styl>
+      </style>
       <section>
         <article class="anime">
           <div class="ball green"></div>

@@ -2,6 +2,13 @@
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:title" content="{{Name}}">
+  <meta property="og:description" content="{{Name}} App">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{{Name}}">
+  <meta name="twitter:description" content="{{Name}} App with Gu">
+  <link rel="apple-touch-icon-precomposed" href="assets/img/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="assets/img/icons/favicon.png" >
   </head>
   <body>
     <div id="loading_page">
@@ -12,16 +19,8 @@
           font-family: "Lato", Helvetica, sans-serif, serif;
         }
 
-        .red {
-          background-color: #ff324A;
-        }
-
-        .blue {
-          background-color: #206EFF;
-        }
-
-        .green {
-          background-color: #32FFA6;
+        .ball {
+          background-color: #222;
         }
 
         html, body {
@@ -30,30 +29,38 @@
 
         body {
           height: 100%;
+          margin: 0px auto;
+          background: #e5e5e5;
         }
 
-        #loading_page{
+        #loading_page {
           width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+
+        .anime {
+          font-size: 1.0em;
+          margin: auto 0px;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          width: 50%;
           height: 100%;
         }
 
         div.ball {
           width: 3em;
           height: 3em;
-          margin-top: auto;
           margin-bottom: auto;
+          margin-top: auto;
           border-radius: 50%;
         }
       </style>
-      <section>
-        <article class="anime">
-          <div class="ball green"></div>
-          <div class="ball blue"></div>
-          <div class="ball red"></div>
-        </article>
-        <article class="intro">
-          <h1>Loading...</h1>
-        </article>
+      <section class="anime">
+        <div class="ball"></div>
+        <div class="ball"></div>
+        <div class="ball"></div>
       </section>
       <script type="text/javascript">
         /*
@@ -698,7 +705,7 @@
       </script>
       <script type="text/javascript">
         anime({
-          targets: 'div',
+          targets: '.anime div.ball',
           translateX: '13.5rem',
           scale: [.75, .9],
           delay: function(el, index) {
@@ -709,7 +716,7 @@
         });
       </script>
     </div>
-    <script type="text/javascript" src="assets/{{NAME}}.js">
+    <script type="text/javascript" src="assets/{{Name}}.js">
     </script>
   </body>
 <html>

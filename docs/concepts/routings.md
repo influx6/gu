@@ -5,9 +5,9 @@ Gu provides a simplified routing system, which does not provide many bells and w
 
 Gu provides two routing concepts for the library:
 
--	View Routers The `View Routers`, also called `Resolvers` callback style, chaining strucuture where higher chains can effect the visibility of lower chains and also feed the lower chains pieces of routers which are left from their own path conditions. With this views can inform internal markup to hide/display themselves based on the supplied routers. This provides a clean approach to dealing with views and how the current paths affects those views.
+-	**View Routers**: The `View Routers`, also called `Resolvers` is a callback style chaining structure, where higher chains can effect the visibility of lower chains and also feed the lower chains pieces of routers which are left from their own path conditions. With this views can inform internal markup to hide/display themselves based on the supplied routers. This provides a clean approach to dealing with views and how the current paths affects those views.
 
--	Request Routers The `Request Routers` are the defactor means by which views and components can make request to retrieve resources from remote endpoints.
+-	**Request Routers**: The `Request Routers` are the defactor means by which views and components can make request to retrieve resources from remote endpoints.
 
 Request Router
 ==============

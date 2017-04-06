@@ -10,12 +10,6 @@ package main
 
 import (
 	"github.com/gu-io/gu"
-	"{{PKG}}/manifests"
-)
-
-
-import (
-	"github.com/gu-io/gu"
 	"github.com/gu-io/gu/router"
 	// "github.com/gu-io/qt" Not yet ready
 	"github.com/gu-io/gopherjs"

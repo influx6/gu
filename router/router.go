@@ -1,6 +1,8 @@
 package router
 
 import (
+	"bytes"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -12,7 +14,7 @@ import (
 type Cache interface {
 	Empty() error
 	Delete(string) error
-	Add(string, *http.Response)
+	Add(string, *http.Response) error
 	Serve(http.ResponseWriter, *http.Request) error
 }
 
@@ -29,6 +31,11 @@ func NewRouter(handler http.Handler, cache Cache) *Router {
 	router.handler = handler
 
 	return &router
+}
+
+// Cache returns the internal cache used by the router.
+func (r *Router) Cache() Cache {
+	return r.cache
 }
 
 // Patch retrieves the giving path and returns the response expected using a PATCH method.
@@ -79,8 +86,9 @@ func (r *Router) Do(method string, path string, body io.ReadCloser) (*http.Respo
 
 	var wg sync.WaitGroup
 
+	wg.Add(1)
+
 	go func() {
-		wg.Add(1)
 		defer wg.Done()
 
 		// If we have no cache, then use the internal handler.
@@ -102,4 +110,20 @@ func (r *Router) Do(method string, path string, body io.ReadCloser) (*http.Respo
 	res.Request = req
 
 	return res, nil
+}
+
+//================================================================================
+
+// ReadBody returns the body of the giving response.
+func ReadBody(res *http.Response) ([]byte, error) {
+	if res.Body == nil {
+		return nil, errors.New("Response has no body/content")
+	}
+
+	var buf bytes.Buffer
+
+	defer res.Body.Close()
+	io.Copy(&buf, res.Body)
+
+	return buf.Bytes(), nil
 }

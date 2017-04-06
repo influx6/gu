@@ -3,7 +3,6 @@ package drivers
 import (
 	"github.com/gu-io/gu"
 	"github.com/gu-io/gu/router"
-	"github.com/gu-io/gu/shell"
 )
 
 // NOOPDriver provides a concrete implementation of the Gu.Driver interface.
@@ -67,10 +66,4 @@ func (driver *NOOPDriver) Render(app *gu.NApp) {
 // Update updates a giving view portion of a giving App within the designated
 // rendering system(browser) provided by the driver.
 func (driver *NOOPDriver) Update(app *gu.NApp, view *gu.NView) {
-}
-
-// Services returns the Fetcher and Cache associated with the provided cacheName.
-// Intercepting requests for usage.
-func (driver *NOOPDriver) Services(cacheName string, intercept bool) (shell.Fetch, shell.Cache) {
-	return nil, nil
 }

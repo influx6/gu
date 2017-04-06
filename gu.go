@@ -32,6 +32,34 @@ func NewKey() string {
 	return fmt.Sprintf("%d-%s", countKeeper.baseCount, countKeeper.baseKey)
 }
 
+//================================================================================
+
+// Services defines a struct which exposes certain fields to be accessible to
+// others.
+type Services struct {
+	AppUUID       string
+	Location      Location
+	Mounted       Subscriptions
+	Rendered      Subscriptions
+	Updated       Subscriptions
+	Unmounted     Subscriptions
+	Router        *router.Router
+	ViewRouter    router.Resolver
+	Notifications *notifications.AppNotification
+}
+
+//================================================================================
+
+// Location defines an interface which exposes a type which allows the retrieval
+// and setting of the location of a given display.
+type Location interface {
+	// Current Location of the driver path.
+	Location() router.PushEvent
+
+	// Navigate the Driver to the provided path.
+	Navigate(router.PushDirectiveEvent)
+}
+
 //==============================================================================
 
 // Identity defines an interface which expoese the identity of a giving object.
@@ -39,19 +67,17 @@ type Identity interface {
 	UUID() string
 }
 
-// Services defines a struct which exposes certain fields to be accessible to
-// others.
-type Services struct {
-	AppUUID       string
-	Driver        Driver
-	Router        router.Resolver
-	Mounted       Subscriptions
-	Rendered      Subscriptions
-	Updated       Subscriptions
-	Unmounted     Subscriptions
-	Notifications *notifications.AppNotification
-	// Fetch         shell.Fetch
-	// Cache         shell.Cache
+// AppUpdate defines a struct which is used to notify the need to update a
+// App.
+type AppUpdate struct {
+	App *NApp
+}
+
+// ViewUpdate defines a struct which is used to notify the need to update a
+// App and a given view.
+type ViewUpdate struct {
+	App  *NApp
+	View *NView
 }
 
 // RegisterService provides an interface which registers the provided fetcher,

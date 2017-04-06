@@ -1,7 +1,7 @@
 // Package main generates the osx output for the app into the assets directory of this app.
 
-//go:generate go generate ./...
-
+//go:generate go generate ./components/...
+//go:generate go generate ./manifests/...
 
 package main
 

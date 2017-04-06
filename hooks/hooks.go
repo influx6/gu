@@ -1,10 +1,12 @@
-package shell
+package hooks
 
 import (
 	"fmt"
 	"path/filepath"
 	"strings"
 
+	"github.com/gu-io/gu/router"
+	"github.com/gu-io/gu/shell"
 	"github.com/gu-io/gu/trees"
 	"github.com/gu-io/gu/trees/elems"
 )
@@ -15,7 +17,7 @@ type JSLink struct{}
 
 // Fetch returns the markup for the giving resource and where it should be inserted
 // into the dom.
-func (JSLink) Fetch(fetch Fetch, attr ManifestAttr) (*trees.Markup, bool, error) {
+func (JSLink) Fetch(r *router.Router, attr shell.ManifestAttr) (*trees.Markup, bool, error) {
 	script := trees.NewMarkup("script", false)
 	trees.NewAttr("src", attr.Path).Apply(script)
 	trees.NewAttr("type", "text/javascript").Apply(script)
@@ -29,7 +31,7 @@ type CSSLink struct{}
 
 // Fetch returns the markup for the giving resource and where it should be inserted
 // into the dom.
-func (CSSLink) Fetch(fetch Fetch, attr ManifestAttr) (*trees.Markup, bool, error) {
+func (CSSLink) Fetch(r *router.Router, attr shell.ManifestAttr) (*trees.Markup, bool, error) {
 	style := trees.NewMarkup("link", false)
 	trees.NewAttr("href", attr.Path).Apply(style)
 	trees.NewAttr("ref", "stylesheet").Apply(style)
@@ -44,7 +46,7 @@ type ImageLink struct{}
 
 // Fetch returns the markup for the giving resource and where it should be inserted
 // into the dom.
-func (ImageLink) Fetch(fetch Fetch, attr ManifestAttr) (*trees.Markup, bool, error) {
+func (ImageLink) Fetch(r *router.Router, attr shell.ManifestAttr) (*trees.Markup, bool, error) {
 	img := trees.NewMarkup("image", false)
 	trees.NewAttr("src", attr.Path).Apply(img)
 
@@ -61,7 +63,7 @@ type ImageEmbed struct{}
 
 // Fetch returns the markup for the giving resource and where it should be inserted
 // into the dom.
-func (m ImageEmbed) Fetch(fetch Fetch, attr ManifestAttr) (*trees.Markup, bool, error) {
+func (m ImageEmbed) Fetch(r *router.Router, attr shell.ManifestAttr) (*trees.Markup, bool, error) {
 	ext := strings.ToLower(strings.TrimPrefix(filepath.Ext(attr.Name), "."))
 
 	img := trees.NewMarkup("img", false)
@@ -76,17 +78,17 @@ func (m ImageEmbed) Fetch(fetch Fetch, attr ManifestAttr) (*trees.Markup, bool, 
 		return img, false, nil
 	}
 
-	res, err := fetch.Do(attr.WebRequest())
+	res, err := r.Get(attr.Path)
 	if err != nil {
 		return nil, false, err
 	}
 
-	decoded, err := res.EncodeContentBase64()
+	body, err := router.ReadBody(res)
 	if err != nil {
 		return nil, false, err
 	}
 
-	trees.NewAttr("src", fmt.Sprintf(imageStyle, ext, decoded)).Apply(img)
+	trees.NewAttr("src", fmt.Sprintf(imageStyle, ext, body)).Apply(img)
 
 	return img, false, nil
 }
@@ -103,7 +105,7 @@ var cssImageStyle = `
 
 // Fetch returns the markup for the giving resource and where it should be inserted
 // into the dom.
-func (m ImageCSSEmbed) Fetch(fetch Fetch, attr ManifestAttr) (*trees.Markup, bool, error) {
+func (m ImageCSSEmbed) Fetch(r *router.Router, attr shell.ManifestAttr) (*trees.Markup, bool, error) {
 	if attr.Content != "" {
 		style := trees.NewMarkup("style", false)
 
@@ -119,7 +121,12 @@ func (m ImageCSSEmbed) Fetch(fetch Fetch, attr ManifestAttr) (*trees.Markup, boo
 		return style, true, nil
 	}
 
-	res, err := fetch.Do(attr.WebRequest())
+	res, err := r.Get(attr.Path)
+	if err != nil {
+		return nil, false, err
+	}
+
+	body, err := router.ReadBody(res)
 	if err != nil {
 		return nil, false, err
 	}
@@ -127,12 +134,7 @@ func (m ImageCSSEmbed) Fetch(fetch Fetch, attr ManifestAttr) (*trees.Markup, boo
 	style := trees.NewMarkup("style", false)
 	ext := strings.TrimPrefix(filepath.Ext(attr.Name), ".")
 
-	decoded, err := res.EncodeContentBase64()
-	if err != nil {
-		return nil, false, err
-	}
-
-	elems.Text(cssImageStyle, getNewName(attr.Name), ext, decoded).Apply(style)
+	elems.Text(cssImageStyle, getNewName(attr.Name), ext, body).Apply(style)
 
 	return style, true, nil
 }
@@ -148,7 +150,7 @@ type CSSEmbed struct{}
 
 // Fetch returns the markup for the giving resource and where it should be inserted
 // into the dom.
-func (CSSEmbed) Fetch(fetch Fetch, attr ManifestAttr) (*trees.Markup, bool, error) {
+func (CSSEmbed) Fetch(r *router.Router, attr shell.ManifestAttr) (*trees.Markup, bool, error) {
 	if attr.Content != "" {
 		style := trees.NewMarkup("style", false)
 
@@ -162,19 +164,19 @@ func (CSSEmbed) Fetch(fetch Fetch, attr ManifestAttr) (*trees.Markup, bool, erro
 		return style, true, nil
 	}
 
-	res, err := fetch.Do(attr.WebRequest())
+	res, err := r.Get(attr.Path)
+	if err != nil {
+		return nil, false, err
+	}
+
+	body, err := router.ReadBody(res)
 	if err != nil {
 		return nil, false, err
 	}
 
 	style := trees.NewMarkup("style", false)
 
-	decoded, err := res.UnwrapBody()
-	if err != nil {
-		return nil, false, err
-	}
-
-	trees.NewText(string(decoded)).Apply(style)
+	trees.NewText(string(body)).Apply(style)
 
 	return style, true, nil
 }
@@ -184,7 +186,7 @@ type JavascriptEmbed struct{}
 
 // Fetch returns the markup for the giving resource and where it should be inserted
 // into the dom.
-func (JavascriptEmbed) Fetch(fetch Fetch, attr ManifestAttr) (*trees.Markup, bool, error) {
+func (JavascriptEmbed) Fetch(r *router.Router, attr shell.ManifestAttr) (*trees.Markup, bool, error) {
 	if attr.Content != "" {
 		style := trees.NewMarkup("script", false)
 
@@ -198,19 +200,19 @@ func (JavascriptEmbed) Fetch(fetch Fetch, attr ManifestAttr) (*trees.Markup, boo
 		return style, true, nil
 	}
 
-	res, err := fetch.Do(attr.WebRequest())
+	res, err := r.Get(attr.Path)
+	if err != nil {
+		return nil, false, err
+	}
+
+	body, err := router.ReadBody(res)
 	if err != nil {
 		return nil, false, err
 	}
 
 	style := trees.NewMarkup("script", false)
 
-	decoded, err := res.UnwrapBody()
-	if err != nil {
-		return nil, false, err
-	}
-
-	trees.NewText(string(decoded)).Apply(style)
+	trees.NewText(string(body)).Apply(style)
 
 	return style, true, nil
 }

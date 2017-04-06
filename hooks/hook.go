@@ -1,16 +1,18 @@
-package shell
+package hooks
 
 import (
 	"errors"
 
+	"github.com/gu-io/gu/router"
+	"github.com/gu-io/gu/shell"
 	"github.com/gu-io/gu/trees"
 )
 
 // Hook defines an interface which handles the retrieval and installation of
-// a ManifestAttr. It expects to return two values, the markup to be installed
+// a shell.ManifestAttr. It expects to return two values, the markup to be installed
 // into the page and a boolean indicating if it should be added into the head.
 type Hook interface {
-	Fetch(Fetch, ManifestAttr) (res *trees.Markup, addToHeader bool, err error)
+	Fetch(*router.Router, shell.ManifestAttr) (res *trees.Markup, addToHeader bool, err error)
 }
 
 // hooks provides a global registry for registering hooks.
@@ -23,12 +25,12 @@ func Register(name string, hook Hook) {
 }
 
 // RegisterManifest adds a manifest into the global register for access by the name.
-func RegisterManifest(attr ManifestAttr) {
+func RegisterManifest(attr shell.ManifestAttr) {
 	hooks.AddManifest(attr)
 }
 
 // GetManifest retrieves the manifest with the given name.
-func GetManifest(name string) (ManifestAttr, error) {
+func GetManifest(name string) (shell.ManifestAttr, error) {
 	return hooks.GetManifest(name)
 }
 
@@ -41,14 +43,14 @@ func Get(name string) (Hook, error) {
 // handles the lifecycle process for a asset from installation to removal.
 type registry struct {
 	hooks     map[string]Hook
-	manifests map[string]ManifestAttr
+	manifests map[string]shell.ManifestAttr
 }
 
 // newRegistry returns a new instance of Registry.
 func newRegistry() *registry {
 	return &registry{
 		hooks:     make(map[string]Hook),
-		manifests: make(map[string]ManifestAttr),
+		manifests: make(map[string]shell.ManifestAttr),
 	}
 }
 
@@ -60,7 +62,7 @@ func (r *registry) Create(name string, hook Hook) {
 
 // AddManifest adds the giving manifest into the global manifest file.
 // It avoids manifests of same name once added.
-func (r *registry) AddManifest(attr ManifestAttr) {
+func (r *registry) AddManifest(attr shell.ManifestAttr) {
 	r.manifests[attr.Name] = attr
 }
 
@@ -81,10 +83,10 @@ func (r *registry) Get(name string) (Hook, error) {
 var ErrManifestNotFound = errors.New("Manifest not found")
 
 // GetManifest returns a giving provider with the provided key.
-func (r *registry) GetManifest(name string) (ManifestAttr, error) {
+func (r *registry) GetManifest(name string) (shell.ManifestAttr, error) {
 	hl, ok := r.manifests[name]
 	if !ok {
-		return ManifestAttr{}, ErrManifestNotFound
+		return shell.ManifestAttr{}, ErrManifestNotFound
 	}
 
 	return hl, nil

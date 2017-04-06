@@ -62,7 +62,7 @@ func (a *API) Delete(path string) error {
 }
 
 // Add adds the giving response object into the cache.
-func (a *API) Add(req string, res *http.Response) {
+func (a *API) Add(req string, res *http.Response) error {
 	resp, reqs := cache.HTTPResponseToResponse(res)
 	if reqs == nil {
 		reqs = &cache.Request{Path: req, Method: "GET"}
@@ -72,6 +72,8 @@ func (a *API) Add(req string, res *http.Response) {
 		Request:  *reqs,
 		Response: *resp,
 	})
+
+	return nil
 }
 
 // Serve attempts to find the request and serve the response into the provided

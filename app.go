@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"strings"
 
+	"github.com/gu-io/gu/hooks"
 	"github.com/gu-io/gu/notifications"
 	"github.com/gu-io/gu/router"
 	"github.com/gu-io/gu/shell"
@@ -13,28 +14,6 @@ import (
 	"github.com/influx6/faux/reflection"
 )
 
-// Driver defines an interface which provides an Interface to render Apps and views
-// to a display system. eg. GopherJS, wkWebview.
-type Driver interface {
-	// Method to subscribe to ready state for the driver.
-	OnReady(func())
-
-	// Name of the driver.
-	Name() string
-
-	// Navigate the Driver to the provided path.
-	Navigate(router.PushDirectiveEvent)
-
-	// Current Location of the driver path.
-	Location() router.PushEvent
-
-	// Render app and it's content.
-	Render(*NApp)
-
-	// Update app's view and it's target content.
-	Update(*NApp, *NView)
-}
-
 // Resource defines any set of rendering links, scripts, styles needed by a view.
 type Resource struct {
 	Manifest shell.AppManifest
@@ -42,14 +21,12 @@ type Resource struct {
 	head     []*trees.Markup
 }
 
-// Mode defines a type to represent the mode which the library works under.
-type Mode int
-
 // AppAttr defines a struct for
 type AppAttr struct {
 	Name      string              `json:"name"`
 	Title     string              `json:"title"`
 	Manifests []shell.AppManifest `json:"manifests, omitempty"`
+	Router    *router.Router      `json:"-"`
 }
 
 // NApp defines a struct which encapsulates all the core view management functions
@@ -57,7 +34,8 @@ type AppAttr struct {
 type NApp struct {
 	uuid          string
 	attr          AppAttr
-	driver        Driver
+	location      Location
+	router        *router.Router
 	notifications *notifications.AppNotification
 	active        bool
 
@@ -75,6 +53,7 @@ func App(attr AppAttr) *NApp {
 	var app NApp
 	app.attr = attr
 	app.uuid = NewKey()
+	app.router = attr.Router
 
 	// Add local notification channel for this giving app.
 	app.notifications = notifications.New(app.uuid)
@@ -83,11 +62,11 @@ func App(attr AppAttr) *NApp {
 	if attr.Manifests != nil {
 
 		for _, mani := range attr.Manifests {
-			// for _, attr := range mani.Manifests {
-			// 	// if attr.IsGlobal {
-			// 	// 	shell.RegisterManifest(attr)
-			// 	// }
-			// }
+			for _, attr := range mani.Manifests {
+				if attr.IsGlobal {
+					hooks.RegisterManifest(attr)
+				}
+			}
 
 			if mani.GlobalScope {
 				app.globalResources = append(app.globalResources, Resource{
@@ -101,6 +80,7 @@ func App(attr AppAttr) *NApp {
 		}
 	}
 
+	// NOTE: Do this in the driver.
 	// app.driver.OnReady(func() {
 	// 	fmt.Printf("Running App: %q\n", app.attr.Name)
 	// 	fmt.Printf("Running App Title: %q\n", app.attr.Name)
@@ -114,18 +94,41 @@ func App(attr AppAttr) *NApp {
 	// 	fmt.Printf("Ending App Run: %q\n", app.attr.Name)
 	// })
 
-	app.notifications.Subscribe(func(directive router.PushDirectiveEvent) {
-		if !app.active || app.driver == nil {
-			return
-		}
+	// NOTE: Do this in the driver.
+	// app.notifications.Subscribe(func(directive router.PushDirectiveEvent) {
+	// 	if !app.active || app.driver == nil {
+	// 		return
+	// 	}
+	//
+	// 	app.driver.Navigate(directive)
+	// })
 
-		app.driver.Navigate(directive)
-	})
-
+	// NOTE: Do this in the driver.
 	// app.driver.OnRoute(&app)
 
+	// NOTE: Do this in the driver.
 	// app.driver.Ready()
 	return &app
+}
+
+// InitApp sets the Location to be used by the NApp and it's views and components.
+func (app *NApp) InitApp(location Location) {
+	app.location = location
+}
+
+// initSanitCheck will perform series of checks to ensure the needed features or
+// structures required by the app is set else will panic.
+func (app *NApp) initSanitCheck() {
+	if app.location != nil {
+		return
+	}
+
+	panic("You are required to set the Location provider first")
+}
+
+// Notifications returns the underlying AppNotification pipeline for access.
+func (app *NApp) Notifications() *notifications.AppNotification {
+	return app.notifications
 }
 
 // Active returns true/false if the giving app is active and has already
@@ -322,33 +325,33 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 				continue
 			}
 
-			// hook, err := shell.Get(manifest.HookName)
-			// if err != nil {
-			// 	fmt.Printf("Hook[%q] does not exists: Resource[%q] unable to install\n", manifest.HookName, manifest.Name)
-			// 	continue
-			// }
+			hook, err := hooks.Get(manifest.HookName)
+			if err != nil {
+				fmt.Printf("Hook[%q] does not exists: Resource[%q] unable to install\n", manifest.HookName, manifest.Name)
+				continue
+			}
 
-			// markup, toHead, err := hook.Fetch(app.fetch, manifest)
-			// if err != nil {
-			// 	fmt.Printf("Hook[%q] failed to retrieve Resource {Name: %q, Path: %q}\n", manifest.HookName, manifest.Name, manifest.Path)
-			// 	continue
-			// }
+			markup, toHead, err := hook.Fetch(app.router, manifest)
+			if err != nil {
+				fmt.Printf("Hook[%q] failed to retrieve Resource {Name: %q, Path: %q}\n", manifest.HookName, manifest.Name, manifest.Path)
+				continue
+			}
 
-			// trees.NewAttr("gu-resource", "true").Apply(markup)
-			// trees.NewAttr("gu-resource-view", app.uuid).Apply(markup)
-			// trees.NewAttr("gu-resource-from", manifest.Path).Apply(markup)
-			// trees.NewAttr("gu-resource-name", manifest.Name).Apply(markup)
-			// trees.NewAttr("gu-resource-id", manifest.ID).Apply(markup)
-			// trees.NewAttr("gu-resource-app-id", app.uuid).Apply(markup)
+			trees.NewAttr("gu-resource", "true").Apply(markup)
+			trees.NewAttr("gu-resource-view", app.uuid).Apply(markup)
+			trees.NewAttr("gu-resource-from", manifest.Path).Apply(markup)
+			trees.NewAttr("gu-resource-name", manifest.Name).Apply(markup)
+			trees.NewAttr("gu-resource-id", manifest.ID).Apply(markup)
+			trees.NewAttr("gu-resource-app-id", app.uuid).Apply(markup)
 
-			// if toHead {
-			// 	def.head = append(def.head, markup)
-			// 	head = append(head, markup)
-			// 	continue
-			// }
-			//
-			// def.body = append(def.body, markup)
-			// body = append(body, markup)
+			if toHead {
+				def.head = append(def.head, markup)
+				head = append(head, markup)
+				continue
+			}
+
+			def.body = append(def.body, markup)
+			body = append(body, markup)
 		}
 	}
 
@@ -389,6 +392,8 @@ type ViewAttr struct {
 
 // View returns a new instance of the view object.
 func (app *NApp) View(attr ViewAttr) *NView {
+	app.initSanitCheck()
+
 	if attr.Base == nil {
 		attr.Base = trees.NewMarkup("view", false)
 		trees.NewCSSStyle("display", "block").Apply(attr.Base)
@@ -398,22 +403,21 @@ func (app *NApp) View(attr ViewAttr) *NView {
 	vw.attr = attr
 	vw.root = app
 	vw.uuid = NewKey()
-	vw.driver = app.driver
+	vw.appUUID = app.uuid
+	vw.location = app.location
 	vw.notifications = app.notifications
 	vw.Reactive = NewReactive()
-	vw.appUUID = app.uuid
-
-	vw.router = router.New(attr.Route)
-	// vw.cache = app.cache
-	// vw.fetch = app.fetch
 	vw.local = app.local
 
-	vw.React(func() {
-		if !app.active || app.driver == nil {
-			return
-		}
+	vw.router = router.New(attr.Route)
 
-		app.driver.Update(app, &vw)
+	vw.React(func() {
+
+		// app.driver.Update(app, &vw)
+		app.notifications.Dispatch(ViewUpdate{
+			App:  app,
+			View: &vw,
+		})
 	})
 
 	// Register to listen for failure of route to match and
@@ -441,15 +445,13 @@ type RenderableData struct {
 // view.
 type NView struct {
 	Reactive
-	root    *NApp
-	uuid    string
-	appUUID string
-	active  bool
-	// cache         shell.Cache
-	// fetch         shell.Fetch
-	router        router.Resolver
-	driver        Driver
+	root          *NApp
+	uuid          string
+	appUUID       string
+	active        bool
 	attr          ViewAttr
+	location      Location
+	router        router.Resolver
 	notifications *notifications.AppNotification
 
 	renderingData []RenderableData
@@ -578,32 +580,32 @@ func (v *NView) Resources() ([]*trees.Markup, []*trees.Markup) {
 				continue
 			}
 
-			// hook, err := shell.Get(manifest.HookName)
-			// if err != nil {
-			// 	fmt.Printf("Hook[%q] does not exists: Resource[%q] unable to install\n", manifest.HookName, manifest.Name)
-			// 	continue
-			// }
-			//
-			// markup, toHead, err := hook.Fetch(v.fetch, manifest)
-			// if err != nil {
-			// 	fmt.Printf("Hook[%q] failed to retrieve Resource {Name: %q, Path: %q}\n", manifest.HookName, manifest.Name, manifest.Path)
-			// 	continue
-			// }
-			//
-			// trees.NewAttr("gu-resource", "true").Apply(markup)
-			// trees.NewAttr("gu-resource-view", v.uuid).Apply(markup)
-			// trees.NewAttr("gu-resource-from", manifest.Path).Apply(markup)
-			// trees.NewAttr("gu-resource-name", manifest.Name).Apply(markup)
-			// trees.NewAttr("gu-resource-id", manifest.ID).Apply(markup)
-			//
-			// if toHead {
-			// 	def.head = append(def.head, markup)
-			// 	head = append(head, markup)
-			// 	continue
-			// }
-			//
-			// def.body = append(def.body, markup)
-			// body = append(body, markup)
+			hook, err := hooks.Get(manifest.HookName)
+			if err != nil {
+				fmt.Printf("Hook[%q] does not exists: Resource[%q] unable to install\n", manifest.HookName, manifest.Name)
+				continue
+			}
+
+			markup, toHead, err := hook.Fetch(v.root.router, manifest)
+			if err != nil {
+				fmt.Printf("Hook[%q] failed to retrieve Resource {Name: %q, Path: %q}\n", manifest.HookName, manifest.Name, manifest.Path)
+				continue
+			}
+
+			trees.NewAttr("gu-resource", "true").Apply(markup)
+			trees.NewAttr("gu-resource-view", v.uuid).Apply(markup)
+			trees.NewAttr("gu-resource-from", manifest.Path).Apply(markup)
+			trees.NewAttr("gu-resource-name", manifest.Name).Apply(markup)
+			trees.NewAttr("gu-resource-id", manifest.ID).Apply(markup)
+
+			if toHead {
+				def.head = append(def.head, markup)
+				head = append(head, markup)
+				continue
+			}
+
+			def.body = append(def.body, markup)
+			body = append(body, markup)
 		}
 	}
 
@@ -695,15 +697,14 @@ func (v *NView) Component(attr ComponentAttr) {
 
 	appServices := Services{
 		AppUUID:       v.appUUID,
-		Driver:        v.driver,
-		Router:        c.Router,
+		Location:      v.location,
 		Mounted:       c.Mounted,
 		Updated:       c.Updated,
-		Unmounted:     c.Unmounted,
 		Rendered:      c.Rendered,
+		Unmounted:     c.Unmounted,
+		ViewRouter:    c.Router,
+		Router:        v.root.router,
 		Notifications: v.notifications,
-		// Fetch:         v.fetch,
-		// Cache:         v.cache,
 	}
 
 	// Transform the base argument into the acceptable
@@ -848,7 +849,8 @@ func (v *NView) Component(attr ComponentAttr) {
 	}
 
 	// Send call for view update.
-	v.driver.Update(v.root, v)
+	// v.driver.Update(v.root, v)
+	v.Publish()
 }
 
 // Component defines a struct which

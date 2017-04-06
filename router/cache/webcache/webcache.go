@@ -9,33 +9,9 @@ import (
 	"github.com/gu-io/gu/router/cache"
 )
 
-// API creates a structure which exposes the new Cache API for
-// browsers found in webkit browsers. https://developer.mozilla.org/en-US/docs/Web/API/Cache.
-type API struct {
-	*js.Object
-}
-
 // ErrInvalidState is returned when the cache api does not exists in the global
 // context.
 var ErrInvalidState = errors.New("Cache Not Found")
-
-// New returns a new instance of the webcache.
-func New() (*API, error) {
-
-	if js.Global == nil || js.Global == js.Undefined {
-		return nil, ErrInvalidState
-	}
-
-	caches := js.Global.Get("caches")
-
-	if caches == nil || caches == js.Undefined {
-		return nil, ErrInvalidState
-	}
-
-	var wc API
-	wc.Object = caches
-	return &wc, nil
-}
 
 // NewCacheResponse defines the response returned when a cache is request from the
 // API.
@@ -47,13 +23,20 @@ type newCacheResponse struct {
 // ErrCacheNotFound defines the error returned when the cached desired is not found.
 var ErrCacheNotFound = errors.New("Cache Not Found")
 
-// Open retrieves a giving cache from the web cache API backend.
-func (wc *API) Open(cacheName string) (*CacheAPI, error) {
-	if wc.Object == nil || wc.Object == js.Undefined {
+// New returns a new instance of the CacheAPI using the browsers cache API.
+// API found in webkit browsers. https://developer.mozilla.org/en-US/docs/Web/API/Cache.
+func New(cacheName string) (*CacheAPI, error) {
+	if js.Global == nil || js.Global == js.Undefined {
 		return nil, ErrInvalidState
 	}
 
-	openReq := wc.Call("open", cacheName)
+	caches := js.Global.Get("caches")
+
+	if caches == nil || caches == js.Undefined {
+		return nil, ErrInvalidState
+	}
+
+	openReq := caches.Call("open", cacheName)
 	if openReq == js.Undefined || openReq == nil {
 		return nil, ErrCacheNotFound
 	}
@@ -74,6 +57,8 @@ func (wc *API) Open(cacheName string) (*CacheAPI, error) {
 	opVal = <-res
 	return opVal.Cache, opVal.Error
 }
+
+//================================================================================
 
 // CacheAPI defines individual cache item received from a call to the internal cache API.
 type CacheAPI struct {

@@ -31,7 +31,8 @@ func main() {
 
 	var server EmptyServer
 
-	router := router.NewRouter(server)
+	cache, err := memorycache.New("greeter")
+	router := router.NewRouter(server, cache)
 
 	app := gu.App(gu.AppAttr{
 		Name:              "{{Name}}",

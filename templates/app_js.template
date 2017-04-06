@@ -34,7 +34,14 @@ func main() {
 
 	var server EmptyServer
 
-	router := router.NewRouter(server)
+	var cache router.Cache
+
+	cache, err := webcache.New("{{Name}}")
+	if err != nil {
+		cache = localcache.New("{{Name}}")
+	}
+
+	router := router.NewRouter(server, cache)
 
 	app := gu.App(gu.AppAttr{
 		Name:              "{{Name}}",

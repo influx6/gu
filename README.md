@@ -15,7 +15,7 @@ go install github.com/gu-io/gu/...
 Example
 -------
 
-[![GopherJS Example](./media/greeter.png)\]
+[GopherJS Example](./media/greeter.png)
 
 The example above can be found in the [Example Repo](https://github.com/gu-io/examples/tree/master/greeter).
 

@@ -1,7 +1,6 @@
 package gu
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"strings"
@@ -20,9 +19,6 @@ type Driver interface {
 	// Method to subscribe to ready state for the driver.
 	OnReady(func())
 
-	// Ready is called to initialize the driver and begin operation.
-	Ready()
-
 	// Name of the driver.
 	Name() string
 
@@ -32,20 +28,11 @@ type Driver interface {
 	// Current Location of the driver path.
 	Location() router.PushEvent
 
-	// OnRoute registers for route change notifications to react accordingly.
-	// This does a totally re-write of the whole display.
-	OnRoute(*NApp)
-
 	// Render app and it's content.
 	Render(*NApp)
 
 	// Update app's view and it's target content.
 	Update(*NApp, *NView)
-
-	// Services returns a new resource fetcher which can be used to retrieve Resources.
-	// Fetcher requires the cacheName and a boolean indicating if it should intercept
-	// all requests for resources.
-	Services(cacheName string, interceptRequests bool) (shell.Fetch, shell.Cache)
 }
 
 // Resource defines any set of rendering links, scripts, styles needed by a view.
@@ -58,25 +45,11 @@ type Resource struct {
 // Mode defines a type to represent the mode which the library works under.
 type Mode int
 
-const (
-	// ProductionMode defines production mode for which defines how the context
-	// which it behaves as regards certain features.
-	ProductionMode Mode = iota
-
-	// DevelopmentMode defines production mode for which defines how the context
-	// which it behaves as regards certain features.
-	DevelopmentMode
-)
-
 // AppAttr defines a struct for
 type AppAttr struct {
-	Mode              Mode   `json:"mode"`
-	Name              string `json:"name"`
-	Title             string `json:"title"`
-	Manifests         string `json:"manifests"`
-	EnableManifest    bool   `json:"ignore_manifest"`
-	InterceptRequests bool   `json:"intercept_requests"`
-	Driver            Driver `json:"-"`
+	Name      string              `json:"name"`
+	Title     string              `json:"title"`
+	Manifests []shell.AppManifest `json:"manifests, omitempty"`
 }
 
 // NApp defines a struct which encapsulates all the core view management functions
@@ -85,8 +58,6 @@ type NApp struct {
 	uuid          string
 	attr          AppAttr
 	driver        Driver
-	cache         shell.Cache
-	fetch         shell.Fetch
 	notifications *notifications.AppNotification
 	active        bool
 
@@ -104,78 +75,56 @@ func App(attr AppAttr) *NApp {
 	var app NApp
 	app.attr = attr
 	app.uuid = NewKey()
-	app.driver = attr.Driver
 
 	// Add local notification channel for this giving app.
 	app.notifications = notifications.New(app.uuid)
 
-	fetch, cache := attr.Driver.Services(attr.Name, attr.InterceptRequests)
-	app.cache = cache
-	app.fetch = fetch
+	// Sort Manifests file accordingly.
+	if attr.Manifests != nil {
 
-	// If we are in development mode empty the cache and reset for new use.
-	if attr.Mode == DevelopmentMode {
-		if err := app.cache.Empty(); err != nil {
-			fmt.Printf("Failed to clear internal cache for %q in development mode: %q\n", app.attr.Name, err.Error())
-		}
-	}
+		for _, mani := range attr.Manifests {
+			// for _, attr := range mani.Manifests {
+			// 	// if attr.IsGlobal {
+			// 	// 	shell.RegisterManifest(attr)
+			// 	// }
+			// }
 
-	// Attempt to retrieve a manifest.json from the backend.
-	if attr.EnableManifest && attr.Manifests != "" {
-		var appm []shell.AppManifest
+			if mani.GlobalScope {
+				app.globalResources = append(app.globalResources, Resource{
+					Manifest: mani,
+				})
 
-		if _, response, err := app.fetch.Get(app.attr.Manifests, shell.DefaultStrategy); err == nil {
-			fmt.Println(fmt.Sprintf("Failed to retrieve `manifests.json` due to network error: %q", err.Error()))
-		} else {
-			if err := json.Unmarshal(response.Body, &appm); err != nil {
-				fmt.Println(fmt.Sprintf("Failed to load shell.AppManifest, resource loading is unavailable: %q", err.Error()))
-			} else {
-
-				for _, mani := range appm {
-					for _, attr := range mani.Manifests {
-						if attr.IsGlobal {
-							shell.RegisterManifest(attr)
-						}
-					}
-
-					if mani.GlobalScope {
-						app.globalResources = append(app.globalResources, Resource{
-							Manifest: mani,
-						})
-
-						continue
-					}
-
-					app.local = append(app.local, mani)
-				}
+				continue
 			}
+
+			app.local = append(app.local, mani)
 		}
 	}
 
-	app.driver.OnReady(func() {
-		fmt.Printf("Running App: %q\n", app.attr.Name)
-		fmt.Printf("Running App Title: %q\n", app.attr.Name)
-
-		app.active = false
-		app.ActivateRoute(app.driver.Location())
-
-		app.driver.Render(&app)
-		app.active = true
-
-		fmt.Printf("Ending App Run: %q\n", app.attr.Name)
-	})
+	// app.driver.OnReady(func() {
+	// 	fmt.Printf("Running App: %q\n", app.attr.Name)
+	// 	fmt.Printf("Running App Title: %q\n", app.attr.Name)
+	//
+	// 	app.active = false
+	// 	app.ActivateRoute(app.driver.Location())
+	//
+	// 	app.driver.Render(&app)
+	// 	app.active = true
+	//
+	// 	fmt.Printf("Ending App Run: %q\n", app.attr.Name)
+	// })
 
 	app.notifications.Subscribe(func(directive router.PushDirectiveEvent) {
-		if !app.active {
+		if !app.active || app.driver == nil {
 			return
 		}
 
 		app.driver.Navigate(directive)
 	})
 
-	app.driver.OnRoute(&app)
+	// app.driver.OnRoute(&app)
 
-	app.driver.Ready()
+	// app.driver.Ready()
 	return &app
 }
 
@@ -373,33 +322,33 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 				continue
 			}
 
-			hook, err := shell.Get(manifest.HookName)
-			if err != nil {
-				fmt.Printf("Hook[%q] does not exists: Resource[%q] unable to install\n", manifest.HookName, manifest.Name)
-				continue
-			}
+			// hook, err := shell.Get(manifest.HookName)
+			// if err != nil {
+			// 	fmt.Printf("Hook[%q] does not exists: Resource[%q] unable to install\n", manifest.HookName, manifest.Name)
+			// 	continue
+			// }
 
-			markup, toHead, err := hook.Fetch(app.fetch, manifest)
-			if err != nil {
-				fmt.Printf("Hook[%q] failed to retrieve Resource {Name: %q, Path: %q}\n", manifest.HookName, manifest.Name, manifest.Path)
-				continue
-			}
+			// markup, toHead, err := hook.Fetch(app.fetch, manifest)
+			// if err != nil {
+			// 	fmt.Printf("Hook[%q] failed to retrieve Resource {Name: %q, Path: %q}\n", manifest.HookName, manifest.Name, manifest.Path)
+			// 	continue
+			// }
 
-			trees.NewAttr("gu-resource", "true").Apply(markup)
-			trees.NewAttr("gu-resource-view", app.uuid).Apply(markup)
-			trees.NewAttr("gu-resource-from", manifest.Path).Apply(markup)
-			trees.NewAttr("gu-resource-name", manifest.Name).Apply(markup)
-			trees.NewAttr("gu-resource-id", manifest.ID).Apply(markup)
-			trees.NewAttr("gu-resource-app-id", app.uuid).Apply(markup)
+			// trees.NewAttr("gu-resource", "true").Apply(markup)
+			// trees.NewAttr("gu-resource-view", app.uuid).Apply(markup)
+			// trees.NewAttr("gu-resource-from", manifest.Path).Apply(markup)
+			// trees.NewAttr("gu-resource-name", manifest.Name).Apply(markup)
+			// trees.NewAttr("gu-resource-id", manifest.ID).Apply(markup)
+			// trees.NewAttr("gu-resource-app-id", app.uuid).Apply(markup)
 
-			if toHead {
-				def.head = append(def.head, markup)
-				head = append(head, markup)
-				continue
-			}
-
-			def.body = append(def.body, markup)
-			body = append(body, markup)
+			// if toHead {
+			// 	def.head = append(def.head, markup)
+			// 	head = append(head, markup)
+			// 	continue
+			// }
+			//
+			// def.body = append(def.body, markup)
+			// body = append(body, markup)
 		}
 	}
 
@@ -455,8 +404,8 @@ func (app *NApp) View(attr ViewAttr) *NView {
 	vw.appUUID = app.uuid
 
 	vw.router = router.New(attr.Route)
-	vw.cache = app.cache
-	vw.fetch = app.fetch
+	// vw.cache = app.cache
+	// vw.fetch = app.fetch
 	vw.local = app.local
 
 	vw.React(func() {
@@ -492,12 +441,12 @@ type RenderableData struct {
 // view.
 type NView struct {
 	Reactive
-	root          *NApp
-	uuid          string
-	appUUID       string
-	active        bool
-	cache         shell.Cache
-	fetch         shell.Fetch
+	root    *NApp
+	uuid    string
+	appUUID string
+	active  bool
+	// cache         shell.Cache
+	// fetch         shell.Fetch
 	router        router.Resolver
 	driver        Driver
 	attr          ViewAttr
@@ -629,32 +578,32 @@ func (v *NView) Resources() ([]*trees.Markup, []*trees.Markup) {
 				continue
 			}
 
-			hook, err := shell.Get(manifest.HookName)
-			if err != nil {
-				fmt.Printf("Hook[%q] does not exists: Resource[%q] unable to install\n", manifest.HookName, manifest.Name)
-				continue
-			}
-
-			markup, toHead, err := hook.Fetch(v.fetch, manifest)
-			if err != nil {
-				fmt.Printf("Hook[%q] failed to retrieve Resource {Name: %q, Path: %q}\n", manifest.HookName, manifest.Name, manifest.Path)
-				continue
-			}
-
-			trees.NewAttr("gu-resource", "true").Apply(markup)
-			trees.NewAttr("gu-resource-view", v.uuid).Apply(markup)
-			trees.NewAttr("gu-resource-from", manifest.Path).Apply(markup)
-			trees.NewAttr("gu-resource-name", manifest.Name).Apply(markup)
-			trees.NewAttr("gu-resource-id", manifest.ID).Apply(markup)
-
-			if toHead {
-				def.head = append(def.head, markup)
-				head = append(head, markup)
-				continue
-			}
-
-			def.body = append(def.body, markup)
-			body = append(body, markup)
+			// hook, err := shell.Get(manifest.HookName)
+			// if err != nil {
+			// 	fmt.Printf("Hook[%q] does not exists: Resource[%q] unable to install\n", manifest.HookName, manifest.Name)
+			// 	continue
+			// }
+			//
+			// markup, toHead, err := hook.Fetch(v.fetch, manifest)
+			// if err != nil {
+			// 	fmt.Printf("Hook[%q] failed to retrieve Resource {Name: %q, Path: %q}\n", manifest.HookName, manifest.Name, manifest.Path)
+			// 	continue
+			// }
+			//
+			// trees.NewAttr("gu-resource", "true").Apply(markup)
+			// trees.NewAttr("gu-resource-view", v.uuid).Apply(markup)
+			// trees.NewAttr("gu-resource-from", manifest.Path).Apply(markup)
+			// trees.NewAttr("gu-resource-name", manifest.Name).Apply(markup)
+			// trees.NewAttr("gu-resource-id", manifest.ID).Apply(markup)
+			//
+			// if toHead {
+			// 	def.head = append(def.head, markup)
+			// 	head = append(head, markup)
+			// 	continue
+			// }
+			//
+			// def.body = append(def.body, markup)
+			// body = append(body, markup)
 		}
 	}
 
@@ -744,23 +693,25 @@ func (v *NView) Component(attr ComponentAttr) {
 		attr.Tag = "component-element"
 	}
 
+	appServices := Services{
+		AppUUID:       v.appUUID,
+		Driver:        v.driver,
+		Router:        c.Router,
+		Mounted:       c.Mounted,
+		Updated:       c.Updated,
+		Unmounted:     c.Unmounted,
+		Rendered:      c.Rendered,
+		Notifications: v.notifications,
+		// Fetch:         v.fetch,
+		// Cache:         v.cache,
+	}
+
 	// Transform the base argument into the acceptable
 	// format for the object.
 	{
 		switch mo := attr.Base.(type) {
 		case func(Services) *trees.Markup:
-			static := Static(mo(Services{
-				AppUUID:       v.appUUID,
-				Driver:        v.driver,
-				Fetch:         v.fetch,
-				Cache:         v.cache,
-				Router:        c.Router,
-				Mounted:       c.Mounted,
-				Updated:       c.Updated,
-				Unmounted:     c.Unmounted,
-				Rendered:      c.Rendered,
-				Notifications: v.notifications,
-			}))
+			static := Static(mo(appServices))
 
 			static.Morph = true
 			c.Rendering = static
@@ -795,18 +746,7 @@ func (v *NView) Component(attr ComponentAttr) {
 
 		case Renderable:
 			if service, ok := mo.(RegisterService); ok {
-				service.RegisterService(Services{
-					AppUUID:       v.appUUID,
-					Driver:        v.driver,
-					Fetch:         v.fetch,
-					Cache:         v.cache,
-					Router:        c.Router,
-					Mounted:       c.Mounted,
-					Updated:       c.Updated,
-					Unmounted:     c.Unmounted,
-					Rendered:      c.Rendered,
-					Notifications: v.notifications,
-				})
+				service.RegisterService(appServices)
 			}
 
 			if renderField, _, err := reflection.StructAndEmbeddedTypeNames(mo); err == nil {
@@ -820,18 +760,7 @@ func (v *NView) Component(attr ComponentAttr) {
 			break
 
 		case func(Services) Renderable:
-			rc := mo(Services{
-				AppUUID:       v.appUUID,
-				Driver:        v.driver,
-				Fetch:         v.fetch,
-				Cache:         v.cache,
-				Router:        c.Router,
-				Mounted:       c.Mounted,
-				Updated:       c.Updated,
-				Unmounted:     c.Unmounted,
-				Rendered:      c.Rendered,
-				Notifications: v.notifications,
-			})
+			rc := mo(appServices)
 
 			if renderField, _, err := reflection.StructAndEmbeddedTypeNames(rc); err == nil {
 				v.renderingData = append(v.renderingData, RenderableData{
@@ -847,18 +776,7 @@ func (v *NView) Component(attr ComponentAttr) {
 			rc := mo()
 
 			if service, ok := rc.(RegisterService); ok {
-				service.RegisterService(Services{
-					AppUUID:       v.appUUID,
-					Driver:        v.driver,
-					Fetch:         v.fetch,
-					Cache:         v.cache,
-					Router:        c.Router,
-					Mounted:       c.Mounted,
-					Updated:       c.Updated,
-					Unmounted:     c.Unmounted,
-					Rendered:      c.Rendered,
-					Notifications: v.notifications,
-				})
+				service.RegisterService(appServices)
 			}
 
 			if renderField, _, err := reflection.StructAndEmbeddedTypeNames(rc); err == nil {

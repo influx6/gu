@@ -23,6 +23,7 @@ var (
 
 	namebytes       = []byte("{{Name}}")
 	pkgbytes        = []byte("{{PKG}}")
+	sourcebytes     = []byte("{{SOURCE}}")
 	goPathbytes     = []byte("{{GOPATH}}")
 	pkgContentbytes = []byte("{{PKG_CONTENT}}")
 	pkgNamebytes    = []byte("{{PKGNAME}}")
@@ -391,13 +392,19 @@ func initCommands() {
 				return nil
 			}
 
-			gopath := os.Getenv("GOPATH")
-			gup := filepath.Join(gopath, "src", gupath)
-
 			cdir, err := os.Getwd()
 			if err != nil {
 				return err
 			}
+
+			gopath := os.Getenv("GOPATH")
+			gupsrc := filepath.Join(gopath, "src")
+			gup := filepath.Join(gupsrc, gupath)
+
+			// packagePath, err := filepath.Rel(gup, cdir)
+			// if err != nil {
+			// 	return err
+			// }
 
 			indir := ctx.String("dir")
 
@@ -417,6 +424,13 @@ func initCommands() {
 
 			driver := ctx.String("driver")
 			appDir := filepath.Join(indir, packageName)
+
+			// appPackagePath := filepath.Join(packagePath, packageName)
+
+			appPackagePath, err := filepath.Rel(gupsrc, appDir)
+			if err != nil {
+				return err
+			}
 
 			fmt.Printf("- Creating new project: %q\n", packageName)
 			fmt.Printf("- Using driver template: %q\n", driver)
@@ -451,6 +465,32 @@ func initCommands() {
 
 			fmt.Printf("- Adding project file: %q\n", "components/components.go")
 
+			manifestDirPath := filepath.Join(appDir, "manifests")
+			if err = os.Mkdir(manifestDirPath, 0777); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project directory: %q\n", filepath.Base(manifestDirPath))
+
+			manifestGendata, err := ioutil.ReadFile(filepath.Join(gup, "templates/manifest-generate.template"))
+			if err != nil {
+				return err
+			}
+
+			manifestSource, err := ioutil.ReadFile(filepath.Join(gup, "templates/manifests.template"))
+			if err != nil {
+				return err
+			}
+
+			manifestSource = []byte(fmt.Sprintf("%q", manifestSource))
+			manifestGendata = bytes.Replace(manifestGendata, sourcebytes, manifestSource, 1)
+
+			if err := writeFile(filepath.Join(manifestDirPath, "generate.go"), manifestGendata); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(manifestDirPath), "generate.go"))
+
 			// Generate files for the project.
 			switch driver {
 			case "js":
@@ -465,6 +505,7 @@ func initCommands() {
 				}
 
 				appdata = bytes.Replace(appdata, goPathbytes, []byte(gopath), -1)
+				appdata = bytes.Replace(appdata, pkgbytes, []byte(appPackagePath), -1)
 				appdata = bytes.Replace(appdata, namebytes, []byte(packageName), -1)
 				apphtmldata = bytes.Replace(apphtmldata, namebytes, []byte(packageName), -1)
 
@@ -488,6 +529,7 @@ func initCommands() {
 				}
 
 				data = bytes.Replace(data, namebytes, []byte(packageName), -1)
+				data = bytes.Replace(data, pkgbytes, []byte(appPackagePath), -1)
 
 				if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
 					return err
@@ -503,6 +545,7 @@ func initCommands() {
 				}
 
 				data = bytes.Replace(data, namebytes, []byte(packageName), -1)
+				data = bytes.Replace(data, pkgbytes, []byte(appPackagePath), -1)
 
 				if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
 					return err
@@ -518,6 +561,7 @@ func initCommands() {
 				}
 
 				data = bytes.Replace(data, namebytes, []byte(packageName), -1)
+				data = bytes.Replace(data, pkgbytes, []byte(appPackagePath), -1)
 
 				if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
 					return err
@@ -533,6 +577,7 @@ func initCommands() {
 				}
 
 				data = bytes.Replace(data, namebytes, []byte(packageName), -1)
+				data = bytes.Replace(data, pkgbytes, []byte(appPackagePath), -1)
 
 				if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
 					return err
@@ -551,122 +596,8 @@ func initCommands() {
 	})
 
 	commands = append(commands, &cli.Command{
-		Name:        "gen-vfs",
-		Usage:       "gu gen-vfs <PackageName>",
-		Description: "Generate-VFS generates a new package which loads the resources loaded from the package, creating a new package which can be loaded and used to virtually serve the resources through a virtual filesystem",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "input-dir",
-				Aliases: []string{"indir"},
-				Usage:   "in-dir=path-to-dir-to-scan",
-			},
-			&cli.StringFlag{
-				Name:    "output-dir",
-				Aliases: []string{"outdir"},
-				Usage:   "out-dir=path-to-store-manifest-file",
-			},
-			&cli.StringFlag{
-				Name:    "packageName",
-				Aliases: []string{"pkg"},
-			},
-		},
-		Action: func(ctx *cli.Context) error {
-			args := ctx.Args()
-			if args.Len() == 0 {
-				return nil
-			}
-			cdir, err := os.Getwd()
-			if err != nil {
-				return err
-			}
-
-			indir := ctx.String("input-dir")
-			outdir := ctx.String("output-dir")
-
-			if indir != "" {
-				if strings.HasPrefix(indir, ".") || !strings.HasPrefix(indir, "/") {
-					indir = filepath.Join(cdir, indir)
-				}
-			} else {
-				indir = cdir
-			}
-
-			if outdir != "" {
-				if strings.HasPrefix(outdir, ".") || !strings.HasPrefix(outdir, "/") {
-					outdir = filepath.Join(cdir, outdir)
-				}
-			} else {
-				outdir = cdir
-			}
-
-			packageName := ctx.String("packageName")
-			if packageName == "" {
-				packageName = defaultName
-			}
-
-			res, err := parse.ShellResources(indir)
-			if err != nil {
-				return err
-			}
-
-			var bu bytes.Buffer
-			var manifests []*shell.AppManifest
-
-			for _, rs := range res {
-				manifest, merr := rs.GenManifests()
-				if merr != nil {
-					return merr
-				}
-
-				manifests = append(manifests, manifest)
-
-				for _, attr := range manifest.Manifests {
-					if attr.Content != "" {
-						bu.WriteString(generateAddFile(attr.Name, []byte(attr.Content)))
-					}
-				}
-			}
-
-			manifestJSON, err := json.MarshalIndent(manifests, "", "\t")
-			if err != nil {
-				return err
-			}
-
-			if bytes.Equal(manifestJSON, []byte("nil")) {
-				manifestJSON = []byte("{}")
-			}
-
-			bu.WriteString(generateAddFile("manifest.json", manifestJSON))
-
-			contents := fmt.Sprintf(aferoTemplate, packageName, packageName, bu.String())
-
-			if merr := os.MkdirAll(filepath.Join(outdir, packageName), 0755); merr != nil {
-				return merr
-			}
-
-			manifestFile, err := os.Create(filepath.Join(outdir, packageName, "manifest.go"))
-			if err != nil {
-				return err
-			}
-
-			defer manifestFile.Close()
-
-			total, err := manifestFile.Write([]byte(contents))
-			if err != nil {
-				return err
-			}
-
-			if total != len(contents) {
-				return errors.New("Data written is incomplete")
-			}
-
-			return nil
-		},
-	})
-
-	commands = append(commands, &cli.Command{
-		Name:        "gen-manifest",
-		Usage:       "gu gen-manifest",
+		Name:        "manifests",
+		Usage:       "gu manifests",
 		Description: "Generate a manifest.json file that contains all resources from meta-comments within the package to be embedded",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -726,7 +657,7 @@ func initCommands() {
 				return err
 			}
 
-			if bytes.Equal(manifestJSON, []byte("nil")) {
+			if bytes.Equal(manifestJSON, []byte("null")) {
 				manifestJSON = []byte("{}")
 			}
 

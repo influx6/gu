@@ -9,7 +9,6 @@ import (
 
 	"github.com/gu-io/gu/notifications"
 	"github.com/gu-io/gu/router"
-	"github.com/gu-io/gu/shell"
 	"github.com/gu-io/gu/trees"
 )
 
@@ -46,13 +45,13 @@ type Services struct {
 	AppUUID       string
 	Driver        Driver
 	Router        router.Resolver
-	Fetch         shell.Fetch
-	Cache         shell.Cache
 	Mounted       Subscriptions
 	Rendered      Subscriptions
 	Updated       Subscriptions
 	Unmounted     Subscriptions
 	Notifications *notifications.AppNotification
+	// Fetch         shell.Fetch
+	// Cache         shell.Cache
 }
 
 // RegisterService provides an interface which registers the provided fetcher,
@@ -81,19 +80,6 @@ type MarkupRenderer interface {
 // from.
 type Properties interface {
 	Get(string) interface{}
-}
-
-// Fetchable exposes a interface which recieves a shell.Fetch and shell.Cache instances
-// through a method.
-type Fetchable interface {
-	UseFetch(shell.Fetch, shell.Cache)
-}
-
-// FetchableRenderer defines a Renderer which expects to recieve instances of
-// the shell.Fetch and shell.Cache interface through the UseFetch method.
-type FetchableRenderer interface {
-	Fetchable
-	Renderable
 }
 
 // Reactor defines an interface for functions subscribing for

@@ -60,7 +60,6 @@ func (r *Resource) GenManifests() (*shell.AppManifest, error) {
 			manifest.Remote = true
 		}
 
-		manifest.ID = appm.ID
 		appm.Manifests = append(appm.Manifests, manifest)
 	}
 

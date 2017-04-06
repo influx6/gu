@@ -1,5 +1,6 @@
 // Package main defines the main method which creates the qt window and loads the app.
 
+//go:generate go generate ./...
 //go:generate qtdeploy build desktop ./
 
 // Code is generated automatically by the gu library. Change with understanding ;).
@@ -9,6 +10,7 @@ package main
 import (
 	"github.com/gu-io/gu"
 	"github.com/gu-io/qt"
+	"{{PKG}}/manifests"
 )
 
 // manifestURL defines the URL where the manifest
@@ -16,7 +18,7 @@ import (
 var manifestURL = "assets/manifests.json"
 
 func registerViews(app *gu.NApp){
-	
+
 	app.View(gu.ViewAttr{
 		Name:  "View.Index",
 		Route: "/*",
@@ -38,9 +40,8 @@ func main() {
 
 	app := gu.App(gu.AppAttr{
 		Name:              "{{Name}}",
-		Mode:              gu.DevelopmentMode,
 		Title:             "{{Name}} Gu App",
-		Manifests: 			manifestURL,
+		Manifests:         manifests.Manifests,
 		Driver: 			driver,
 	})
 

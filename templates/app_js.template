@@ -1,5 +1,6 @@
 // Package main generates the gopherjs output for the app into the assets directory of this app.
 
+//go:generate go generate ./...
 //go:generate go get github.com/gopherjs/gopherjs
 //go generate go install {{GOPATH}}/github.com/gopherjs/gopherjs/...
 //go:generate gopherjs build -o assets/{{Name}}.js
@@ -9,16 +10,15 @@ package main
 import (
 	"github.com/gu-io/gu"
 	"github.com/gu-io/gopherjs"
+	"{{PKG}}/manifests"
 )
 
 // AppSettings defines the attributes for the app for using the GopherJS
 // driver.
 var AppSettings = gu.AppAttr{
-	InterceptRequests: true,
 	Name:              "{{Name}}",
-	Mode:              gu.DevelopmentMode,
 	Title:             "{{Name}} Gu App",
-	Manifests:         "assets/manifests.json",
+	Manifests:         manifests.Manifests,
 	Driver:            gopherjs.NewJSDriver(),
 }
 

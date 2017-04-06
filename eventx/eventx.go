@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gu-io/gu/notifications/mque"
-	"github.com/gu-io/gu/shell"
+	"github.com/gu-io/gu/router/cache"
 )
 
 // Element defines a string type which contains the markup of the giving element.
@@ -439,7 +439,7 @@ type DeviceProximityEvent struct {
 type FetchEvent struct {
 	Core     interface{} `json:"-"`
 	IsReload bool
-	Request  shell.WebRequest
+	Request  cache.Request
 	ClientID string
 }
 

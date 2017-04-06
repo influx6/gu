@@ -7,21 +7,15 @@ import (
 
 // NOOPDriver provides a concrete implementation of the Gu.Driver interface.
 type NOOPDriver struct {
-	readyHandlers []func()
-	started       bool
+	app     *gu.NApp
+	started bool
 }
 
 // NewNOOPDriver returns a new instance of a js driver.
-func NewNOOPDriver() *NOOPDriver {
+func NewNOOPDriver(app *gu.NApp) *NOOPDriver {
 	var driver NOOPDriver
+	driver.app = app
 	return &driver
-}
-
-// Ready is called to intialize the driver and load the page.
-func (driver *NOOPDriver) Ready() {
-	for _, ready := range driver.readyHandlers {
-		ready()
-	}
 }
 
 // Name returns the name of the driver.
@@ -29,20 +23,13 @@ func (driver *NOOPDriver) Name() string {
 	return "NO-OP Driver"
 }
 
-// OnReady registers the giving handle function to be called when the giving
-// driver is ready and loaded.
-func (driver *NOOPDriver) OnReady(handle func()) {
-	driver.readyHandlers = append(driver.readyHandlers, handle)
-}
-
 // Location returns the current location of the browser.
 func (driver *NOOPDriver) Location() router.PushEvent {
 	return router.PushEvent{
-		// Host:   host,
-		// Path:   path,
-		// Hash:   hash,
-		// Rem:    hash,
-		// From:   location,
+		Host:   "noop.com",
+		Path:   "/",
+		Hash:   "#",
+		From:   "/#",
 		Params: make(map[string]string),
 	}
 }
@@ -50,20 +37,14 @@ func (driver *NOOPDriver) Location() router.PushEvent {
 // Navigate takes the provided route and navigates the rendering system to the
 // desired page.
 func (driver *NOOPDriver) Navigate(route router.PushDirectiveEvent) {
-	// SetLocationByPushEvent(route)
-}
+	var ps router.PushEvent
 
-// OnRoute registers the NApp instance for route changes and re-rendering.
-func (driver *NOOPDriver) OnRoute(app *gu.NApp) {
-}
+	ps, err := router.NewPushEvent(route.To, true)
+	if err != nil {
+		ps = router.PushEvent{
+			Path: route.To,
+		}
+	}
 
-// Render issues a clean rendering of all content clearing out the current content
-// of the browser to the one provided by the appliation.
-func (driver *NOOPDriver) Render(app *gu.NApp) {
-	driver.started = true
-}
-
-// Update updates a giving view portion of a giving App within the designated
-// rendering system(browser) provided by the driver.
-func (driver *NOOPDriver) Update(app *gu.NApp, view *gu.NView) {
+	driver.app.ActivateRoute(ps)
 }

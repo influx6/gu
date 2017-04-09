@@ -174,19 +174,29 @@ func initCommands() {
 	})
 
 	subcommands = append(subcommands, &cli.Command{
-		Name:        "new",
-		Usage:       "gu new <component-name>",
-		Description: "Generates a new boiler code component file which can be set to be in it's own package or part of the component package ",
+		Name:  "new",
+		Usage: "gu new <component-name>",
+		Description: `Generates a new boiler code component file which can be set to be in it's 
+		own package or part of the current directory.
+
+		Options:
+			- flat: This option will indicate that only a .go file of that component is to be generated
+				     in the app's components package.
+
+			- base:	This option will force that component file or package to be generated right in the 
+					directory where the command was called and not in the components package.
+		
+		`,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name:    "base",
-				Aliases: []string{"bs"},
+				Name:    "base-of-components-package",
+				Aliases: []string{"base"},
 				Usage:   "base=true",
 				Value:   true,
 			},
 			&cli.BoolFlag{
-				Name:    "flat",
-				Aliases: []string{"fl"},
+				Name:    "flat-file",
+				Aliases: []string{"flat"},
 				Usage:   "flat=true",
 				Value:   false,
 			},
@@ -207,8 +217,8 @@ func initCommands() {
 				return err
 			}
 
-			flat := ctx.Bool("flat")
-			base := ctx.Bool("base")
+			flat := ctx.Bool("flat-file")
+			base := ctx.Bool("base-of-components-package")
 
 			gopath := os.Getenv("GOPATH")
 			gup := filepath.Join(gopath, "src")
@@ -283,7 +293,12 @@ func initCommands() {
 
 				componentsPackagePath, coerr := findLower(packagePath, "components")
 				if coerr != nil {
-					return coerr
+					possiblePath := filepath.Join(packagePath, "components")
+					if _, err := os.Stat(possiblePath); err != nil && err == os.ErrNotExist {
+						return fmt.Errorf("Error: %+q not found in %q", coerr, packagePath)
+					}
+
+					componentsPackagePath = possiblePath
 				}
 
 				cpdata = bytes.Replace(cpdata, pkgNamebytes, []byte(baseDir), -1)

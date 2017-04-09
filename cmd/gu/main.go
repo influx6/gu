@@ -491,7 +491,7 @@ func initCommands() {
 
 			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(manifestDirPath), "generate.go"))
 
-			plainPKGData, err := ioutil.ReadFile(filepath.Join(gup, "templates/plain_pkg.template"))
+			plainPKGData, err := ioutil.ReadFile(filepath.Join(gup, "templates/plain_generated_pkg.template"))
 			if err != nil {
 				return err
 			}

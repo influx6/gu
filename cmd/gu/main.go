@@ -491,6 +491,19 @@ func initCommands() {
 
 			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(manifestDirPath), "generate.go"))
 
+			plainPKGData, err := ioutil.ReadFile(filepath.Join(gup, "templates/plain_pkg.template"))
+			if err != nil {
+				return err
+			}
+
+			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte(filepath.Base(manifestDirPath)), -1)
+
+			if err := writeFile(filepath.Join(manifestDirPath, "manifests.go"), plainPKGData); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(manifestDirPath), "manifests.go"))
+
 			// Generate files for the project.
 			switch driver {
 			case "nodriver":

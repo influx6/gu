@@ -234,13 +234,12 @@ func (app *NApp) RenderJSON(es interface{}) AppJSON {
 		}
 	}
 
+	tjson.Body = append(tjson.Body, afterBody...)
+
 	script := trees.NewMarkup("script", false)
 	trees.NewAttr("type", "text/javascript").Apply(script)
 	trees.NewText(core.JavascriptDriverCore).Apply(script)
-
-	afterBody = append(afterBody, script.TreeJSON())
-
-	tjson.Body = append(tjson.Body, afterBody...)
+	tjson.BodyResources = append(tjson.BodyResources, script.TreeJSON())
 
 	return tjson
 }

@@ -289,15 +289,15 @@ func (app *NApp) Render(es interface{}) *trees.Markup {
 		toBody = append(toBody, viewBody...)
 	}
 
-	body.AddChild(last.Children()...)
-
-	body.AddChild(toBody...)
-
 	script := trees.NewMarkup("script", false)
 	trees.NewAttr("type", "text/javascript").Apply(script)
 	trees.NewText(core.JavascriptDriverCore).Apply(script)
 
-	script.Apply(body)
+	script.Apply(last)
+
+	body.AddChild(last.Children()...)
+
+	body.AddChild(toBody...)
 
 	// Ensure to have this gc'ed.
 	last = nil

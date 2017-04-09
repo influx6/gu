@@ -756,7 +756,7 @@ func findLowerByStat(root string, path string, dirName string, dirOnly bool) (st
 			return findLower(filepath.Join(path, ".."), dirName)
 		}
 
-		return path, nil
+		return filepath.Join(path, dirName), nil
 	}
 
 	return findLowerByStat(root, filepath.Join(path, ".."), dirName, dirOnly)

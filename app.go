@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"strings"
 
+	"github.com/gu-io/gu/drivers/core"
 	"github.com/gu-io/gu/hooks"
 	"github.com/gu-io/gu/notifications"
 	"github.com/gu-io/gu/router"
@@ -233,6 +234,12 @@ func (app *NApp) RenderJSON(es interface{}) AppJSON {
 		}
 	}
 
+	script := trees.NewMarkup("script", false)
+	trees.NewAttr("type", "text/javascript").Apply(script)
+	trees.NewText(core.JavascriptDriverCore).Apply(script)
+
+	afterBody = append(afterBody, script.TreeJSON())
+
 	tjson.Body = append(tjson.Body, afterBody...)
 
 	return tjson
@@ -285,6 +292,12 @@ func (app *NApp) Render(es interface{}) *trees.Markup {
 	body.AddChild(last.Children()...)
 
 	body.AddChild(toBody...)
+
+	script := trees.NewMarkup("script", false)
+	trees.NewAttr("type", "text/javascript").Apply(script)
+	trees.NewText(core.JavascriptDriverCore).Apply(script)
+
+	script.Apply(body)
 
 	// Ensure to have this gc'ed.
 	last = nil

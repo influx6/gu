@@ -291,14 +291,25 @@ func initCommands() {
 					return cerr
 				}
 
+				// Attempt to follow path down the stack to see if we can match it and
+				// cheat.
 				componentsPackagePath, coerr := findLower(packagePath, "components")
 				if coerr != nil {
-					possiblePath := filepath.Join(packagePath, "components")
-					if _, err := os.Stat(possiblePath); err != nil && err == os.ErrNotExist {
-						return fmt.Errorf("Error: %+q not found in %q", coerr, packagePath)
-					}
 
-					componentsPackagePath = possiblePath
+					// We couldn't cheat, so we follow the hard road and stat down the pipe
+					// by attempting to see if we find a ./components dir down the tree.
+					componentsPackagePath, coerr = findLowerByStat(gup, packagePath, "components", true)
+					if coerr != nil {
+
+						// We are still unable to find it, so just match if we are at the root directory
+						// and we possibly just went stupid.
+						possiblePath := filepath.Join(packagePath, "components")
+						if _, err := os.Stat(possiblePath); err != nil {
+							return fmt.Errorf("Error: %+q not found in %q", coerr, packagePath)
+						}
+
+						componentsPackagePath = possiblePath
+					}
 				}
 
 				cpdata = bytes.Replace(cpdata, pkgNamebytes, []byte(baseDir), -1)
@@ -725,6 +736,30 @@ func initCommands() {
 			return nil
 		},
 	})
+}
+
+// FindLowerByStat searches the path line down until it's roots to find the directory with the giving
+// dirName matching else returns an error.
+func findLowerByStat(root string, path string, dirName string, dirOnly bool) (string, error) {
+	path = filepath.Clean(path)
+
+	if path == "." {
+		return "", errors.New("'" + dirName + "' path not found")
+	}
+
+	// Let's attempt to see if there is a dirName in this path and if it's a
+	// directory.
+	possiblePath := filepath.Join(root, path, dirName)
+	possibleStat, err := os.Stat(possiblePath)
+	if err == nil {
+		if dirOnly && !possibleStat.IsDir() {
+			return findLower(filepath.Join(path, ".."), dirName)
+		}
+
+		return possiblePath, nil
+	}
+
+	return findLowerByStat(root, filepath.Join(path, ".."), dirName, dirOnly)
 }
 
 // Searches the path line down until it's roots to find the directory with the giving

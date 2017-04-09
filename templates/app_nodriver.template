@@ -1,4 +1,5 @@
-// Package {{PKGNAME}} generates the gopherjs output for the app into the assets directory of this app.
+// Package {{PKGNAME}} is an auto-generated package which exposes the Gu.NApp which 
+// can be created to use the constructed views if any. Edit as you see fit.
 
 //go:generate go generate ./components/...
 //go:generate go generate ./manifests/...

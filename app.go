@@ -111,6 +111,20 @@ func App(attr AppAttr) *NApp {
 	return &app
 }
 
+// Navigate sets the giving app location and also sets the location of the
+// NOOPLocation which returns that always.
+func (app *NApp) Navigate(pe router.PushDirectiveEvent) {
+	app.initSanitCheck()
+	app.location.Navigate(pe)
+}
+
+// Location returns the current route. It stores all set routes and returns the
+// last route else returning a
+func (app *NApp) Location() router.PushEvent {
+	app.initSanitCheck()
+	return app.location.Location()
+}
+
 // InitApp sets the Location to be used by the NApp and it's views and components.
 func (app *NApp) InitApp(location Location) {
 	app.location = location
@@ -123,7 +137,8 @@ func (app *NApp) initSanitCheck() {
 		return
 	}
 
-	panic("You are required to set the Location provider first")
+	// Use the NoopLocation since we have not being set.
+	app.location = NewNoopLocation(app)
 }
 
 // Notifications returns the underlying AppNotification pipeline for access.
@@ -404,7 +419,7 @@ func (app *NApp) View(attr ViewAttr) *NView {
 	vw.root = app
 	vw.uuid = NewKey()
 	vw.appUUID = app.uuid
-	vw.location = app.location
+	// vw.location = app.location
 	vw.notifications = app.notifications
 	vw.Reactive = NewReactive()
 	vw.local = app.local
@@ -445,12 +460,12 @@ type RenderableData struct {
 // view.
 type NView struct {
 	Reactive
-	root          *NApp
-	uuid          string
-	appUUID       string
-	active        bool
-	attr          ViewAttr
-	location      Location
+	root    *NApp
+	uuid    string
+	appUUID string
+	active  bool
+	attr    ViewAttr
+	// location      Location
 	router        router.Resolver
 	notifications *notifications.AppNotification
 
@@ -697,7 +712,7 @@ func (v *NView) Component(attr ComponentAttr) {
 
 	appServices := Services{
 		AppUUID:       v.appUUID,
-		Location:      v.location,
+		Location:      v.root,
 		Mounted:       c.Mounted,
 		Updated:       c.Updated,
 		Rendered:      c.Rendered,

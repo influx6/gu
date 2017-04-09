@@ -53,7 +53,7 @@ func NewPushEvent(path string, useHash bool) (PushEvent, error) {
 	if useHash {
 		target = hash
 	} else {
-		target = ups.String()
+		target = ups.Path
 	}
 
 	return PushEvent{

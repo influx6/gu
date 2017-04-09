@@ -60,6 +60,41 @@ type Location interface {
 	Navigate(router.PushDirectiveEvent)
 }
 
+// NoopLocation defines a basic struct which implements the Location interface
+// and is used to stand in for a app when not provided one.
+type NoopLocation struct {
+	app     *NApp
+	current *router.PushEvent
+}
+
+// NewNoopLocation returns a new instance of a NoopLocation.
+func NewNoopLocation(app *NApp) *NoopLocation {
+	return &NoopLocation{
+		app: app,
+	}
+}
+
+// Navigate sets the giving app location and also sets the location of the
+// NOOPLocation which returns that always.
+func (n *NoopLocation) Navigate(pe router.PushDirectiveEvent) {
+	if newLocation, err := router.NewPushEvent(pe.To, true); err == nil {
+		n.app.ActivateRoute(newLocation)
+		n.current = &newLocation
+	}
+}
+
+// Location returns the current route. It stores all set routes and returns the
+// last route else returning a
+func (n *NoopLocation) Location() router.PushEvent {
+	if n.current == nil {
+		if root, err := router.NewPushEvent("/#", true); err == nil {
+			n.current = &root
+		}
+	}
+
+	return *n.current
+}
+
 //==============================================================================
 
 // Identity defines an interface which expoese the identity of a giving object.

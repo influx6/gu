@@ -9,6 +9,7 @@ package {{PKG}}
 import (
 	"encoding/json"
 	"fmt"
+	"errors"
 
 	"github.com/gu-io/gu/shell"
 )
@@ -19,7 +20,7 @@ var Manifests []shell.AppManifest
 
 // Get returns the a shell.AppManifest if it exists with the given name.
 func Get(name string) (shell.AppManifest, error) {
-	for _, manifest := range manifests {
+	for _, manifest := range Manifests {
 		if manifest.Name == name {
 			return manifest, nil
 		}

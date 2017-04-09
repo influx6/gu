@@ -373,7 +373,7 @@ func initCommands() {
 			&cli.StringFlag{
 				Name:    "driver",
 				Aliases: []string{"dri"},
-				Usage:   "driver=js|qt",
+				Usage:   "driver=js|nodriver",
 				Value:   "js",
 			},
 			&cli.StringFlag{
@@ -493,6 +493,23 @@ func initCommands() {
 
 			// Generate files for the project.
 			switch driver {
+			case "nodriver":
+				appdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_nodriver.template"))
+				if err != nil {
+					return err
+				}
+
+				appdata = bytes.Replace(appdata, goPathbytes, []byte(gopath), -1)
+				appdata = bytes.Replace(appdata, pkgbytes, []byte(appPackagePath), -1)
+				appdata = bytes.Replace(appdata, pkgNamebytes, []byte(packageName), -1)
+				appdata = bytes.Replace(appdata, namebytes, []byte(packageName), -1)
+
+				if err := writeFile(filepath.Join(indir, packageName, "app.go"), appdata); err != nil {
+					return err
+				}
+
+				fmt.Printf("- Adding project file: %q\n", "app.go")
+
 			case "js":
 				appdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_js.template"))
 				if err != nil {

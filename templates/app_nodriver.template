@@ -1,0 +1,33 @@
+// Package {{PKGNAME}} generates the gopherjs output for the app into the assets directory of this app.
+
+//go:generate go generate ./components/...
+//go:generate go generate ./manifests/...
+
+package {{PKGNAME}}
+
+import (
+    "net/http"
+	"github.com/gu-io/gu"
+	"github.com/gu-io/gu/router"
+	"github.com/gu-io/gu/router/cache"
+	"{{PKG}}/manifests"
+)
+
+// New returns a new gu.NApp using the provided arguments as needed.
+func New(cache router.Cache, server http.Handler) *gu.NApp {
+	router := router.NewRouter(server, cache)
+
+	app := gu.App(gu.AppAttr{
+		Name:              "{{Name}}",
+		Title:             "{{Name}} Gu App",
+		Manifests:         manifests.Manifests,
+		Router: 		   router,
+	})
+
+	app.View(gu.ViewAttr{
+		Name:  "View.Index",
+        Route: "/*",
+    })
+
+    return app
+}

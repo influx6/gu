@@ -24,6 +24,12 @@ func New{{Name}}() *{{Name}} {
   }
 }
 
+// Apply adds the giving components Render() result to the 
+// provided root.
+func (c {{Name}}) Apply(root *trees.Markup)  {
+	root.AddChild(c.Render())
+}
+
 // Render returns the markup for this {{Name}} component.
 func (c {{Name}}) Render() *trees.Markup {
 	return elems.Div(property.ClassAttr("component"))

@@ -1,7 +1,11 @@
 package gu
 
 import (
+	"bytes"
+	"fmt"
 	"strings"
+
+	"html/template"
 
 	"github.com/gu-io/gu/trees"
 	"golang.org/x/net/html"
@@ -54,9 +58,35 @@ func (c *ComponentRegistry) Generate(markup string, attr ComponentAttr) Componen
 	return attr
 }
 
+// MustParseByTemplate returns a new Renderable from using text template to parse the provided
+// markup.
+func (c *ComponentRegistry) MustParseByTemplate(markup string, m interface{}) Renderable {
+	renderable, err := c.ParseByTemplate(markup, m)
+	if err != nil {
+		panic(err)
+	}
+	return renderable
+}
+
+// ParseByTemplate returns a new Renderable from using text template to parse the provided
+// markup.
+func (c *ComponentRegistry) ParseByTemplate(markup string, m interface{}) (Renderable, error) {
+	tmp, err := template.New("css").Parse(markup)
+	if err != nil {
+		return nil, err
+	}
+
+	var content bytes.Buffer
+	if err := tmp.Execute(&content, m); err != nil {
+		return nil, err
+	}
+
+	return ParseComponent(content.String(), c), nil
+}
+
 // Parse returns a new Renderable from the giving markup.
-func (c *ComponentRegistry) Parse(markup string) Renderable {
-	return ParseComponent(markup, c)
+func (c *ComponentRegistry) Parse(markup string, m ...interface{}) Renderable {
+	return ParseComponent(fmt.Sprintf(markup, m...), c)
 }
 
 // Add adds the giving set of possible item/items of the Acceptable type into

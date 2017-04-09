@@ -351,16 +351,30 @@ func initCommands() {
 				return merr
 			}
 
+			plainPKGData, err := ioutil.ReadFile(filepath.Join(gup, "templates/plain_generated_pkg.template"))
+			if err != nil {
+				return err
+			}
+
+			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte("styles"), -1)
+
 			cssbeforegendata = []byte(fmt.Sprintf("%q", cssbeforegendata))
 			cssgendata = bytes.Replace(cssgendata, pkgContentbytes, cssbeforegendata, 1)
 			cssgendata = bytes.Replace(cssgendata, dirNamebytes, []byte("css"), 1)
 			cssgendata = bytes.Replace(cssgendata, pkgNamebytes, []byte("\""+cssDirName+"\""), 1)
+			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte("\""+cssDirName+"\""), -1)
 
 			if err = writeFile(filepath.Join(newComponentCSSDir, "generate.go"), cssgendata); err != nil {
 				return err
 			}
 
 			fmt.Printf("- Adding project file: %q\n", filepath.Join("components", componentPkgName, "styles", "generate.go"))
+
+			if err := writeFile(filepath.Join(newComponentCSSDir, "css.go"), plainPKGData); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project file: %q\n", filepath.Join("components", componentPkgName, "styles", "css.go"))
 
 			cpdata, cperr := ioutil.ReadFile(filepath.Join(gupkg, "templates/pkgcomponent.template"))
 			if cperr != nil {

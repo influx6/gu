@@ -338,7 +338,7 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 	head = append(head, elems.Meta(trees.NewAttr("gu-app-title", app.attr.Title)))
 
 	if !app.attr.SkipNormalizeCSS {
-		head = append(head, elems.CSS(core.NormalizeCSS, nil))
+		head = append(head, elems.Style(elems.Text(core.NormalizeCSS)))
 	}
 
 	for _, def := range app.globalResources {

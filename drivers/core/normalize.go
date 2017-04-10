@@ -1,10 +1,9 @@
 package core
 
-import "github.com/gu-io/gu/trees/css"
-
 // NormalizeCSS Exposes a variable which contains the contents of the normalize css library.
 // LinK: https://necolas.github.io/normalize.css/.
-var NormalizeCSS = css.New(`/*! normalize.css v6.0.0 | MIT License | github.com/necolas/normalize.css */
+var NormalizeCSS = (`
+/*! normalize.css v6.0.0 | MIT License | github.com/necolas/normalize.css */
 
 /* Document
    ========================================================================== */
@@ -430,4 +429,5 @@ template {
 
 [hidden] {
   display: none;
-}`)
+}
+`)

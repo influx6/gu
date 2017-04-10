@@ -167,7 +167,7 @@ func initCommands() {
 			cssgendata = bytes.Replace(cssgendata, pkgContentbytes, gendata, 1)
 			cssgendata = bytes.Replace(cssgendata, dirNamebytes, []byte("css"), 1)
 			cssgendata = bytes.Replace(cssgendata, pkgNamebytes, []byte("\""+cssDirName+"\""), 1)
-			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte("\""+cssDirName+"\""), -1)
+			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte(cssDirName), -1)
 
 			if err := writeFile(filepath.Join(cssDirPath, "generate.go"), cssgendata); err != nil {
 				return err
@@ -372,7 +372,7 @@ func initCommands() {
 			cssgendata = bytes.Replace(cssgendata, pkgContentbytes, cssbeforegendata, 1)
 			cssgendata = bytes.Replace(cssgendata, dirNamebytes, []byte("css"), 1)
 			cssgendata = bytes.Replace(cssgendata, pkgNamebytes, []byte("\""+cssDirName+"\""), 1)
-			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte("\""+cssDirName+"\""), -1)
+			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte(cssDirName), -1)
 
 			if err = writeFile(filepath.Join(newComponentCSSDir, "generate.go"), cssgendata); err != nil {
 				return err

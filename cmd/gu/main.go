@@ -158,16 +158,28 @@ func initCommands() {
 				return err
 			}
 
+			plainPKGData, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/plain_generated_pkg.template"))
+			if err != nil {
+				return err
+			}
+
 			gendata = []byte(fmt.Sprintf("%q", gendata))
 			cssgendata = bytes.Replace(cssgendata, pkgContentbytes, gendata, 1)
 			cssgendata = bytes.Replace(cssgendata, dirNamebytes, []byte("css"), 1)
 			cssgendata = bytes.Replace(cssgendata, pkgNamebytes, []byte("\""+cssDirName+"\""), 1)
+			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte("\""+cssDirName+"\""), -1)
 
 			if err := writeFile(filepath.Join(cssDirPath, "generate.go"), cssgendata); err != nil {
 				return err
 			}
 
 			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(cssDirPath), "generate.go"))
+
+			if err := writeFile(filepath.Join(cssDirPath, "css.go"), plainPKGData); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(cssDirPath), "css.go"))
 
 			return nil
 		},
@@ -355,8 +367,6 @@ func initCommands() {
 			if err != nil {
 				return err
 			}
-
-			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte("styles"), -1)
 
 			cssbeforegendata = []byte(fmt.Sprintf("%q", cssbeforegendata))
 			cssgendata = bytes.Replace(cssgendata, pkgContentbytes, cssbeforegendata, 1)

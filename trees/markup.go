@@ -575,7 +575,53 @@ func (e *Markup) Apply(em *Markup) {
 
 // Clonable defines an interface for objects that can be cloned
 type Clonable interface {
+	CopyTo(*Markup)
 	Clone() *Markup
+}
+
+// CopyTo transfers all attributes to a giving root from the called base.
+func (e *Markup) CopyTo(co *Markup) {
+
+	//copy over the textContent
+	// TODO: Should we not check if we should swap textcontent?
+	// if co.textContent == "" {
+	co.textContent = e.textContent
+	co.textContentFn = e.textContentFn
+	// }
+
+	//clone the internal styles
+	if co.allowStyles {
+		for _, so := range e.styles {
+			so.Clone().Apply(co)
+		}
+	}
+
+	//clone the internal attribute
+	if co.allowAttributes {
+		for _, ao := range e.attrs {
+			if name, _ := ao.Render(); name == "data-gen" {
+				continue
+			}
+
+			ao.Clone().Apply(co)
+		}
+	}
+
+	// co.allowAttributes = e.allowAttributes
+	//clone the internal children
+	if co.allowChildren {
+		for _, ch := range e.children {
+			ch.Clone().Apply(co)
+		}
+	}
+
+	if co.allowEvents {
+		for _, ch := range e.events {
+			ch.Clone().Apply(co)
+		}
+	}
+
+	co.morphers = append(co.morphers, e.morphers...)
 }
 
 // Clone makes a new copy of the markup structure

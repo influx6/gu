@@ -191,7 +191,7 @@ func (t *Treeset) Render() *trees.Markup {
 		base = t.Tree.Clone()
 
 		if t.Renderable != nil {
-			t.Renderable.Render().Apply(base)
+			t.Renderable.Render().CopyTo(base)
 		}
 
 		base.UpdateHash()

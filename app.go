@@ -24,10 +24,11 @@ type Resource struct {
 
 // AppAttr defines a struct for
 type AppAttr struct {
-	Name      string              `json:"name"`
-	Title     string              `json:"title"`
-	Manifests []shell.AppManifest `json:"manifests, omitempty"`
-	Router    *router.Router      `json:"-"`
+	Name             string              `json:"name"`
+	Title            string              `json:"title"`
+	Manifests        []shell.AppManifest `json:"manifests, omitempty"`
+	Router           *router.Router      `json:"-"`
+	SkipNormalizeCSS bool                `json:"skip_normalize_css"`
 }
 
 // NApp defines a struct which encapsulates all the core view management functions
@@ -335,6 +336,10 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 	head = append(head, elems.Meta(trees.NewAttr("gu-app-id", app.uuid)))
 	head = append(head, elems.Meta(trees.NewAttr("gu-app-name", app.attr.Name)))
 	head = append(head, elems.Meta(trees.NewAttr("gu-app-title", app.attr.Title)))
+
+	if !app.attr.SkipNormalizeCSS {
+		head = append(head, elems.CSS(core.NormalizeCSS, nil))
+	}
 
 	for _, def := range app.globalResources {
 		if def.body != nil || def.head != nil {

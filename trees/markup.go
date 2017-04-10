@@ -300,6 +300,7 @@ func (e *Markup) Hash() string {
 
 // Morphers exposes a method to allow adding morphers.
 type Morphers interface {
+	Morphers() []Morphers
 	AddMorpher(...Morpher)
 	ApplyMorphers() *Markup
 }
@@ -307,6 +308,11 @@ type Morphers interface {
 // AddMorpher adds the provided morphers into the elements lists.
 func (e *Markup) AddMorpher(m ...Morpher) {
 	e.morphers = append(e.morphers, m...)
+}
+
+// Morphers returns the slice of Morphers used by this markup.
+func (e *Markup) Morphers() []Morpher {
+	return e.morphers
 }
 
 // ApplyMorphers calls all elemental morphers sequentially applying them to the

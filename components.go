@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"text/template"
+	"html/template"
 
 	"github.com/gu-io/gu/trees"
 	"golang.org/x/net/html"

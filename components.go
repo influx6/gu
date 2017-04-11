@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"html/template"
+	"text/template"
 
 	"github.com/gu-io/gu/trees"
 	"golang.org/x/net/html"
@@ -71,7 +71,7 @@ func (c *ComponentRegistry) MustParseByTemplate(markup string, m interface{}) Re
 // ParseByTemplate returns a new Renderable from using text template to parse the provided
 // markup.
 func (c *ComponentRegistry) ParseByTemplate(markup string, m interface{}) (Renderable, error) {
-	tmp, err := template.New("css").Parse(markup)
+	tmp, err := template.New("component").Parse(markup)
 	if err != nil {
 		return nil, err
 	}

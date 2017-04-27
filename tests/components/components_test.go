@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/gu-io/gu"
-	"github.com/gu-io/gu/tests"
 	"github.com/gu-io/gu/trees"
 	"github.com/gu-io/gu/trees/elems"
+	"github.com/influx6/faux/tests"
 )
 
 type hello struct {
@@ -51,7 +51,7 @@ func TestComponent(t *testing.T) {
 	if val := component.Render().HTML(); val != expected && val != expected2 {
 		t.Logf("\t\tRecieved: %q\n", val)
 		t.Logf("\t\tExpected: %q\n", expected)
-		tests.Failed(t, "Should have rendered expected markup")
+		tests.Failed("Should have rendered expected markup")
 	}
-	tests.Passed(t, "Should have rendered expected markup")
+	tests.Passed("Should have rendered expected markup")
 }

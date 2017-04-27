@@ -10,6 +10,7 @@ import (
 	"github.com/gu-io/gu/notifications"
 	"github.com/gu-io/gu/router"
 	"github.com/gu-io/gu/trees"
+	"github.com/gu-io/gu/trees/themes/styleguide"
 )
 
 // countKeeper handles management of the keys being generating. Guards the incrementation
@@ -45,6 +46,7 @@ type Services struct {
 	Unmounted     Subscriptions
 	Router        *router.Router
 	ViewRouter    router.Resolver
+	Theme         styleguide.StyleGuide
 	Notifications *notifications.AppNotification
 }
 

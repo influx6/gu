@@ -1,0 +1,548 @@
+/*--------------mixin functions--------------------------------------*/
+
+
+/**
+dp provides a simple dp scale classes which allows you to easily generate 8 or 4 
+based incremental scaling factors for spaces, size.
+
+*/
+.dp(@prefix, @prop, @base, @scale){
+    .loop(1, @prefix, @prop, @base, @scale, 200);
+}
+
+.loop(@counter, @prefix, @prop, @base, @scale, @count) when (@counter <= @count){
+
+    .@{prefix}.dp@{counter} {
+        @{prop}: ((@base * @counter) / @scale);
+    }
+
+
+    .loop(@counter + 1, @prefix, @prop, @base, @scale, @count);
+}
+
+
+/* Creates grid capable of using with list items and use -24px gutter. */
+.grids(@gutter, @letter_spacing){
+
+    & {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        letter-spacing: -@letter_spacing;
+        margin-left:-@gutter;
+
+        html.opera & {
+            word-spacing: -(@letter_spacing+0.1em);
+        }
+    }
+
+    /* Have grid not use any gutter. */
+    .grid-nogutter {
+        margin-left: 0;
+    }
+
+    /* Reverse grid items ordering to right-to-left instead of left-to-right.*/
+    .grid-rev{
+        direction: rtl;
+        text-align: left;
+
+        & > grid__block{
+            direction: ltr;
+            text-align: left;
+        }
+    }
+
+    /* Move grid items to fill up all available space. */
+    .grid-full{
+        margin-left:0;
+
+        & > grid__block{
+            padding-left: 0;
+        }
+    }
+
+    /* Move grid items to the right instead of left.*/
+    .grid-right{
+        text-align: right;
+
+        & > grid__block{
+            text-align: left;
+        }
+    }
+
+    /* Center grid items to the center. */
+    .grid-center{
+        text-align: center;
+
+        & > grid__block{
+            text-align: left;
+        }
+    }
+
+    /* Aligns grid items to occupy bottom space as possible */
+    .grid-bottom{
+        & > grid__block {
+            vertical-align: bottom;
+        }
+    }
+
+    /* Aligns grid items to occupy center space as possible */
+    .grid-middle{
+        & > grid__block {
+            vertical-align: middle;
+        }
+    }
+
+    /* Aligns grid items to use more gutter by multiplying the gutter by 2*/
+    .grid-wide{
+        margin-left: -(@gutter*2);
+
+        & > grid__block {
+            padding-left: @gutter*2;
+        }
+    }
+
+    /* Aligns grid items to use less gutter by dividing the gutter by 2*/
+    .grid-narrow{
+        margin-left: -(@gutter/2);
+
+        & > grid__block {
+            padding-left: @gutter/2;
+        }
+    }
+
+    /* Define class for individual grid blocks and have it fill full width when in mobile mode*/
+    .grid--block {
+        display: inline-block;
+        padding-left: -@gutter;
+        vertical-align: top;
+        letter-spacing: normal;
+        word-spacing: normal;
+
+        /*Add the sizing settings for the grid blocks*/
+        .sizing;
+
+        .palm-media({
+            width: 100%;
+        })
+    }
+
+}
+
+
+
+.range(@ration, @mux: 1) {
+  width: (@mux * (100/@ration)) * 1%;
+}
+
+.pullRange(@ration, @mux: 1) {
+  right: (@mux * (100/@ration)) * 1%;
+}
+
+.pushRange(@ration, @mux: 1) {
+  left: (@mux * (100/@ration)) * 1%;
+}
+
+/*--------------media functions--------------------------------------*/
+
+@palm-max: 480px;
+@lap-min: 481px;
+@lap-max: 1023px;
+@portable-max:1023px;
+@desk-min:1024px;
+
+.palm-media(@rules){
+    @media (max-width: @palm-max) {
+        @rules();
+    }
+}
+
+.lap-media(@rules){
+    @media (min-width: @lap-min) and (max-width: @lap-max) {
+        @rules();
+    }
+}
+
+.portable-media(@rules){
+    @media (max-width: @portable-max) {
+        @rules();
+    }
+}
+
+.desktop-media(@rules){
+    @media (min-width: @desk-min) {
+        @rules();
+    }
+}
+
+.push(){
+
+    .push-one-whole{.pushRange(1); }
+    .push-one-half{.pushRange(2); }
+    .push-one-third{.pushRange(3); }
+    .push-two-third{.pushRange(3,2); }
+    .push-one-quater{.pushRange(4); }
+    .push-two-quater{.pushRange(4,2); }
+    .push-three-quater{.pushRange(4,3); }
+    .push-one-fifth{ .pushRange(5); }
+    .push-two-fifth{.pushRange(5,2);}
+    .push-three-fifth{.pushRange(5,3);}
+    .push-four-fifth{.pushRange(5,4);}
+    .push-one-sixth{ .pushRange(6); }
+    .push-two-sixth{.pushRange(6,2);}
+    .push-three-sixth{.pushRange(6,3);}
+    .push-four-sixth{.pushRange(6,4);}
+    .push-five-sixth{.pushRange(6,5);}
+    .push-one-eight{ .pushRange(8); }
+    .push-two-eight{.pushRange(8,2);}
+    .push-three-eight{.pushRange(8,3);}
+    .push-four-eight{.pushRange(8,4);}
+    .push-five-eight{.pushRange(8,5);}
+    .push-six-eight{.pushRange(8,6);}
+    .push-seven-eight{.pushRange(8,7);}
+    .push-one-tenth{ .pushRange(10); }
+    .push-two-tenth{.pushRange(10,2);}
+    .push-three-tenth{.pushRange(10,3);}
+    .push-four-tenth{.pushRange(10,4);}
+    .push-five-tenth{.pushRange(10,5);}
+    .push-six-tenth{.pushRange(10,6);}
+    .push-seventh-tenth{.pushRange(10,7);}
+    .push-eight-tenth{.pushRange(10,8);}
+    .push-nine-tenth{.pushRange(10,9);}
+    .push-one-twelveth{ .pushRange(12); }
+    .push-two-twelveth{.pushRange(12,2);}
+    .push-three-twelveth{.pushRange(12,3);}
+    .push-four-twelveth{.pushRange(12,4);}
+    .push-five-twelveth{.pushRange(12,5);}
+    .push-six-twelveth{.pushRange(12,6);}
+    .push-seventh-twelveth{.pushRange(12,7);}
+    .push-eight-twelveth{.pushRange(12,8);}
+    .push-nine-twelveth{.pushRange(12,9);}
+    .push-ten-twelveth{.pushRange(12,10);}
+    .push-eleven-twelveth{.pushRange(12,11);}
+
+};
+
+
+.pull(){
+
+    .pull-one-whole{.pullRange(1); }
+    .pull-one-half{.pullRange(2); }
+    .pull-one-third{.pullRange(3); }
+    .pull-two-third{.pullRange(3,2); }
+    .pull-one-quater{.pullRange(4); }
+    .pull-two-quater{.pullRange(4,2); }
+    .pull-three-quater{.pullRange(4,3); }
+    .pull-one-fifth{ .pullRange(5); }
+    .pull-two-fifth{.pullRange(5,2);}
+    .pull-three-fifth{.pullRange(5,3);}
+    .pull-four-fifth{.pullRange(5,4);}
+    .pull-one-sixth{ .pullRange(6); }
+    .pull-two-sixth{.pullRange(6,2);}
+    .pull-three-sixth{.pullRange(6,3);}
+    .pull-four-sixth{.pullRange(6,4);}
+    .pull-five-sixth{.pullRange(6,5);}
+    .pull-one-eight{ .pullRange(8); }
+    .pull-two-eight{.pullRange(8,2);}
+    .pull-three-eight{.pullRange(8,3);}
+    .pull-four-eight{.pullRange(8,4);}
+    .pull-five-eight{.pullRange(8,5);}
+    .pull-six-eight{.pullRange(8,6);}
+    .pull-seven-eight{.pullRange(8,7);}
+    .pull-one-tenth{ .pullRange(10); }
+    .pull-two-tenth{.pullRange(10,2);}
+    .pull-three-tenth{.pullRange(10,3);}
+    .pull-four-tenth{.pullRange(10,4);}
+    .pull-five-tenth{.pullRange(10,5);}
+    .pull-six-tenth{.pullRange(10,6);}
+    .pull-seventh-tenth{.pullRange(10,7);}
+    .pull-eight-tenth{.pullRange(10,8);}
+    .pull-nine-tenth{.pullRange(10,9);}
+    .pull-one-twelveth{ .pullRange(12); }
+    .pull-two-twelveth{.pullRange(12,2);}
+    .pull-three-twelveth{.pullRange(12,3);}
+    .pull-four-twelveth{.pullRange(12,4);}
+    .pull-five-twelveth{.pullRange(12,5);}
+    .pull-six-twelveth{.pullRange(12,6);}
+    .pull-seventh-twelveth{.pullRange(12,7);}
+    .pull-eight-twelveth{.pullRange(12,8);}
+    .pull-nine-twelveth{.pullRange(12,9);}
+    .pull-ten-twelveth{.pullRange(12,10);}
+    .pull-eleven-twelveth{.pullRange(12,11);}
+
+};
+
+.devices(){
+
+    .one-whole{.range(1); }
+    .one-half{.range(2); }
+
+    .one-third{.range(3); }
+    .two-third{.range(3,2); }
+
+    .one-quater{.range(4); }
+    .two-quater{.range(4,2); }
+    .three-quater{.range(4,3); }
+
+    .one-fifth{ .range(5); }
+    .two-fifth{.range(5,2);}
+    .three-fifth{.range(5,3);}
+    .four-fifth{.range(5,4);}
+
+    .one-sixth{ .range(6); }
+    .two-sixth{.range(6,2);}
+    .three-sixth{.range(6,3);}
+    .four-sixth{.range(6,4);}
+    .five-sixth{.range(6,5);}
+
+    .one-eight{ .range(8); }
+    .two-eight{.range(8,2);}
+    .three-eight{.range(8,3);}
+    .four-eight{.range(8,4);}
+    .five-eight{.range(8,5);}
+    .six-eight{.range(8,6);}
+    .seven-eight{.range(8,7);}
+
+    .one-tenth{ .range(10); }
+    .two-tenth{.range(10,2);}
+    .three-tenth{.range(10,3);}
+    .four-tenth{.range(10,4);}
+    .five-tenth{.range(10,5);}
+    .six-tenth{.range(10,6);}
+    .seventh-tenth{.range(10,7);}
+    .eight-tenth{.range(10,8);}
+    .nine-tenth{.range(10,9);}
+
+    .one-twelveth{ .range(12); }
+    .two-twelveth{.range(12,2);}
+    .three-twelveth{.range(12,3);}
+    .four-twelveth{.range(12,4);}
+    .five-twelveth{.range(12,5);}
+    .six-twelveth{.range(12,6);}
+    .seventh-twelveth{.range(12,7);}
+    .eight-twelveth{.range(12,8);}
+    .nine-twelveth{.range(12,9);}
+    .ten-twelveth{.range(12,10);}
+    .eleven-twelveth{.range(12,11);}
+
+};
+
+.desktop-devices(){
+
+    .desktop-one-whole{.range(1); }
+    .desktop-one-half{.range(2); }
+
+    .desktop-one-third{.range(3); }
+    .desktop-two-third{.range(3,2); }
+
+    .desktop-one-quater{.range(4); }
+    .desktop-two-quater{.range(4,2); }
+    .desktop-three-quater{.range(4,3); }
+
+    .desktop-one-fifth{ .range(5); }
+    .desktop-two-fifth{.range(5,2);}
+    .desktop-three-fifth{.range(5,3);}
+    .desktop-four-fifth{.range(5,4);}
+
+    .desktop-one-sixth{ .range(6); }
+    .desktop-two-sixth{.range(6,2);}
+    .desktop-three-sixth{.range(6,3);}
+    .desktop-four-sixth{.range(6,4);}
+    .desktop-five-sixth{.range(6,5);}
+
+    .desktop-one-eight{ .range(8); }
+    .desktop-two-eight{.range(8,2);}
+    .desktop-three-eight{.range(8,3);}
+    .desktop-four-eight{.range(8,4);}
+    .desktop-five-eight{.range(8,5);}
+    .desktop-six-eight{.range(8,6);}
+    .desktop-seven-eight{.range(8,7);}
+
+    .desktop-one-tenth{ .range(10); }
+    .desktop-two-tenth{.range(10,2);}
+    .desktop-three-tenth{.range(10,3);}
+    .desktop-four-tenth{.range(10,4);}
+    .desktop-five-tenth{.range(10,5);}
+    .desktop-six-tenth{.range(10,6);}
+    .desktop-seventh-tenth{.range(10,7);}
+    .desktop-eight-tenth{.range(10,8);}
+    .desktop-nine-tenth{.range(10,9);}
+
+    .desktop-one-twelveth{ .range(12); }
+    .desktop-two-twelveth{.range(12,2);}
+    .desktop-three-twelveth{.range(12,3);}
+    .desktop-four-twelveth{.range(12,4);}
+    .desktop-five-twelveth{.range(12,5);}
+    .desktop-six-twelveth{.range(12,6);}
+    .desktop-seventh-twelveth{.range(12,7);}
+    .desktop-eight-twelveth{.range(12,8);}
+    .desktop-nine-twelveth{.range(12,9);}
+    .desktop-ten-twelveth{.range(12,10);}
+    .desktop-eleven-twelveth{.range(12,11);}
+
+};
+
+.lap-devices(){
+
+    .lap-one-whole{.range(1); }
+    .lap-one-half{.range(2); }
+
+    .lap-one-third{.range(3); }
+    .lap-two-third{.range(3,2); }
+
+    .lap-one-quater{.range(4); }
+    .lap-two-quater{.range(4,2); }
+    .lap-three-quater{.range(4,3); }
+
+    .lap-one-fifth{ .range(5); }
+    .lap-two-fifth{.range(5,2);}
+    .lap-three-fifth{.range(5,3);}
+    .lap-four-fifth{.range(5,4);}
+
+    .lap-one-sixth{ .range(6); }
+    .lap-two-sixth{.range(6,2);}
+    .lap-three-sixth{.range(6,3);}
+    .lap-four-sixth{.range(6,4);}
+    .lap-five-sixth{.range(6,5);}
+
+    .lap-one-eight{ .range(8); }
+    .lap-two-eight{.range(8,2);}
+    .lap-three-eight{.range(8,3);}
+    .lap-four-eight{.range(8,4);}
+    .lap-five-eight{.range(8,5);}
+    .lap-six-eight{.range(8,6);}
+    .lap-seven-eight{.range(8,7);}
+
+    .lap-one-tenth{ .range(10); }
+    .lap-two-tenth{.range(10,2);}
+    .lap-three-tenth{.range(10,3);}
+    .lap-four-tenth{.range(10,4);}
+    .lap-five-tenth{.range(10,5);}
+    .lap-six-tenth{.range(10,6);}
+    .lap-seventh-tenth{.range(10,7);}
+    .lap-eight-tenth{.range(10,8);}
+    .lap-nine-tenth{.range(10,9);}
+
+    .lap-one-twelveth{ .range(12); }
+    .lap-two-twelveth{.range(12,2);}
+    .lap-three-twelveth{.range(12,3);}
+    .lap-four-twelveth{.range(12,4);}
+    .lap-five-twelveth{.range(12,5);}
+    .lap-six-twelveth{.range(12,6);}
+    .lap-seventh-twelveth{.range(12,7);}
+    .lap-eight-twelveth{.range(12,8);}
+    .lap-nine-twelveth{.range(12,9);}
+    .lap-ten-twelveth{.range(12,10);}
+    .lap-eleven-twelveth{.range(12,11);}
+
+};
+
+.palm-devices(){
+
+    .palm-one-whole{.range(1); }
+    .palm-one-half{.range(2); }
+
+    .palm-one-third{.range(3); }
+    .palm-two-third{.range(3,2); }
+
+    .palm-one-quater{.range(4); }
+    .palm-two-quater{.range(4,2); }
+    .palm-three-quater{.range(4,3); }
+
+    .palm-one-fifth{ .range(5); }
+    .palm-two-fifth{.range(5,2);}
+    .palm-three-fifth{.range(5,3);}
+    .palm-four-fifth{.range(5,4);}
+
+    .palm-one-sixth{ .range(6); }
+    .palm-two-sixth{.range(6,2);}
+    .palm-three-sixth{.range(6,3);}
+    .palm-four-sixth{.range(6,4);}
+    .palm-five-sixth{.range(6,5);}
+
+    .palm-one-eight{ .range(8); }
+    .palm-two-eight{.range(8,2);}
+    .palm-three-eight{.range(8,3);}
+    .palm-four-eight{.range(8,4);}
+    .palm-five-eight{.range(8,5);}
+    .palm-six-eight{.range(8,6);}
+    .palm-seven-eight{.range(8,7);}
+
+    .palm-one-tenth{ .range(10); }
+    .palm-two-tenth{.range(10,2);}
+    .palm-three-tenth{.range(10,3);}
+    .palm-four-tenth{.range(10,4);}
+    .palm-five-tenth{.range(10,5);}
+    .palm-six-tenth{.range(10,6);}
+    .palm-seventh-tenth{.range(10,7);}
+    .palm-eight-tenth{.range(10,8);}
+    .palm-nine-tenth{.range(10,9);}
+
+    .palm-one-twelveth{ .range(12); }
+    .palm-two-twelveth{.range(12,2);}
+    .palm-three-twelveth{.range(12,3);}
+    .palm-four-twelveth{.range(12,4);}
+    .palm-five-twelveth{.range(12,5);}
+    .palm-six-twelveth{.range(12,6);}
+    .palm-seventh-twelveth{.range(12,7);}
+    .palm-eight-twelveth{.range(12,8);}
+    .palm-nine-twelveth{.range(12,9);}
+    .palm-ten-twelveth{.range(12,10);}
+    .palm-eleven-twelveth{.range(12,11);}
+
+};
+
+.portable-devices(){
+
+    .portable-one-whole{.range(1); }
+    .portable-one-half{.range(2); }
+
+    .portable-one-third{.range(3); }
+    .portable-two-third{.range(3,2); }
+
+    .portable-one-quater{.range(4); }
+    .portable-two-quater{.range(4,2); }
+    .portable-three-quater{.range(4,3); }
+
+    .portable-one-fifth{ .range(5); }
+    .portable-two-fifth{.range(5,2);}
+    .portable-three-fifth{.range(5,3);}
+    .portable-four-fifth{.range(5,4);}
+
+    .portable-one-sixth{ .range(6); }
+    .portable-two-sixth{.range(6,2);}
+    .portable-three-sixth{.range(6,3);}
+    .portable-four-sixth{.range(6,4);}
+    .portable-five-sixth{.range(6,5);}
+
+    .portable-one-eight{ .range(8); }
+    .portable-two-eight{.range(8,2);}
+    .portable-three-eight{.range(8,3);}
+    .portable-four-eight{.range(8,4);}
+    .portable-five-eight{.range(8,5);}
+    .portable-six-eight{.range(8,6);}
+    .portable-seven-eight{.range(8,7);}
+
+    .portable-one-tenth{ .range(10); }
+    .portable-two-tenth{.range(10,2);}
+    .portable-three-tenth{.range(10,3);}
+    .portable-four-tenth{.range(10,4);}
+    .portable-five-tenth{.range(10,5);}
+    .portable-six-tenth{.range(10,6);}
+    .portable-seventh-tenth{.range(10,7);}
+    .portable-eight-tenth{.range(10,8);}
+    .portable-nine-tenth{.range(10,9);}
+
+    .portable-one-twelveth{ .range(12); }
+    .portable-two-twelveth{.range(12,2);}
+    .portable-three-twelveth{.range(12,3);}
+    .portable-four-twelveth{.range(12,4);}
+    .portable-five-twelveth{.range(12,5);}
+    .portable-six-twelveth{.range(12,6);}
+    .portable-seventh-twelveth{.range(12,7);}
+    .portable-eight-twelveth{.range(12,8);}
+    .portable-nine-twelveth{.range(12,9);}
+    .portable-ten-twelveth{.range(12,10);}
+    .portable-eleven-twelveth{.range(12,11);}
+
+};

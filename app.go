@@ -12,6 +12,8 @@ import (
 	"github.com/gu-io/gu/shell"
 	"github.com/gu-io/gu/trees"
 	"github.com/gu-io/gu/trees/elems"
+	"github.com/gu-io/gu/trees/themes/grids"
+	"github.com/gu-io/gu/trees/themes/styleguide"
 	"github.com/influx6/faux/reflection"
 )
 
@@ -24,11 +26,13 @@ type Resource struct {
 
 // AppAttr defines a struct for
 type AppAttr struct {
-	Name             string              `json:"name"`
-	Title            string              `json:"title"`
-	Manifests        []shell.AppManifest `json:"manifests, omitempty"`
-	Router           *router.Router      `json:"-"`
-	SkipNormalizeCSS bool                `json:"skip_normalize_css"`
+	Name             string                `json:"name"`
+	Title            string                `json:"title"`
+	Manifests        []shell.AppManifest   `json:"manifests, omitempty"`
+	Router           *router.Router        `json:"-"`
+	Theme            styleguide.StyleGuide `json:"theme"`
+	SkipNormalizeCSS bool                  `json:"skip_normalize_css"`
+	SkipGridCSS      bool                  `json:"skip_grid_css"`
 }
 
 // NApp defines a struct which encapsulates all the core view management functions
@@ -339,6 +343,10 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 
 	if !app.attr.SkipNormalizeCSS {
 		head = append(head, elems.Style(elems.Text(core.NormalizeCSS)))
+	}
+
+	if !app.attr.SkipGridCSS {
+		head = append(head, elems.CSS(grids.Get("grid.css"), nil))
 	}
 
 	for _, def := range app.globalResources {
@@ -736,6 +744,7 @@ func (v *NView) Component(attr ComponentAttr) {
 		Unmounted:     c.Unmounted,
 		ViewRouter:    c.Router,
 		Router:        v.root.router,
+		Theme:         v.root.attr.Theme,
 		Notifications: v.notifications,
 	}
 

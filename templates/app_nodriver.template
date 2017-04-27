@@ -25,10 +25,5 @@ func New(cache router.Cache, server http.Handler) *gu.NApp {
 		Router: 		   router,
 	})
 
-	app.View(gu.ViewAttr{
-		Name:  "View.Index",
-        Route: "/*",
-    })
-
     return app
 }

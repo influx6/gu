@@ -100,9 +100,6 @@ html {
 	box-shadow: {{ .FloatingShadow }};
 }
 
-/*______________________________________________________________________*/
-
-
 /*____________ Base font size classes ____________________________*/
 /**
   These are classes provide a simple set of font-scale font-size
@@ -125,9 +122,7 @@ html {
 }
 {{ end }}
 
-/*______________________________________________________________________*/
-
-/*____________ Base primary color set ____________________________*/
+/*____________ Color set ____________________________*/
 /**
   These are classes provide a color set based on specific brand colors 
   provided, these allows us to easily generate color, background and border-color
@@ -144,321 +139,223 @@ html {
   These are further subdivided into these diffent tones/shades:
 
   base: The original color without any modification.
-  lumen: The original color version with a bit of increase in lumination.
-  lumin: The original color version as close to white or 50/60% illumination.
-  light: The original color version as close to white or 100% illumination.
-  Lush: The original color with more black added.
-  Dark: The original color with 50% dark harded.
+
+  Other color tones are graded from 10...nth where n is a multiple of 10 * index.
+  The lowest grade of 10 is where the color is close to it's darkest version while 
+  the highest means a continous increase in luminousity.
 
   We further generate classes for Color, Border-Color and Background based on the division and 
   subdivision.
 
 */
 
-.brand-primary__base, .brand-primary {
+.brand-color-primary {
+	color: {{.Brand.PrimaryBrand.Base}};
+}
+
+.brand-border-color-primary {
+	border-color: {{.Brand.PrimaryBrand.Base}};
+}
+
+.brand-background-color-primary {
+	background: {{.Brand.PrimaryBrand.Base}};
+}
+
+{{ range $index, $item := .Brand.PrimaryBrand.Grades }}
+{{ $rn := add $index 1 }}
+.brand-primary-{{ multiply $rn 10}} {
+	color: {{$item}};
+}
+{{ end }}
+
+{{ range $index, $item := .Brand.PrimaryBrand.Grades }}
+{{ $rn := add $index 1 }}
+.brand-background-color-primary-{{ multiply $rn 10}} {
+	background: {{$item}};
+}
+{{ end }}
+
+
+{{ range $index, $item := .Brand.PrimaryBrand.Grades }}
+{{ $rn := add $index 1 }}
+.brand-border-color-primary-{{ multiply $rn 10}} {
+	border-color: {{$item}};
+}
+{{ end }}
+
+.color-primary {
 	color: {{.Brand.Primary.Base}};
 }
 
-.brand-primary__lumen {
-	color: {{.Brand.Primary.Lumen}};
+.border-color-primary {
+	border-color: {{.Brand.Primary.Base}};
 }
 
-.brand-primary__lumin {
-	color: {{.Brand.Primary.Lumin}};
+.background-color-primary {
+	background: {{.Brand.Primary.Base}};
 }
 
-.brand-primary__light {
-	color: {{.Brand.Primary.Light}};
+{{ range $index, $item := .Brand.Primary.Grades }}
+{{ $rn := add $index 1 }}
+.color-primary-{{ multiply $rn 10}} {
+	color: {{$item}};
 }
+{{ end }}
 
-.brand-primary__lush {
-	color: {{.Brand.Primary.Lush}};
+{{ range $index, $item := .Brand.Primary.Grades }}
+{{ $rn := add $index 1 }}
+.background-color-primary-{{ multiply $rn 10}} {
+	background: {{$item}};
 }
+{{ end }}
 
-.brand-primary__dark {
-	color: {{.Brand.Primary.Dark}};
+
+{{ range $index, $item := .Brand.Primary.Grades }}
+{{ $rn := add $index 1 }}
+.border-color-primary-{{ multiply $rn 10}} {
+	border-color: {{$item}};
 }
-
-
-.brand-secondary__base, .brand-secondary {
-	color: {{.Brand.Secondary.Base}};
-}
-
-.brand-secondary__lumen {
-	color: {{.Brand.Secondary.Lumen}};
-}
-
-.brand-secondary__lumin {
-	color: {{.Brand.Secondary.Lumin}};
-}
-
-.brand-secondary__light {
-	color: {{.Brand.Secondary.Light}};
-}
-
-.brand-secondary__lush {
-	color: {{.Brand.Secondary.Lush}};
-}
-
-.brand-secondary__dark {
-	color: {{.Brand.Secondary.Dark}};
-}
-
-
-.brand-success__base, .brand-success {
-	color: {{.Brand.Success.Base}};
-}
-
-.brand-success__lumen {
-	color: {{.Brand.Success.Lumen}};
-}
-
-.brand-success__lumin {
-	color: {{.Brand.Success.Lumin}};
-}
-
-.brand-success__light {
-	color: {{.Brand.Success.Light}};
-}
-
-.brand-success__lush {
-	color: {{.Brand.Success.Lush}};
-}
-
-.brand-success__dark {
-	color: {{.Brand.Success.Dark}};
-}
-
-
-.brand-failure__base, .brand-failure {
-	color: {{.Brand.Failure.Base}};
-}
-
-.brand-failure__lumen {
-	color: {{.Brand.Failure.Lumen}};
-}
-
-.brand-failure__lumin {
-	color: {{.Brand.Failure.Lumin}};
-}
-
-.brand-failure__light {
-	color: {{.Brand.Failure.Light}};
-}
-
-.brand-failure__lush {
-	color: {{.Brand.Failure.Lush}};
-}
-
-.brand-failure__dark {
-	color: {{.Brand.Failure.Dark}};
-}
-
-/*______________________________________________________________________*/
+{{ end }}
 
 
 *____________ Base background color set ____________________________*/
 
-.background-color-primary__base, .background-color-primary {
-	color: {{.Brand.Primary.Base}};
-}
 
-.background-color-primary__lumen {
-	color: {{.Brand.Primary.Lumen}};
-}
-
-.background-color-primary__lumin {
-	color: {{.Brand.Primary.Lumin}};
-}
-
-.background-color-primary__light {
-	color: {{.Brand.Primary.Light}};
-}
-
-.background-color-primary__lush {
-	color: {{.Brand.Primary.Lush}};
-}
-
-.background-color-primary__dark {
-	color: {{.Brand.Primary.Dark}};
-}
-
-
-.background-color-secondary__base, .background-color-secondary {
+.color-secondary {
 	color: {{.Brand.Secondary.Base}};
 }
 
-.background-color-secondary__lumen {
-	color: {{.Brand.Secondary.Lumen}};
+.background-color-secondary {
+	background: {{.Brand.Secondary.Base}};
 }
 
-.background-color-secondary__lumin {
-	color: {{.Brand.Secondary.Lumin}};
+.border-color-secondary {
+	background: {{.Brand.Secondary.Base}};
 }
 
-.background-color-secondary__light {
-	color: {{.Brand.Secondary.Light}};
+{{ range $index, $item := .Brand.Secondary.Grades }}
+{{ $rn := add $index 1 }}
+.color-secondary-{{ multiply $rn 10}} {
+	color: {{$item}};
+}
+{{ end }}
+
+{{ range $index, $item := .Brand.Secondary.Grades }}
+{{ $rn := add $index 1 }}
+.background-color-secondary-{{ multiply $rn 10}} {
+	background: {{$item}};
+}
+{{ end }}
+
+{{ range $index, $item := .Brand.Secondary.Grades }}
+{{ $rn := add $index 1 }}
+.border-color-secondary-{{ multiply $rn 10}} {
+	border-color: {{$item}};
+}
+{{ end }}
+
+
+.brand-color-secondary {
+	color: {{.Brand.SecondaryBrand.Base}};
 }
 
-.background-color-secondary__lush {
-	color: {{.Brand.Secondary.Lush}};
+.brand-background-color-secondary {
+	background: {{.Brand.SecondaryBrand.Base}};
 }
 
-.background-color-secondary__dark {
-	color: {{.Brand.Secondary.Dark}};
+.brand-border-color-secondary {
+	background: {{.Brand.SecondaryBrand.Base}};
 }
 
-.background-color-success__base, .background-color-success {
+{{ range $index, $item := .Brand.SecondaryBrand.Grades }}
+{{ $rn := add $index 1 }}
+.brand-color-secondary-{{ multiply $rn 10}} {
+	color: {{$item}};
+}
+{{ end }}
+
+{{ range $index, $item := .Brand.SecondaryBrand.Grades }}
+{{ $rn := add $index 1 }}
+.brand-background-color-secondary-{{ multiply $rn 10}} {
+	background: {{$item}};
+}
+{{ end }}
+
+{{ range $index, $item := .Brand.SecondaryBrand.Grades }}
+{{ $rn := add $index 1 }}
+.brand-border-color-secondary-{{ multiply $rn 10}} {
+	border-color: {{$item}};
+}
+{{ end }}
+
+*____________ Base secondary color set ____________________________*/
+
+.brand-success {
 	color: {{.Brand.Success.Base}};
 }
 
-.background-color-success__lumen {
-	color: {{.Brand.Success.Lumen}};
+.background-color-success {
+	background: {{.Brand.Success.Base}};
 }
 
-.background-color-success__lumin {
-	color: {{.Brand.Success.Lumin}};
-}
-
-.background-color-success__light {
-	color: {{.Brand.Success.Light}};
-}
-
-.background-color-success__lush {
-	color: {{.Brand.Success.Lush}};
-}
-
-.background-color-success__dark {
-	color: {{.Brand.Success.Dark}};
-}
-
-
-.background-color-failure__base, .background-color-failure {
-	color: {{.Brand.Failure.Base}};
-}
-
-.background-color-failure__lumen {
-	color: {{.Brand.Failure.Lumen}};
-}
-
-.background-color-failure__lumin {
-	color: {{.Brand.Failure.Lumin}};
-}
-
-.background-color-failure__light {
-	color: {{.Brand.Failure.Light}};
-}
-
-.background-color-failure__lush {
-	color: {{.Brand.Failure.Lush}};
-}
-
-.background-color-failure__dark {
-	color: {{.Brand.Failure.Dark}};
-}
-
-/*______________________________________________________________________*/
-
-
-/*____________ Base border primary color set ____________________________*/
-
-.border-color-primary__base, .border-color-primary {
-	border-color: {{.Brand.Primary.Base}};
-}
-
-.border-color-primary__lumen {
-	border-color: {{.Brand.Primary.Lumen}};
-}
-
-.border-color-primary__lumin {
-	border-color: {{.Brand.Primary.Lumin}};
-}
-
-.border-color-primary__light {
-	border-color: {{.Brand.Primary.Light}};
-}
-
-.border-color-primary__lush {
-	border-color: {{.Brand.Primary.Lush}};
-}
-
-.border-color-primary__dark {
-	border-color: {{.Brand.Primary.Dark}};
-}
-
-
-.border-color-secondary__base, .border-color-secondary {
-	border-color: {{.Brand.Secondary.Base}};
-}
-
-.border-color-secondary__lumen {
-	border-color: {{.Brand.Secondary.Lumen}};
-}
-
-.border-color-secondary__lumin {
-	border-color: {{.Brand.Secondary.Lumin}};
-}
-
-.border-color-secondary__light {
-	border-color: {{.Brand.Secondary.Light}};
-}
-
-.border-color-secondary__lush {
-	border-color: {{.Brand.Secondary.Lush}};
-}
-
-.border-color-secondary__dark {
-	border-color: {{.Brand.Secondary.Dark}};
-}
-
-
-.border-color-success__base, .border-color-success {
+.border-color-success {
 	border-color: {{.Brand.Success.Base}};
 }
 
-.border-color-success__lumen {
-	border-color: {{.Brand.Success.Lumen}};
+{{ range $index, $item := .Brand.Success.Grades }}
+{{ $rn := add $index 1 }}
+.brand-success-{{ multiply $rn 10}} {
+	color: {{$item}};
+}
+{{ end }}
+
+{{ range $index, $item := .Brand.Success.Grades }}
+{{ $rn := add $index 1 }}
+.background-color-success-{{ multiply $rn 10}} {
+	background: {{$item}};
+}
+{{ end }}
+
+{{ range $index, $item := .Brand.Success.Grades }}
+{{ $rn := add $index 1 }}
+.border-color-success-{{ multiply $rn 10}} {
+	border-color: {{$item}};
+}
+{{ end }}
+
+/*____________ Base border primary color set ____________________________*/
+
+.background-color-failure {
+	background: {{.Brand.Failure.Base}};
 }
 
-.border-color-success__lumin {
-	border-color: {{.Brand.Success.Lumin}};
+.brand-failure {
+	color: {{.Brand.Failure.Base}};
 }
 
-.border-color-success__light {
-	border-color: {{.Brand.Success.Light}};
-}
-
-.border-color-success__lush {
-	border-color: {{.Brand.Success.Lush}};
-}
-
-.border-color-success__dark {
-	border-color: {{.Brand.Success.Dark}};
-}
-
-
-.border-color-failure__base, .border-color-failure {
+.border-color-failure {
 	border-color: {{.Brand.Failure.Base}};
 }
 
-.border-color-failure__lumen {
-	border-color: {{.Brand.Failure.Lumen}};
+{{ range $index, $item := .Brand.Failure.Grades }}
+{{ $rn := add $index 1 }}
+.background-color-failure-{{ multiply $rn 10}} {
+	background: {{$item}};
 }
+{{ end }}
 
-.border-color-failure__lumin {
-	border-color: {{.Brand.Failure.Lumin}};
+{{ range $index, $item := .Brand.Failure.Grades }}
+{{ $rn := add $index 1 }}
+.brand-failure-{{ multiply $rn 10}} {
+	color: {{$item}};
 }
+{{ end }}
 
-.border-color-failure__light {
-	border-color: {{.Brand.Failure.Light}};
+{{ range $index, $item := .Brand.Failure.Grades }}
+{{ $rn := add $index 1 }}
+.border-color-failure-{{ multiply $rn 10}} {
+	border-color: {{$item}};
 }
-
-.border-color-failure__lush {
-	border-color: {{.Brand.Failure.Lush}};
-}
-
-.border-color-failure__dark {
-	border-color: {{.Brand.Failure.Dark}};
-}
+{{ end }}
 
 /*______________________________________________________________________*/

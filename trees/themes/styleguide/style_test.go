@@ -11,7 +11,9 @@ import (
 func TestColor(t *testing.T) {
 	style, _ := styleguide.NewStyleGuide(styleguide.Attr{
 		PrimaryBrandColor:   "#7fffd4",
+		PrimaryColor:        "#7fffd4",
 		SecondaryBrandColor: "#7fffd4",
+		SecondaryColor:      "#7fffd4",
 		SuccessColor:        "#7fffd4",
 		FailureColor:        "#7fffd4",
 	})

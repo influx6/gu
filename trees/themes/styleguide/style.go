@@ -10,10 +10,27 @@ import (
 	colorful "github.com/lucasb-eyer/go-colorful"
 )
 
+var (
+	helpers = template.FuncMap{
+		"add": func(a, b int) int {
+			return a + b
+		},
+		"multiply": func(a, b int) int {
+			return a * b
+		},
+		"subtract": func(a, b int) int {
+			return b - a
+		},
+	}
+)
+
 // Attr defines different color and size of strings to define a specific brand.
 type Attr struct {
+	PrimaryColor        string
+	SecondaryColor      string
 	PrimaryBrandColor   string
 	SecondaryBrandColor string
+	PrimaryWhite        string
 	SuccessColor        string
 	FailureColor        string
 
@@ -33,10 +50,13 @@ type Attr struct {
 // StyleColors defines a struct which holds all possible giving brand colors utilized
 // for the project.
 type StyleColors struct {
-	Primary   Tones `json:"primary"`
-	Secondary Tones `json:"secondary"`
-	Success   Tones `json:"success"`
-	Failure   Tones `json:"failure"`
+	Primary        Tones `json:"primary"`
+	Secondary      Tones `json:"secondary"`
+	Success        Tones `json:"success"`
+	Failure        Tones `json:"failure"`
+	White          Tones `json:"white"`
+	PrimaryBrand   Tones `json:"primary_support"`
+	SecondaryBrand Tones `json:"secondary_support"`
 }
 
 // TypeSize defines a type for a float64 with a special
@@ -62,12 +82,27 @@ func NewStyleGuide(attr Attr) (StyleGuide, error) {
 	var style StyleGuide
 
 	var err error
-	style.Brand.Primary, err = NewTones(attr.PrimaryBrandColor)
+	style.Brand.Primary, err = NewTones(attr.PrimaryColor)
 	if err != nil {
 		return style, err
 	}
 
-	style.Brand.Secondary, err = NewTones(attr.SecondaryBrandColor)
+	style.Brand.PrimaryBrand, err = NewTones(attr.PrimaryBrandColor)
+	if err != nil {
+		return style, err
+	}
+
+	style.Brand.Secondary, err = NewTones(attr.SecondaryColor)
+	if err != nil {
+		return style, err
+	}
+
+	style.Brand.SecondaryBrand, err = NewTones(attr.SecondaryBrandColor)
+	if err != nil {
+		return style, err
+	}
+
+	style.Brand.White, err = NewTones(attr.PrimaryWhite)
 	if err != nil {
 		return style, err
 	}
@@ -144,7 +179,7 @@ func (sc *StyleGuide) init() {
 
 // CSS returns a css style content for usage with a css stylesheet.
 func (sc *StyleGuide) CSS() string {
-	tml, err := template.New("style").Parse(styleTemplate)
+	tml, err := template.New("styleguide").Funcs(helpers).Parse(styleTemplate)
 	if err != nil {
 		return err.Error()
 	}
@@ -162,12 +197,8 @@ func (sc *StyleGuide) CSS() string {
 // Tones defines the set of color tones generated for a base color using the Hamonic tone
 // sets, it provides a very easily set of color variations for use in styles.
 type Tones struct {
-	Base  Color `json:"base"`
-	Lumen Color `json:"lumen"` // Basic Light tone of base.
-	Lumin Color `json:"Lumin"` // Lighter tone of base.
-	Light Color `json:"light"` // Near White color version.
-	Lush  Color `json:"Lush"`  // Dark-Even tone of base.
-	Dark  Color `json:"dark"`  // Dark tone of base
+	Base   Color   `json:"base"`
+	Grades []Color `json:"tones"`
 }
 
 // NewTones returns a new Tones object representing the provided color tones if
@@ -185,17 +216,13 @@ func NewTones(base string) (Tones, error) {
 func (t Tones) JSON() string {
 	return fmt.Sprintf(`{
 	"base": %q,
-	"lumen": %q,
-	"lumin": %q,
-	"light": %q,
-	"lush": %q,
-	"dark": %q,
-  }`, t.Base, t.Lumen, t.Lumin, t.Light, t.Lush, t.Dark)
+	"grades": %+q
+  }`, t.Base, t.Grades)
 }
 
 // String returns the string representation of the provided tone.
 func (t Tones) String() string {
-	return fmt.Sprintf(`[%q, %q, %q, %q, %q, %q]`, t.Base, t.Lumen, t.Lumin, t.Light, t.Lush, t.Dark)
+	return fmt.Sprintf(`%q %q`, t.Base, t.Grades)
 }
 
 //================================================================================================
@@ -229,7 +256,14 @@ func HamonicsFrom(c Color) Tones {
 		scale = normalScale
 	}
 
-	// fmt.Printf("CC: H: %.4f S: %.4f L: %.4f  -> Sc: %+.4f\n", c.Hue, c.Saturation, c.Luminosity, scale)
+	var darkers []Color
+	for _, scale := range darkerScale {
+		darkers = append(darkers, MultiplicativeLumination(c, scale))
+	}
+
+	for i := len(darkers) - 1; i > 0; i-- {
+		colors = append(colors, darkers[i])
+	}
 
 	for index, scale := range scale {
 		var next Color
@@ -245,21 +279,9 @@ func HamonicsFrom(c Color) Tones {
 		colors = append(colors, AdditiveSaturation(AdditiveLumination(next, scale), saturateScale))
 	}
 
-	for _, scale := range darkerScale {
-		colors = append(colors, MultiplicativeLumination(c, scale))
-	}
-
-	// fmt.Printf("CCO: %+q\n", colors)
-
 	var t Tones
 	t.Base = c
-	t.Lumen = colors[0]
-	t.Lumin = colors[1]
-	t.Light = colors[2]
-	t.Lush = colors[3]
-	t.Dark = colors[4]
-
-	// fmt.Printf("Tone: %+s\n", t)
+	t.Grades = colors
 
 	return t
 }

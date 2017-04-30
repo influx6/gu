@@ -1,0 +1,32 @@
+package {{PKG}}
+
+import (
+    "path"
+	"github.com/gu-io/gu/parsers/htmlfiles"
+	"github.com/gu-io/gu"
+)
+
+var htmlFiles map[string]string
+
+// Get retrieves the giving file and the content of that giving file.
+func Get(file string) (content string, found bool) {
+    var hasExt bool
+
+    fileExt := path.Ext(file)
+    hasExt = (fileExt == "")
+
+    // If we have a file extension then check against the given file name directly.
+    if hasExt{
+        content, found = htmlfiles[file]
+        return
+    }
+    
+
+    // Since no extension, attempt to locate file+'.html' path.
+    newFile = file + ".html"
+    content, found = htmlFiles[file]
+}
+
+func init(){
+    {{FILES}}
+}

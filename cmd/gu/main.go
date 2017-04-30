@@ -409,6 +409,85 @@ func initCommands() {
 	})
 
 	commands = append(commands, &cli.Command{
+		Name:        "views",
+		Usage:       "gu views <views-dir-name>",
+		Description: "Generates a package which builds all internal [.html|.xhtml|.xml|.gml|.ghtml|.tml] files into a go file",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "name",
+				Aliases: []string{"n"},
+				Usage:   "name=myviews",
+			},
+		},
+		Action: func(ctx *cli.Context) error {
+			args := ctx.Args()
+			if args.Len() == 0 {
+				return nil
+			}
+
+			cdir, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+
+			vDirName := ctx.String("name")
+			if vDirName == "" && args.Len() > 0 {
+				vDirName = args.First()
+			}
+
+			if vDirName == "" && args.Len() == 0 {
+				vDirName = "views"
+			}
+
+			gopath := os.Getenv("GOPATH")
+			gup := filepath.Join(gopath, "src")
+			gupkg := filepath.Join(gup, gupath)
+			vDirPath := filepath.Join(cdir, vDirName)
+
+			if err = os.MkdirAll(vDirPath, 0777); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project directory: %q\n", filepath.Base(vDirPath))
+
+			gendata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/views.template"))
+			if err != nil {
+				return err
+			}
+
+			vgendata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/viewsgenerate.template"))
+			if err != nil {
+				return err
+			}
+
+			plainPKGData, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/plain_generated_pkg.template"))
+			if err != nil {
+				return err
+			}
+
+			gendata = []byte(fmt.Sprintf("%q", gendata))
+			vgendata = bytes.Replace(vgendata, pkgContentbytes, gendata, 1)
+			vgendata = bytes.Replace(vgendata, dirNamebytes, []byte(vDirPath), 1)
+			vgendata = bytes.Replace(vgendata, pkgNamebytes, []byte("\""+vDirName+"\""), 1)
+			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte(vDirName), -1)
+
+			if err := writeFile(filepath.Join(vDirPath, "generate.go"), vgendata); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(vDirPath), "generate.go"))
+
+			if err := writeFile(filepath.Join(vDirPath, "views.go"), plainPKGData); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(vDirPath), "views.go"))
+
+			return nil
+		},
+	})
+
+	commands = append(commands, &cli.Command{
 		Name:        "components",
 		Usage:       "gu components <sub-comand>",
 		Description: "This provides subcommands which are used in the development of components",

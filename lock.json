@@ -1,5 +1,5 @@
 {
-    "memo": "8bcaac3430d96c70880309c1ddfcf42878c2fd5655db6eaeac97963a19578de0",
+    "memo": "1991b40b23512719cfdfb01688707be298b887d36688d068e8654899b52561b9",
     "projects": [
         {
             "name": "github.com/PuerkitoBio/goquery",
@@ -47,9 +47,19 @@
             "branch": "master",
             "revision": "d956f1012d971bd8151ee7815da39653e9b9b705",
             "packages": [
+                "colors",
                 "pattern",
                 "reflection",
-                "tests"
+                "tests",
+                "utils"
+            ]
+        },
+        {
+            "name": "github.com/lucasb-eyer/go-colorful",
+            "branch": "master",
+            "revision": "c900de9dbbc73129068f5af6a823068fc5f2308c",
+            "packages": [
+                "."
             ]
         },
         {

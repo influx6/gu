@@ -55,11 +55,16 @@ func walkDir(items map[string]string, root string, path string, info os.FileInfo
 		return nil
 	}
 
+	rel, err := filepath.Rel(root, path)
+	if err != nil {
+		return err
+	}
+
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}
 
-	items[path] = string(data)
+	items[rel] = string(data)
 	return nil
 }

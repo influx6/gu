@@ -3,7 +3,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"bytes"
 	"os"
@@ -22,7 +21,7 @@ func main() {
 		panic(err)
 	}
 
-	items, err := htmlfiles.ParseDir(filepath.Join(cdir, "{{DIRNAME}}"))
+	items, err := htmlfiles.ParseDir(cdir)
 	if err != nil {
 		panic("Failed to walk html files: "+ err.Error())
 	}
@@ -30,7 +29,7 @@ func main() {
     var buf bytes.Buffer
 
     for path, item := range items {
-        fmt.Fprintf("htmlfiles[%q] = %+q", path, item)
+        fmt.Fprintf(&buf,"\thtmlfiles[%q] = %+q\n", path, item)
     }
 
 	file, err := os.Create(filepath.Join(cdir, "views.go"))
@@ -41,7 +40,7 @@ func main() {
 	defer file.Close()
 
 	pkg = strings.Replace(pkg,"{{PKG}}", pkgName, -1)
-	pkg = strings.Replace(pkg,"{{FILES}}", buf.String(), 1)
+	pkg = strings.Replace(pkg,"{{FILES}}", buf.String(), -1)
 
 	file.Write([]byte(pkg))
 }

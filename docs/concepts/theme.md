@@ -19,7 +19,6 @@ var theme = styleguide.MustNew(styleguide.Attr{
 	SuccessColor: 			"#ffffff",
 })
 
-
 ```
 
 *Color fields must be in full else an error would be throw*

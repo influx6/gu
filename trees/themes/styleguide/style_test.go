@@ -1,7 +1,6 @@
 package styleguide_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/gu-io/gu/trees/themes/styleguide"
@@ -9,17 +8,6 @@ import (
 )
 
 func TestColor(t *testing.T) {
-	style, _ := styleguide.NewStyleGuide(styleguide.Attr{
-		PrimaryBrandColor:   "#7fffd4",
-		PrimaryColor:        "#7fffd4",
-		SecondaryBrandColor: "#7fffd4",
-		SecondaryColor:      "#7fffd4",
-		SuccessColor:        "#7fffd4",
-		FailureColor:        "#7fffd4",
-	})
-
-	fmt.Printf("%+s\n", style.CSS())
-
 	color, err := styleguide.ColorFrom("#7fffd4")
 	if err != nil {
 		tests.Failed("Should have successfully returned hsl value for hashed color: %+q.", err)

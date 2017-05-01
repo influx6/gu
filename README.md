@@ -124,6 +124,8 @@ Gu is fundamentally a library built to provide rendering capabilities with simpl
 
 -	[Embeddable Resources](./docs/concepts/embedded-resources.md)
 
+-	[Style Guides](./docs/concepts/theme.md)
+
 How to Contribute
 -----------------
 

@@ -11,6 +11,17 @@ import (
 	colorful "github.com/lucasb-eyer/go-colorful"
 )
 
+const (
+	shadowLarge    = "0px 20px 40px 4px rgba(0, 0, 0, 0.51)"
+	shadowPopDrops = "0px 9px 30px 2px rgba(0, 0, 0, 0.51)"
+	shadowHovers   = "0px 13px 30px 5px rgba(0, 0, 0, 0.58)"
+	shadowNormal   = "0px 13px 20px 2px rgba(0, 0, 0, 0.45)"
+
+	smallBorderRadius  = 2
+	mediumBorderRadius = 4
+	largeBorderRadius  = 8
+)
+
 var (
 	helpers = template.FuncMap{
 		"add": func(a, b int) int {
@@ -34,18 +45,14 @@ type Attr struct {
 	PrimaryWhite        string
 	SuccessColor        string
 	FailureColor        string
-
-	BaseFontSize int // BaseFontSize for typeface using MajorThird.
-
-	SmallBorderRadius  int // SmallBorderRadius for tiny components eg checkbox, radio buttons.
-	MediumBorderRadius int // MediaBorderRadius for buttons, inputs, etc
-	LargeBorderRadius  int // LargeBorderRadius for components like cards, modals, etc.
-
-	// Optional shadow values, need not set
-	FloatingShadow string // shadow for floating icons, elements.
-	HoverShadow    string // shadow for over dialog etc
-	DropShadow     string // Useful for popovers/dropovers
-	BaseShadow     string // Normal shadow of elemnts
+	BaseFontSize        int    // BaseFontSize for typeface using MajorThird.
+	SmallBorderRadius   int    // SmallBorderRadius for tiny components eg checkbox, radio buttons.
+	MediumBorderRadius  int    // MediaBorderRadius for buttons, inputs, etc
+	LargeBorderRadius   int    // LargeBorderRadius for components like cards, modals, etc.
+	FloatingShadow      string // shadow for floating icons, elements.
+	HoverShadow         string // shadow for over dialog etc
+	DropShadow          string // Useful for popovers/dropovers
+	BaseShadow          string // Normal shadow of elemnts
 }
 
 // StyleColors defines a struct which holds all possible giving brand colors utilized
@@ -90,105 +97,107 @@ func MustNew(attr Attr) StyleGuide {
 // New returns a new StyleGuide object which generates the necessary css
 // styles to utilize the defined style within any project.
 func New(attr Attr) (StyleGuide, error) {
+	if attr.BaseFontSize <= 0 {
+		attr.BaseFontSize = 16
+	}
+
+	if attr.FloatingShadow == "" {
+		attr.FloatingShadow = shadowLarge
+	}
+
+	if attr.HoverShadow == "" {
+		attr.HoverShadow = shadowHovers
+	}
+
+	if attr.BaseShadow == "" {
+		attr.BaseShadow = shadowNormal
+	}
+
+	if attr.DropShadow == "" {
+		attr.DropShadow = shadowPopDrops
+	}
+
+	if attr.SmallBorderRadius <= 0 {
+		attr.SmallBorderRadius = smallBorderRadius
+	}
+
+	if attr.MediumBorderRadius <= 0 {
+		attr.MediumBorderRadius = mediumBorderRadius
+	}
+
+	if attr.LargeBorderRadius <= 0 {
+		attr.LargeBorderRadius = largeBorderRadius
+	}
+
 	var style StyleGuide
+	style.Attr = attr
 
 	var err error
-	style.Brand.Primary, err = NewTones(attr.PrimaryColor)
-	if err != nil {
-		return style, err
+
+	if attr.PrimaryColor != "" {
+		style.Brand.Primary, err = NewTones(attr.PrimaryColor)
+		if err != nil {
+			return StyleGuide{}, errors.New("Invalid primary color")
+		}
 	}
 
-	style.Brand.PrimaryBrand, err = NewTones(attr.PrimaryBrandColor)
-	if err != nil {
-		return style, err
+	if attr.SecondaryColor != "" {
+		style.Brand.Secondary, err = NewTones(attr.SecondaryColor)
+		if err != nil {
+			return StyleGuide{}, errors.New("Invalid secondary color")
+		}
 	}
 
-	style.Brand.Secondary, err = NewTones(attr.SecondaryColor)
-	if err != nil {
-		return style, err
+	if attr.PrimaryBrandColor != "" {
+		style.Brand.PrimaryBrand, err = NewTones(attr.PrimaryBrandColor)
+		if err != nil {
+			return StyleGuide{}, errors.New("Invalid primary brand color")
+		}
 	}
 
-	style.Brand.SecondaryBrand, err = NewTones(attr.SecondaryBrandColor)
-	if err != nil {
-		return style, err
+	if attr.SecondaryBrandColor != "" {
+		style.Brand.SecondaryBrand, err = NewTones(attr.SecondaryBrandColor)
+		if err != nil {
+			return StyleGuide{}, errors.New("Invalid secondary brand color")
+		}
 	}
 
-	style.Brand.White, err = NewTones(attr.PrimaryWhite)
-	if err != nil {
-		return style, err
+	if attr.PrimaryWhite != "" {
+		style.Brand.White, err = NewTones(attr.PrimaryWhite)
+		if err != nil {
+			return StyleGuide{}, errors.New("Invalid primary white tone color")
+		}
 	}
 
-	style.Brand.Success, err = NewTones(attr.SuccessColor)
-	if err != nil {
-		return style, err
+	if attr.SuccessColor != "" {
+		style.Brand.Success, err = NewTones(attr.SuccessColor)
+		if err != nil {
+			return StyleGuide{}, errors.New("Invalid success color")
+		}
 	}
 
-	style.Brand.Failure, err = NewTones(attr.FailureColor)
-	if err != nil {
-		return style, err
-	}
-
-	style.init()
-	return style, nil
-}
-
-const (
-	shadowLarge    = "0px 20px 40px 4px rgba(0, 0, 0, 0.51)"
-	shadowPopDrops = "0px 9px 30px 2px rgba(0, 0, 0, 0.51)"
-	shadowHovers   = "0px 13px 30px 5px rgba(0, 0, 0, 0.58)"
-	shadowNormal   = "0px 13px 20px 2px rgba(0, 0, 0, 0.45)"
-
-	smallBorderRadius  = 2
-	mediumBorderRadius = 4
-	largeBorderRadius  = 8
-)
-
-// init initializes the style guide properties which require values.
-func (sc *StyleGuide) init() {
-	if sc.Attr.BaseFontSize <= 0 {
-		sc.BaseFontSize = 16
-	}
-
-	if sc.FloatingShadow == "" {
-		sc.FloatingShadow = shadowLarge
-	}
-
-	if sc.HoverShadow == "" {
-		sc.HoverShadow = shadowHovers
-	}
-
-	if sc.BaseShadow == "" {
-		sc.BaseShadow = shadowNormal
-	}
-
-	if sc.DropShadow == "" {
-		sc.DropShadow = shadowPopDrops
-	}
-
-	if sc.SmallBorderRadius <= 0 {
-		sc.SmallBorderRadius = smallBorderRadius
-	}
-
-	if sc.MediumBorderRadius <= 0 {
-		sc.MediumBorderRadius = mediumBorderRadius
-	}
-
-	if sc.LargeBorderRadius <= 0 {
-		sc.LargeBorderRadius = largeBorderRadius
+	if attr.FailureColor != "" {
+		style.Brand.Failure, err = NewTones(attr.FailureColor)
+		if err != nil {
+			return StyleGuide{}, errors.New("Invalid failure color")
+		}
 	}
 
 	bg, sm := GenerateValueScale(MajorThird, 1)
 
 	for _, item := range bg {
-		sc.BigFontScale = append(sc.BigFontScale, TypeSize(item))
+		style.BigFontScale = append(style.BigFontScale, TypeSize(item))
 	}
 
 	for _, item := range sm {
-		sc.SmallFontScale = append(sc.SmallFontScale, TypeSize(item))
+		style.SmallFontScale = append(style.SmallFontScale, TypeSize(item))
 	}
+
+	return style, nil
 }
 
-// Stylesheet returns a instance of a *css.Rule object which contains the style for the theme.
+// Stylesheet returns a css.Rule object which contains the styleguide style
+// rules.
 func (sc *StyleGuide) Stylesheet() *css.Rule {
 	return css.New(sc.CSS(), nil)
 }

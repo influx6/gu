@@ -3,11 +3,9 @@ html {
 	font-size: {{ .BaseFontSize }}px;
 }
 
-
-/*____________ Base  classes ____________________________*/
-
-
-/* Letter spacing class go from highest to lowest where the highest is in positive 
+/*
+____________ Base  classes ____________________________
+ Letter spacing class go from highest to lowest where the highest is in positive 
    spacing value and the last in negative spacing values.
 */
 .letter-spacing-1 {
@@ -26,7 +24,6 @@ html {
 	letter-spacing: -2px;
 }
 
-
 .wrap {
   text-wrap: wrap;
   white-space: -moz-pre-wrap;
@@ -34,8 +31,9 @@ html {
   word-wrap: break-word;
 }
 
-/*____________ Base border radius classes ____________________________*/
-/**
+/*
+____________ Base border radius classes ____________________________
+
   These are classes for different border radius effect chosen specifically for 
   use with different components.
 
@@ -73,8 +71,9 @@ html {
 	border-radius: 50%;
 }
 
-/*____________ Base shadowdrop classes ____________________________*/
-/**
+/*
+____________ Base shadowdrop classes ____________________________
+
   These are classes for different shadow effect chosen specifically for 
   use with different components.
 
@@ -100,8 +99,9 @@ html {
 	box-shadow: {{ .FloatingShadow }};
 }
 
-/*____________ Base font size classes ____________________________*/
-/**
+/*
+____________ Base font size classes ____________________________
+
   These are classes provide a simple set of font-scale font-size
   which allow you to use for scaling based on an initial font-size 
   set on a parent, they should scale well.
@@ -122,8 +122,9 @@ html {
 }
 {{ end }}
 
-/*____________ Color set ____________________________*/
-/**
+/*
+____________ Color set ____________________________
+
   These are classes provide a color set based on specific brand colors 
   provided, these allows us to easily generate color, background and border-color
   classes suited to provide a consistent color design for use in project.
@@ -163,25 +164,19 @@ html {
 
 {{ range $index, $item := .Brand.PrimaryBrand.Grades }}
 {{ $rn := add $index 1 }}
+.brand-background-color-primary-{{ multiply $rn 10}} {
+	background: {{$item}};
+}
+
+.brand-border-color-primary-{{ multiply $rn 10}} {
+	border-color: {{$item}};
+}
+
 .brand-primary-{{ multiply $rn 10}} {
 	color: {{$item}};
 }
 {{ end }}
 
-{{ range $index, $item := .Brand.PrimaryBrand.Grades }}
-{{ $rn := add $index 1 }}
-.brand-background-color-primary-{{ multiply $rn 10}} {
-	background: {{$item}};
-}
-{{ end }}
-
-
-{{ range $index, $item := .Brand.PrimaryBrand.Grades }}
-{{ $rn := add $index 1 }}
-.brand-border-color-primary-{{ multiply $rn 10}} {
-	border-color: {{$item}};
-}
-{{ end }}
 
 .color-primary {
 	color: {{.Brand.Primary.Base}};
@@ -197,29 +192,20 @@ html {
 
 {{ range $index, $item := .Brand.Primary.Grades }}
 {{ $rn := add $index 1 }}
-.color-primary-{{ multiply $rn 10}} {
-	color: {{$item}};
-}
-{{ end }}
-
-{{ range $index, $item := .Brand.Primary.Grades }}
-{{ $rn := add $index 1 }}
 .background-color-primary-{{ multiply $rn 10}} {
 	background: {{$item}};
 }
-{{ end }}
 
+.color-primary-{{ multiply $rn 10}} {
+	color: {{$item}};
+}
 
-{{ range $index, $item := .Brand.Primary.Grades }}
-{{ $rn := add $index 1 }}
 .border-color-primary-{{ multiply $rn 10}} {
 	border-color: {{$item}};
 }
 {{ end }}
 
-
-*____________ Base background color set ____________________________*/
-
+/*____________ Secondary color set ____________________________*/
 
 .color-secondary {
 	color: {{.Brand.Secondary.Base}};
@@ -235,25 +221,18 @@ html {
 
 {{ range $index, $item := .Brand.Secondary.Grades }}
 {{ $rn := add $index 1 }}
+.background-color-secondary-{{ multiply $rn 10}} {
+	background: {{$item}};
+}
+
+.border-color-secondary-{{ multiply $rn 10}} {
+	border-color: {{$item}};
+}
+
 .color-secondary-{{ multiply $rn 10}} {
 	color: {{$item}};
 }
 {{ end }}
-
-{{ range $index, $item := .Brand.Secondary.Grades }}
-{{ $rn := add $index 1 }}
-.background-color-secondary-{{ multiply $rn 10}} {
-	background: {{$item}};
-}
-{{ end }}
-
-{{ range $index, $item := .Brand.Secondary.Grades }}
-{{ $rn := add $index 1 }}
-.border-color-secondary-{{ multiply $rn 10}} {
-	border-color: {{$item}};
-}
-{{ end }}
-
 
 .brand-color-secondary {
 	color: {{.Brand.SecondaryBrand.Base}};
@@ -269,26 +248,21 @@ html {
 
 {{ range $index, $item := .Brand.SecondaryBrand.Grades }}
 {{ $rn := add $index 1 }}
+.brand-background-color-secondary-{{ multiply $rn 10}} {
+	background: {{$item}};
+}
+
+.brand-border-color-secondary-{{ multiply $rn 10}} {
+	border-color: {{$item}};
+}
+
 .brand-color-secondary-{{ multiply $rn 10}} {
 	color: {{$item}};
 }
 {{ end }}
 
-{{ range $index, $item := .Brand.SecondaryBrand.Grades }}
-{{ $rn := add $index 1 }}
-.brand-background-color-secondary-{{ multiply $rn 10}} {
-	background: {{$item}};
-}
-{{ end }}
 
-{{ range $index, $item := .Brand.SecondaryBrand.Grades }}
-{{ $rn := add $index 1 }}
-.brand-border-color-secondary-{{ multiply $rn 10}} {
-	border-color: {{$item}};
-}
-{{ end }}
-
-*____________ Base secondary color set ____________________________*/
+/*____________ Success color set ____________________________*/
 
 .brand-success {
 	color: {{.Brand.Success.Base}};
@@ -304,26 +278,49 @@ html {
 
 {{ range $index, $item := .Brand.Success.Grades }}
 {{ $rn := add $index 1 }}
-.brand-success-{{ multiply $rn 10}} {
-	color: {{$item}};
-}
-{{ end }}
-
-{{ range $index, $item := .Brand.Success.Grades }}
-{{ $rn := add $index 1 }}
 .background-color-success-{{ multiply $rn 10}} {
 	background: {{$item}};
 }
-{{ end }}
 
-{{ range $index, $item := .Brand.Success.Grades }}
-{{ $rn := add $index 1 }}
+.brand-success-{{ multiply $rn 10}} {
+	color: {{$item}};
+}
+
 .border-color-success-{{ multiply $rn 10}} {
 	border-color: {{$item}};
 }
 {{ end }}
 
-/*____________ Base border primary color set ____________________________*/
+/*____________ White color set ____________________________*/
+
+.background-color-white {
+	background: {{.Brand.White.Base}};
+}
+
+.brand-white {
+	color: {{.Brand.White.Base}};
+}
+
+.border-color-white {
+	border-color: {{.Brand.White.Base}};
+}
+
+{{ range $index, $item := .Brand.White.Grades }}
+{{ $rn := add $index 1 }}
+.background-color-white-{{ multiply $rn 10}} {
+	background: {{$item}};
+}
+
+.brand-white-{{ multiply $rn 10}} {
+	color: {{$item}};
+}
+
+.border-color-white-{{ multiply $rn 10}} {
+	border-color: {{$item}};
+}
+{{ end }}
+
+/*____________ Failure color set ____________________________*/
 
 .background-color-failure {
 	background: {{.Brand.Failure.Base}};
@@ -342,17 +339,11 @@ html {
 .background-color-failure-{{ multiply $rn 10}} {
 	background: {{$item}};
 }
-{{ end }}
 
-{{ range $index, $item := .Brand.Failure.Grades }}
-{{ $rn := add $index 1 }}
 .brand-failure-{{ multiply $rn 10}} {
 	color: {{$item}};
 }
-{{ end }}
 
-{{ range $index, $item := .Brand.Failure.Grades }}
-{{ $rn := add $index 1 }}
 .border-color-failure-{{ multiply $rn 10}} {
 	border-color: {{$item}};
 }

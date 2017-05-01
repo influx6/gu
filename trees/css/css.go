@@ -18,7 +18,13 @@ var (
 			return a * b
 		},
 		"subtract": func(a, b int) int {
-			return b - a
+			return a - b
+		},
+		"divide": func(a, b int) int {
+			return a / b
+		},
+		"perc": func(a, b float64) float64 {
+			return (a / b) * 100
 		},
 	}
 )

@@ -12,7 +12,7 @@ var theme = styleguide.MustNew(styleguide.Attr{
 	PrimaryColor: 			"#ffffff",
 	SecondaryColor: 		"#ffffff",
 	PrimaryBrandColor: 		"#ffffff",
-	SecondaryBrandColor: 	"#ffffff",
+	SecondaryBrandColor:	"#ffffff",
 	PrimaryWhite: 			"#ffffff",
 	FailureColor: 			"#ffffff",
 	SuccessColor: 			"#ffffff",

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gu-io/gu/trees"
 	"golang.org/x/net/html"
+	"github.com/gu-io/gu/trees/themes/styleguide"
 )
 
 // DefaultComponentMakers provides a set of default components makers which can be
@@ -17,6 +18,9 @@ var DefaultComponentMakers = []ComponentItem{
 	{
 		TagName: "css",
 		Unwrap:  true,
+		MakerTheme: func(fields map[string]string, template string, theme styleguide.StyleGuide) Renderable {
+			return Static(trees.CSSStylesheet(template, fields, theme.Stylesheet()))
+		},
 		Maker: func(fields map[string]string, template string) Renderable {
 			return Static(trees.CSSStylesheet(template, fields))
 		},
@@ -26,22 +30,25 @@ var DefaultComponentMakers = []ComponentItem{
 // ComponentMaker defines a function type which returns a Renderable based on
 // a series of provied attributes.
 type ComponentMaker func(fields map[string]string, template string) Renderable
+type ComponentMakerWithTheme func(fields map[string]string, template string, styleguide.StyleGuide) Renderable
 
 // ComponentItem defines a struct which contains the tagName and maker corresponding
 // to generating the giving tagName.
 type ComponentItem struct {
 	TagName string
 	Maker   ComponentMaker
+	MakerTheme   ComponentMaker
 	Unwrap  bool
 }
 
 // ComponentRegistry defines a struct to manage all registered Component makers.
 type ComponentRegistry struct {
 	makers map[string]ComponentItem
+	theme *styleguide.StyleGuide
 }
 
 // NewComponentRegistry returns a new instance of a ComponentRegistry.
-func NewComponentRegistry() *ComponentRegistry {
+func NewComponentRegistry(theme *styleguide.StyleGuide) *ComponentRegistry {
 	registry := &ComponentRegistry{
 		makers: make(map[string]ComponentItem),
 	}
@@ -122,6 +129,11 @@ func (c *ComponentRegistry) ParseTag(tag string, fields map[string]string, templ
 	if !ok {
 		return nil, false
 	}
+
+	if cm.MakerTheme != nil  {
+		return cm.MakerTheme(fields, template, c.theme)
+	}
+
 
 	return cm.Maker(fields, template), cm.Unwrap
 }

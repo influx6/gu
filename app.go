@@ -86,34 +86,6 @@ func App(attr AppAttr) *NApp {
 		}
 	}
 
-	// NOTE: Do this in the driver.
-	// app.driver.OnReady(func() {
-	// 	fmt.Printf("Running App: %q\n", app.attr.Name)
-	// 	fmt.Printf("Running App Title: %q\n", app.attr.Name)
-	//
-	// 	app.active = false
-	// 	app.ActivateRoute(app.driver.Location())
-	//
-	// 	app.driver.Render(&app)
-	// 	app.active = true
-	//
-	// 	fmt.Printf("Ending App Run: %q\n", app.attr.Name)
-	// })
-
-	// NOTE: Do this in the driver.
-	// app.notifications.Subscribe(func(directive router.PushDirectiveEvent) {
-	// 	if !app.active || app.driver == nil {
-	// 		return
-	// 	}
-	//
-	// 	app.driver.Navigate(directive)
-	// })
-
-	// NOTE: Do this in the driver.
-	// app.driver.OnRoute(&app)
-
-	// NOTE: Do this in the driver.
-	// app.driver.Ready()
 	return &app
 }
 

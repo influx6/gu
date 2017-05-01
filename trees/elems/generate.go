@@ -277,8 +277,8 @@ func Guscript(path string) *trees.Markup {
 // CSS provides a function that takes style rules which returns a stylesheet embeded into
 // the provided element parent and is built on the gu/css package which collects
 // necessary details from its parent to only target where it gets mounted.
-func CSS(styles interface{}, bind interface{}) *trees.Markup {
-	return trees.CSSStylesheet(styles, bind)
+func CSS(styles interface{}, bind interface{}, ext *css.Rule) *trees.Markup {
+	return trees.CSSStylesheet(styles, bind, ext)
 }
 `)
 

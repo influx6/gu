@@ -58,12 +58,12 @@ func NewText(txt string, dl ...interface{}) *Markup {
 // CSSStylesheet provides a function that takes style rules which returns a stylesheet embeded into
 // the provided element parent and is built on the gu/css package which collects
 // necessary details from its parent to only target where it gets mounted.
-func CSSStylesheet(styles interface{}, bind interface{}) *Markup {
+func CSSStylesheet(styles interface{}, bind interface{}, ext *css.Rule) *Markup {
 	var rs *css.Rule
 
 	switch so := styles.(type) {
 	case string:
-		rs = css.New(so, nil)
+		rs = css.New(so, ext)
 	case *css.Rule:
 		rs = so
 	default:

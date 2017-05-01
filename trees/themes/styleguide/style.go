@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"text/template"
 
+	"github.com/gu-io/gu/trees/css"
 	"github.com/influx6/faux/colors"
 	colorful "github.com/lucasb-eyer/go-colorful"
 )
@@ -76,9 +77,19 @@ type StyleGuide struct {
 	SmallFontScale []TypeSize
 }
 
-// NewStyleGuide returns a new StyleGuide object which generates the necessary css
+// MustNew returns the giving style or panics if it fails.
+func MustNew(attr Attr) StyleGuide {
+	style, err := New(attr)
+	if err != nil {
+		panic(err)
+	}
+
+	return style
+}
+
+// New returns a new StyleGuide object which generates the necessary css
 // styles to utilize the defined style within any project.
-func NewStyleGuide(attr Attr) (StyleGuide, error) {
+func New(attr Attr) (StyleGuide, error) {
 	var style StyleGuide
 
 	var err error
@@ -175,6 +186,11 @@ func (sc *StyleGuide) init() {
 	for _, item := range sm {
 		sc.SmallFontScale = append(sc.SmallFontScale, TypeSize(item))
 	}
+}
+
+// Stylesheet returns a instance of a *css.Rule object which contains the style for the theme.
+func (sc *StyleGuide) Stylesheet() *css.Rule {
+	return css.New(sc.CSS(), nil)
 }
 
 // CSS returns a css style content for usage with a css stylesheet.

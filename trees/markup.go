@@ -63,7 +63,7 @@ func CSSStylesheet(styles interface{}, bind interface{}) *Markup {
 
 	switch so := styles.(type) {
 	case string:
-		rs = css.New(so)
+		rs = css.New(so, nil)
 	case *css.Rule:
 		rs = so
 	default:

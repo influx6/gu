@@ -3,24 +3,26 @@ Style Guide
 Gu provides a [StyleGuide](https://github.com/gu-io/gu/tree/master/trees/themes/styleguide) package which provides a basic set of styles generated from the color sets provided and allows a quick startup in design. It's an optional piece of the package but can help to reduce alot of the metal load in creating a consistent set of design styles.
 
 Example
-==========
+-----------
 
 Defining a style guide requires the selection of the primary and secondary color and brand which the project uses, with the selective color values for success and failures, which helps generate a giving stylesheet of property styles.
 
 ```go
 
 var theme = styleguide.MustNew(styleguide.Attr{
-	PrimaryColor: 			"#000",
-	SecondaryColor: 		"#000",
-	PrimaryBrandColor: 		"#000",
-	SecondaryBrandColor: 	"#000",
-	PrimaryWhite: 			"#fff",
-	FailureColor: 			"#000",
-	SuccessColor: 			"#000",
+	PrimaryColor: 			"#ffffff",
+	SecondaryColor: 		"#ffffff",
+	PrimaryBrandColor: 		"#ffffff",
+	SecondaryBrandColor: 	"#ffffff",
+	PrimaryWhite: 			"#ffffff",
+	FailureColor: 			"#ffffff",
+	SuccessColor: 			"#ffffff",
 })
 
 
 ```
+
+*Color fields must be in full else an error would be throw*
 
 Executing `theme.CSS()` will produce: 
 

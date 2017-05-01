@@ -8,7 +8,6 @@ Example
 Defining a style guide requires the selection of the primary and secondary color and brand which the project uses, with the selective color values for success and failures, which helps generate a giving stylesheet of property styles.
 
 ```go
-
 var theme = styleguide.MustNew(styleguide.Attr{
 	PrimaryColor: 			"#ffffff",
 	SecondaryColor: 		"#ffffff",

@@ -14,6 +14,7 @@ import (
 	// "github.com/gu-io/qt" Not yet ready
 	"github.com/gu-io/gopherjs"
 	"{{PKG}}/manifests"
+	"{{PKG}}/components"
 )
 
 // EmptyServer is structure you should replace, this allows you to serve requests
@@ -42,7 +43,8 @@ func main() {
 		Name:              "{{Name}}",
 		Title:             "{{Name}} Gu App",
 		Manifests:         manifests.Manifests,
-		Router: 					 router,
+		Router: 		   router,
+		Theme:			   components.Theme,
 	})
 
 	// Must be done before attempting to add any view

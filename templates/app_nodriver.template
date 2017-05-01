@@ -12,6 +12,7 @@ import (
 	"github.com/gu-io/gu/router"
 	"github.com/gu-io/gu/router/cache"
 	"{{PKG}}/manifests"
+	"{{PKG}}/components"
 )
 
 // New returns a new gu.NApp using the provided arguments as needed.
@@ -23,6 +24,7 @@ func New(cache router.Cache, server http.Handler) *gu.NApp {
 		Title:             "{{Name}} Gu App",
 		Manifests:         manifests.Manifests,
 		Router: 		   router,
+		Theme:			   components.Theme,
 	})
 
     return app

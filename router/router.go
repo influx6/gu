@@ -3,11 +3,17 @@ package router
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"sync"
 )
+
+// Params defines a map type of key-value pairs to be sent as query parameters.
+type Params map[string]string
 
 // Cache defines a interface which exposes a cache like structure for retrieving
 // requests.
@@ -39,43 +45,56 @@ func (r *Router) Cache() Cache {
 }
 
 // Patch retrieves the giving path and returns the response expected using a PATCH method.
-func (r *Router) Patch(path string, body io.ReadCloser) (*http.Response, error) {
-	return r.Do("PATCH", path, body)
+func (r *Router) Patch(path string, params Params, body io.ReadCloser) (*http.Response, error) {
+	return r.Do("PATCH", path, params, body)
 }
 
 // Put retrieves the giving path and returns the response expected using a PUT method.
-func (r *Router) Put(path string, body io.ReadCloser) (*http.Response, error) {
-	return r.Do("PUT", path, body)
+func (r *Router) Put(path string, params Params, body io.ReadCloser) (*http.Response, error) {
+	return r.Do("PUT", path, params, body)
 }
 
 // Post retrieves the giving path and returns the response expected using a POST method.
-func (r *Router) Post(path string, body io.ReadCloser) (*http.Response, error) {
-	return r.Do("POST", path, body)
+func (r *Router) Post(path string, params Params, body io.ReadCloser) (*http.Response, error) {
+	return r.Do("POST", path, params, body)
 }
 
 // Options retrieves the giving path and returns the response expected using a OPTIONS method.
-func (r *Router) Options(path string) (*http.Response, error) {
-	return r.Do("OPTIONS", path, nil)
+func (r *Router) Options(path string, params Params) (*http.Response, error) {
+	return r.Do("OPTIONS", path, params, nil)
 }
 
 // Delete retrieves the giving path and returns the response expected using a DELETE method.
-func (r *Router) Delete(path string) (*http.Response, error) {
-	return r.Do("DELETE", path, nil)
+func (r *Router) Delete(path string, params Params) (*http.Response, error) {
+	return r.Do("DELETE", path, params, nil)
 }
 
 // Head retrieves the giving path and returns the response expected using a HEAD method.
-func (r *Router) Head(path string) (*http.Response, error) {
-	return r.Do("HEAD", path, nil)
+func (r *Router) Head(path string, params Params) (*http.Response, error) {
+	return r.Do("HEAD", path, params, nil)
 }
 
 // Get retrieves the giving path and returns the response expected using a GET method.
-func (r *Router) Get(path string) (*http.Response, error) {
-	return r.Do("GET", path, nil)
+func (r *Router) Get(path string, params Params) (*http.Response, error) {
+	return r.Do("GET", path, params, nil)
 }
 
 // Do performs the giving requests for a giving path with the provided body and returns the
 // response for that method.
-func (r *Router) Do(method string, path string, body io.ReadCloser) (*http.Response, error) {
+func (r *Router) Do(method string, path string, params Params, body io.ReadCloser) (*http.Response, error) {
+
+	// Do we have parameters?
+	if params != nil {
+		parameters := WrapParams(params)
+
+		// Does it already contain a query part?
+		if strings.Contains(path, "?") {
+			path = path + "&" + url.QueryEscape(parameters)
+		} else {
+			path = path + "?" + url.QueryEscape(parameters)
+		}
+	}
+
 	req, err := http.NewRequest(method, path, body)
 	if err != nil {
 		return nil, err
@@ -113,6 +132,17 @@ func (r *Router) Do(method string, path string, body io.ReadCloser) (*http.Respo
 }
 
 //================================================================================
+
+// WrapParams transforms the params map into a string of &key=value pair.
+func WrapParams(params Params) string {
+	var q []string
+
+	for k, v := range params {
+		q = append(q, fmt.Sprintf("%s=%s", k, v))
+	}
+
+	return strings.Join(q, "&")
+}
 
 // ReadBody returns the body of the giving response.
 func ReadBody(res *http.Response) ([]byte, error) {

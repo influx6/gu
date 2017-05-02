@@ -41,7 +41,7 @@ func main() {
 
 	app := gu.App(gu.AppAttr{
 		Name:              "{{Name}}",
-		Title:             "{{Name}} Gu App",
+		Title:             "{{Name}} App",
 		Manifests:         manifests.Manifests,
 		Router: 		   router,
 		Theme:			   components.Theme,

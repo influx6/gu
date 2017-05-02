@@ -46,19 +46,12 @@ func main() {
 
 	app := gu.App(gu.AppAttr{
 		Name:              "{{Name}}",
-		Title:             "{{Name}} Gu App",
+		Title:             "{{Name}} App",
 		Manifests:         manifests.Manifests,
 		Router: 		   router,
 		Theme:			   components.Theme,
 	})
 
 	// Must be done before attempting to add any view
-	driver := gopherjs.NewJSDriver(app)
-
-	app.View(gu.ViewAttr{
-		Name:  "View.Index",
-        Route: "/*",
-  })
-
-	_ = driver
+	_ = gopherjs.NewJSDriver(app)
 }

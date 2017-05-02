@@ -8,8 +8,8 @@ import (
 	"html/template"
 
 	"github.com/gu-io/gu/trees"
-	"golang.org/x/net/html"
 	"github.com/gu-io/gu/trees/themes/styleguide"
+	"golang.org/x/net/html"
 )
 
 // DefaultComponentMakers provides a set of default components makers which can be
@@ -30,28 +30,31 @@ var DefaultComponentMakers = []ComponentItem{
 // ComponentMaker defines a function type which returns a Renderable based on
 // a series of provied attributes.
 type ComponentMaker func(fields map[string]string, template string) Renderable
-type ComponentMakerWithTheme func(fields map[string]string, template string, *styleguide.StyleGuide) Renderable
+
+// ComponentMakerWithTheme defines a function type which returns a Renderable based
+// on the fields, template and style guide provided, which it optional uses.
+type ComponentMakerWithTheme func(fields map[string]string, template string, guide *styleguide.StyleGuide) Renderable
 
 // ComponentItem defines a struct which contains the tagName and maker corresponding
 // to generating the giving tagName.
 type ComponentItem struct {
-	TagName string
-	Maker   ComponentMaker
-	MakerTheme   ComponentMaker
-	Unwrap  bool
+	TagName    string
+	Maker      ComponentMaker
+	MakerTheme ComponentMaker
+	Unwrap     bool
 }
 
 // ComponentRegistry defines a struct to manage all registered Component makers.
 type ComponentRegistry struct {
 	makers map[string]ComponentItem
-	theme *styleguide.StyleGuide
+	theme  *styleguide.StyleGuide
 }
 
 // NewComponentRegistry returns a new instance of a ComponentRegistry.
 func NewComponentRegistry(theme *styleguide.StyleGuide) *ComponentRegistry {
 	registry := &ComponentRegistry{
 		makers: make(map[string]ComponentItem),
-		theme: theme,
+		theme:  theme,
 	}
 
 	registry.Add(DefaultComponentMakers)
@@ -131,10 +134,9 @@ func (c *ComponentRegistry) ParseTag(tag string, fields map[string]string, templ
 		return nil, false
 	}
 
-	if cm.MakerTheme != nil  {
+	if cm.MakerTheme != nil {
 		return cm.MakerTheme(fields, template, c.theme), cm.Unwrap
 	}
-
 
 	return cm.Maker(fields, template), cm.Unwrap
 }

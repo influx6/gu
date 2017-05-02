@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
-	"sync"
 )
 
 // Params defines a map type of key-value pairs to be sent as query parameters.
@@ -24,10 +23,18 @@ type Cache interface {
 	Serve(http.ResponseWriter, *http.Request) error
 }
 
+// PreprocessHandler exposes a type which implements both the http.Handler and
+// a method which pre-processes giving routes for use in a request.
+type PreprocessHandler interface {
+	http.Handler
+	Preprocess(string) string
+}
+
 // Router exposes a interface which describes a
 type Router struct {
-	handler http.Handler
-	cache   Cache
+	handler  http.Handler
+	phandler PreprocessHandler
+	cache    Cache
 }
 
 // NewRouter returns a new instance of a Router.
@@ -35,6 +42,11 @@ func NewRouter(handler http.Handler, cache Cache) *Router {
 	var router Router
 	router.cache = cache
 	router.handler = handler
+
+	// if we have a preprocessor then retrieve type.
+	if ph, ok := handler.(PreprocessHandler); ok {
+		router.phandler = ph
+	}
 
 	return &router
 }
@@ -95,6 +107,10 @@ func (r *Router) Do(method string, path string, params Params, body io.ReadClose
 		}
 	}
 
+	if r.phandler != nil {
+		path = r.phandler.Preprocess(path)
+	}
+
 	req, err := http.NewRequest(method, path, body)
 	if err != nil {
 		return nil, err
@@ -103,27 +119,32 @@ func (r *Router) Do(method string, path string, params Params, body io.ReadClose
 	// Create a ResponseRecorder for the giving
 	responseRecoder := httptest.NewRecorder()
 
-	var wg sync.WaitGroup
+	// TODO: Validate to ensure we don't need this here.
+	// var wg sync.WaitGroup
+	// wg.Add(1)
 
-	wg.Add(1)
+	// go func() {
+	// 	defer wg.Done()
 
-	go func() {
-		defer wg.Done()
+	// If we have no cache, then use the internal handler.
+	if r.cache == nil {
+		r.handler.ServeHTTP(responseRecoder, req)
 
-		// If we have no cache, then use the internal handler.
-		if r.cache == nil {
-			r.handler.ServeHTTP(responseRecoder, req)
-			return
-		}
+		// return
+		res := responseRecoder.Result()
+		res.Request = req
 
-		// Since we have a cache, attempt to serve the request, else use the
-		// supplied http.Handler
-		if err := r.cache.Serve(responseRecoder, req); err != nil {
-			r.handler.ServeHTTP(responseRecoder, req)
-		}
-	}()
+		return res, nil
+	}
 
-	wg.Wait()
+	// Since we have a cache, attempt to serve the request, else use the
+	// supplied http.Handler
+	if err := r.cache.Serve(responseRecoder, req); err != nil {
+		r.handler.ServeHTTP(responseRecoder, req)
+	}
+	// }()
+
+	// wg.Wait()
 
 	res := responseRecoder.Result()
 	res.Request = req

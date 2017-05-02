@@ -18,7 +18,7 @@ var DefaultComponentMakers = []ComponentItem{
 	{
 		TagName: "css",
 		Unwrap:  true,
-		MakerTheme: func(fields map[string]string, template string, theme styleguide.StyleGuide) Renderable {
+		MakerTheme: func(fields map[string]string, template string, theme *styleguide.StyleGuide) Renderable {
 			return Static(trees.CSSStylesheet(template, fields, theme.Stylesheet()))
 		},
 		Maker: func(fields map[string]string, template string) Renderable {
@@ -30,7 +30,7 @@ var DefaultComponentMakers = []ComponentItem{
 // ComponentMaker defines a function type which returns a Renderable based on
 // a series of provied attributes.
 type ComponentMaker func(fields map[string]string, template string) Renderable
-type ComponentMakerWithTheme func(fields map[string]string, template string, styleguide.StyleGuide) Renderable
+type ComponentMakerWithTheme func(fields map[string]string, template string, *styleguide.StyleGuide) Renderable
 
 // ComponentItem defines a struct which contains the tagName and maker corresponding
 // to generating the giving tagName.
@@ -51,6 +51,7 @@ type ComponentRegistry struct {
 func NewComponentRegistry(theme *styleguide.StyleGuide) *ComponentRegistry {
 	registry := &ComponentRegistry{
 		makers: make(map[string]ComponentItem),
+		theme: theme,
 	}
 
 	registry.Add(DefaultComponentMakers)
@@ -131,7 +132,7 @@ func (c *ComponentRegistry) ParseTag(tag string, fields map[string]string, templ
 	}
 
 	if cm.MakerTheme != nil  {
-		return cm.MakerTheme(fields, template, c.theme)
+		return cm.MakerTheme(fields, template, c.theme), cm.Unwrap
 	}
 
 

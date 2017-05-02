@@ -70,6 +70,8 @@ Although the above example is trivial, the code does demonstrate how the `trees`
 
 -	CSS Package(https://github.com/gu-io/gu/trees/css) The `css` package provides a stylesheet formatter which underneat uses the a css tokenizer and parser and the Go's text template to create a robust and flexible way to include stylesheet rules targeting the `trees` package markup structures. This package can be freely used on it's own has it highly decouples and provides a clean API.
 
+- Basic Style
+
 ```go
 import (
 	"github.com/gu-io/gu/trees/css"
@@ -98,7 +100,7 @@ csr := css.New(`
     }
 
   }
-`)
+`, nil)
 
 sheet, err := csr.Stylesheet(struct {
 	Font string
@@ -127,6 +129,142 @@ sheet.String();
 		    font-family: Helvetica;
 	    }
     }
+
+*/
+```
+
+- Combined Styles
+
+```go
+import (
+	"github.com/gu-io/gu/trees/css"
+)
+
+csd := css.New(`
+  block {
+    font-family: {{ .Font }};
+    color: {{ .Color }};
+  }
+`, nil)
+
+csr := css.New(`
+
+  &:hover {
+    color: red;
+  }
+
+  &::before {
+    content: "bugger";
+  }
+
+  & div a {
+    color: black;
+    font-family: {{ .Font }};
+  }
+
+  @media (max-width: 400px){
+
+    &:hover {
+      color: blue;
+      font-family: {{ .Font }};
+    }
+
+  }
+`, nil, csd)
+
+sheet, err := csr.Stylesheet(struct {
+	Font string
+}{Font: "Helvetica"}, "#galatica")
+
+
+sheet.String();
+/* =>
+
+    block {
+      font-family: Helvetica;
+      color: Pink;
+    }
+
+    #galatica:hover {
+		  color: red;
+		}
+
+    #galatica::before {
+		  content: "bugger";
+		}
+
+    #galatica div a {
+		  color: black;
+		  font-family: Helvetica;
+		}
+
+    @media (max-width: 400px) {
+		  #galatica:hover {
+		    color: blue;
+		    font-family: Helvetica;
+	    }
+    }
+
+*/
+```
+
+The css package also allows use of other `css.Rule` to allow us extend exisiting rulesets into a new css ruleset, these though simple, provides a very powerful concept in creating generic styles which can be extended into specific css declarations for specific components. 
+
+Note: The rule set being extend will receive the same `binding` has the ruleset which is using it for extension.
+
+```go
+	csr := css.New(`
+    block {
+      font-family: {{ .Font }};
+      color: {{ .Color }};
+    }
+  `, nil)
+
+	csx := css.New(`
+
+    ::before {
+      content: "bugger";
+    }
+
+    div a {
+			{{ extend "block" }}
+			border: 1px solid #000;
+    }
+
+    @media (max-width: 400px){
+
+      :hover {
+        color: blue;
+        font-family: {{ .Font }};
+      }
+
+    }
+`, csr)
+
+	sheet, err := csx.Stylesheet(struct {
+		Font  string
+		Color string
+	}{
+		Font:  "Helvetica",
+		Color: "Pink",
+	}, "#galatica")
+
+  sheet.String() /*=>
+
+#galatica::before {
+  content: "bugger";
+}
+div a {
+  font-family: Helvetica;
+  color: Pink;
+  border: 1px solid #000;
+}
+@media (max-width: 400px) {
+  #galatica:hover {
+    color: blue;
+    font-family: Helvetica;
+  }
+}
 
 */
 ```

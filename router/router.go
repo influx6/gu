@@ -30,10 +30,18 @@ type PreprocessHandler interface {
 	Preprocess(string) string
 }
 
+// CacheHandler defines a handler which implements a type which allows a
+// handler to have access to a current request and response with the underline
+// cache being used.
+type CacheHandler interface {
+	ServeAndCache(http.ResponseWriter, *http.Request, Cache) error
+}
+
 // Router exposes a interface which describes a
 type Router struct {
 	handler  http.Handler
 	phandler PreprocessHandler
+	chandler CacheHandler
 	cache    Cache
 }
 
@@ -46,6 +54,11 @@ func NewRouter(handler http.Handler, cache Cache) *Router {
 	// if we have a preprocessor then retrieve type.
 	if ph, ok := handler.(PreprocessHandler); ok {
 		router.phandler = ph
+	}
+
+	// if we have a cache handler then retrieve type.
+	if ch, ok := handler.(CacheHandler); ok {
+		router.chandler = ch
 	}
 
 	return &router
@@ -140,7 +153,15 @@ func (r *Router) Do(method string, path string, params Params, body io.ReadClose
 	// Since we have a cache, attempt to serve the request, else use the
 	// supplied http.Handler
 	if err := r.cache.Serve(responseRecoder, req); err != nil {
-		r.handler.ServeHTTP(responseRecoder, req)
+
+		// If the CacheHandler is available then let it handle the request and pass
+		// in the routers cache, incase it wishes to store the request into the cache.
+		// If not, pass to normal http.handler.
+		if r.chandler != nil {
+			r.chandler.ServeAndCache(responseRecoder, req, r.cache)
+		} else {
+			r.handler.ServeHTTP(responseRecoder, req)
+		}
 	}
 	// }()
 

@@ -60,6 +60,12 @@ func New(rules string, extension *Rule, rs ...*Rule) *Rule {
 	return rsc
 }
 
+// Add adds the giving rule into the rules depends list.
+func (r *Rule) Add(c *Rule) *Rule {
+	r.depends = append(r.depends, c)
+	return r
+}
+
 // extend attempts to pull a giving set of classes and assigns into
 // a target class.
 func (r *Rule) extend(item string) string {

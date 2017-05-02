@@ -57,7 +57,7 @@ func (s *cssstyle) Rule(root []cssstyle) *css.Rule {
 	self := css.New(s.Style, befores...)
 
 	for _, after := range s.After {
-		self = (root[after]).Rule(root).AddRoot(self)
+		self = (root[after]).Rule(root).Add(self)
 	}
 
 	return self

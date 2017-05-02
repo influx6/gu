@@ -47,14 +47,12 @@ type ComponentItem struct {
 // ComponentRegistry defines a struct to manage all registered Component makers.
 type ComponentRegistry struct {
 	makers map[string]ComponentItem
-	theme  *styleguide.StyleGuide
 }
 
 // NewComponentRegistry returns a new instance of a ComponentRegistry.
-func NewComponentRegistry(theme *styleguide.StyleGuide) *ComponentRegistry {
+func NewComponentRegistry() *ComponentRegistry {
 	registry := &ComponentRegistry{
 		makers: make(map[string]ComponentItem),
-		theme:  theme,
 	}
 
 	registry.Add(DefaultComponentMakers)
@@ -71,8 +69,8 @@ func (c *ComponentRegistry) Generate(markup string, attr ComponentAttr) Componen
 
 // MustParseByTemplate returns a new Renderable from using text template to parse the provided
 // markup.
-func (c *ComponentRegistry) MustParseByTemplate(markup string, m interface{}) Renderable {
-	renderable, err := c.ParseByTemplate(markup, m)
+func (c *ComponentRegistry) MustParseByTemplate(markup string, m interface{}, style *styleguide.StyleGuide) Renderable {
+	renderable, err := c.ParseByTemplate(markup, m, style)
 	if err != nil {
 		panic(err)
 	}
@@ -81,7 +79,7 @@ func (c *ComponentRegistry) MustParseByTemplate(markup string, m interface{}) Re
 
 // ParseByTemplate returns a new Renderable from using text template to parse the provided
 // markup.
-func (c *ComponentRegistry) ParseByTemplate(markup string, m interface{}) (Renderable, error) {
+func (c *ComponentRegistry) ParseByTemplate(markup string, m interface{}, style *styleguide.StyleGuide) (Renderable, error) {
 	tmp, err := template.New("component").Parse(markup)
 	if err != nil {
 		return nil, err
@@ -92,12 +90,12 @@ func (c *ComponentRegistry) ParseByTemplate(markup string, m interface{}) (Rende
 		return nil, err
 	}
 
-	return ParseComponent(content.String(), c), nil
+	return ParseComponent(content.String(), c, style), nil
 }
 
 // Parse returns a new Renderable from the giving markup.
-func (c *ComponentRegistry) Parse(markup string, m ...interface{}) Renderable {
-	return ParseComponent(fmt.Sprintf(markup, m...), c)
+func (c *ComponentRegistry) Parse(markup string, style *styleguide.StyleGuide, m ...interface{}) Renderable {
+	return ParseComponent(fmt.Sprintf(markup, m...), c, style)
 }
 
 // Add adds the giving set of possible item/items of the Acceptable type into
@@ -127,7 +125,7 @@ func (c *ComponentRegistry) Has(tag string) bool {
 }
 
 // ParseTag returns the giving Renderable for the giving markup.
-func (c *ComponentRegistry) ParseTag(tag string, fields map[string]string, template string) (Renderable, bool) {
+func (c *ComponentRegistry) ParseTag(tag string, fields map[string]string, template string, style *styleguide.StyleGuide) (Renderable, bool) {
 	tag = strings.ToLower(tag)
 	cm, ok := c.makers[tag]
 	if !ok {
@@ -135,7 +133,7 @@ func (c *ComponentRegistry) ParseTag(tag string, fields map[string]string, templ
 	}
 
 	if cm.MakerTheme != nil {
-		return cm.MakerTheme(fields, template, c.theme), cm.Unwrap
+		return cm.MakerTheme(fields, template, c.theme, style), cm.Unwrap
 	}
 
 	return cm.Maker(fields, template), cm.Unwrap
@@ -176,15 +174,17 @@ type Treeset struct {
 	Children      []*Treeset
 	Tree          *trees.Markup
 	Fields        map[string]string
+	Theme         *styleguide.StyleGuide
 }
 
 // initialize any internal defered tag and template.
 func (t *Treeset) init() {
 	if t.DeferedTag != "" && t.Renderable == nil {
-		res, unwrap := t.Registry.ParseTag(t.DeferedTag, t.Fields, t.DeferTemplate)
+		res, unwrap := t.Registry.ParseTag(t.DeferedTag, t.Fields, t.DeferTemplate, t.Theme)
 
 		t.Renderable = res
 		t.Registry = nil
+		t.Theme = nil
 		t.Fields = nil
 		t.DeferedTag = ""
 		t.DeferTemplate = ""
@@ -229,11 +229,11 @@ func (t *Treeset) Render() *trees.Markup {
 
 // ParseComponent returns a new Renderable from the giving markup generating the
 // Renderable.
-func ParseComponent(markup string, registry *ComponentRegistry) Renderable {
+func ParseComponent(markup string, registry *ComponentRegistry, style *styleguide.StyleGuide) Renderable {
 	var tree Treeset
 
 	tokens := html.NewTokenizer(strings.NewReader(markup))
-	parseTokens(tokens, &tree, registry)
+	parseTokens(tokens, &tree, registry, style)
 
 	if len(tree.Children) == 1 {
 		return tree.Children[0]
@@ -245,7 +245,7 @@ func ParseComponent(markup string, registry *ComponentRegistry) Renderable {
 
 // parseTokens generates a new heirarchy of Treeset using the provided registery.
 // Creating appropriate markup necessary to build.
-func parseTokens(tokens *html.Tokenizer, parent *Treeset, registery *ComponentRegistry) {
+func parseTokens(tokens *html.Tokenizer, parent *Treeset, registery *ComponentRegistry, style *styleguide.StyleGuide) {
 	var templateEnable bool
 	var template []string
 
@@ -348,6 +348,7 @@ func parseTokens(tokens *html.Tokenizer, parent *Treeset, registery *ComponentRe
 					DeferedTag: tag,
 					Registry:   registery,
 					Tree:       wrap,
+					Theme:      style,
 				}
 			} else {
 				elem := trees.NewMarkup(string(tagName), token == html.SelfClosingTagToken)
@@ -371,7 +372,7 @@ func parseTokens(tokens *html.Tokenizer, parent *Treeset, registery *ComponentRe
 				continue
 			}
 
-			parseTokens(tokens, &set, registery)
+			parseTokens(tokens, &set, registery, style)
 		}
 	}
 }

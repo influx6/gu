@@ -26,6 +26,13 @@ func New{{Name}}() *{{Name}} {
   }
 }
 
+// RegisterServices is created so that the Services struct which contains 
+// objects that provide different functionality to the component can be 
+// recieved and accessed by the component.
+func (c *{{Name}}) RegisterServices(services gu.Services)  {
+	c.services = services
+}
+
 // Render returns the markup for this {{Name}} component.
 func (c {{Name}}) Render() *trees.Markup {
 	return elems.Div(property.ClassAttr("component"))

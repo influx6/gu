@@ -2,12 +2,13 @@ package components
 
 import (
 	"github.com/gu-io/gu"
+	"github.com/gu-io/gu/trees/themes/styleguide"
 )
 
 // Theme defines a possible default theme which colors should be changed to fit 
 // the desired colors, brands and settings of your project. It exists for the sake 
 // of where you wish to create use its styles to augment your internal styles.
-var Theme = styleguide.MustNew(styleguide.Attr{
+var Theme = styleguide.Must(styleguide.Attr{
 	PrimaryColor: 			"#000000",
 	SecondaryColor: 		"#000000",
 	PrimaryBrandColor: 		"#000000",

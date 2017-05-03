@@ -84,8 +84,8 @@ type StyleGuide struct {
 	SmallFontScale []TypeSize
 }
 
-// MustNew returns the giving style or panics if it fails.
-func MustNew(attr Attr) StyleGuide {
+// Must returns the giving style or panics if it fails.
+func Must(attr Attr) StyleGuide {
 	style, err := New(attr)
 	if err != nil {
 		panic(err)

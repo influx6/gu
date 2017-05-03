@@ -635,7 +635,9 @@ func initCommands() {
 
 			// Generate files for the project.
 			switch driver {
-			case "nodriver":
+			case "plain":
+				break
+			case "nodriver", "no-driver":
 				appdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_nodriver.template"))
 				if err != nil {
 					return err

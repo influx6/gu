@@ -8,6 +8,7 @@ package main
 import (
 	"github.com/gu-io/gu"
 	"github.com/gu-io/gu/router"
+	"github.com/gu-io/gu/router/cache/memorycache"
 	"github.com/gu-io/gopherjs"
 	"{{PKG}}/manifests"
 	"{{PKG}}/components"

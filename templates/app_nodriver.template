@@ -16,7 +16,7 @@ import (
 )
 
 // New returns a new gu.NApp using the provided arguments as needed.
-func New(cache router.Cache, server http.Handler) *gu.NApp {
+func New(cache cache.Cache, server http.Handler) *gu.NApp {
 	router := router.NewRouter(server, cache)
 
 	app := gu.App(gu.AppAttr{

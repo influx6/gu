@@ -11,6 +11,7 @@ package main
 import (
 	"github.com/gu-io/gu"
 	"github.com/gu-io/gu/router"
+	"github.com/gu-io/gu/router/cache"
 	"github.com/gu-io/gopherjs"
 	"{{PKG}}/manifests"
 	"{{PKG}}/components"
@@ -35,7 +36,7 @@ func main() {
 
 	var server EmptyServer
 
-	var cache router.Cache
+	var cache cache.Cache
 
 	cache, err := webcache.New("{{Name}}")
 	if err != nil {

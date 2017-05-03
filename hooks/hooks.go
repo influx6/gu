@@ -78,7 +78,7 @@ func (m ImageEmbed) Fetch(r *router.Router, attr shell.ManifestAttr) (*trees.Mar
 		return img, false, nil
 	}
 
-	res, err := r.Get(attr.Path)
+	res, err := r.Get(attr.Path, nil)
 	if err != nil {
 		return nil, false, err
 	}
@@ -121,7 +121,7 @@ func (m ImageCSSEmbed) Fetch(r *router.Router, attr shell.ManifestAttr) (*trees.
 		return style, true, nil
 	}
 
-	res, err := r.Get(attr.Path)
+	res, err := r.Get(attr.Path, nil)
 	if err != nil {
 		return nil, false, err
 	}
@@ -164,7 +164,7 @@ func (CSSEmbed) Fetch(r *router.Router, attr shell.ManifestAttr) (*trees.Markup,
 		return style, true, nil
 	}
 
-	res, err := r.Get(attr.Path)
+	res, err := r.Get(attr.Path, nil)
 	if err != nil {
 		return nil, false, err
 	}
@@ -200,7 +200,7 @@ func (JavascriptEmbed) Fetch(r *router.Router, attr shell.ManifestAttr) (*trees.
 		return style, true, nil
 	}
 
-	res, err := r.Get(attr.Path)
+	res, err := r.Get(attr.Path, nil)
 	if err != nil {
 		return nil, false, err
 	}

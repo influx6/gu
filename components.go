@@ -8,6 +8,7 @@ import (
 	"html/template"
 
 	"github.com/gu-io/gu/trees"
+	"github.com/gu-io/gu/trees/elems"
 	"github.com/gu-io/gu/trees/themes/styleguide"
 	"golang.org/x/net/html"
 )
@@ -15,6 +16,13 @@ import (
 // DefaultComponentMakers provides a set of default components makers which can be
 // readily used in creating markup.
 var DefaultComponentMakers = []ComponentItem{
+	{
+		TagName: "markdown",
+		Unwrap:  true,
+		Maker: func(fields map[string]string, template string) Renderable {
+			return elems.Markdown(template)
+		},
+	},
 	{
 		TagName: "css",
 		Unwrap:  true,

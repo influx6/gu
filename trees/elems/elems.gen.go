@@ -12,9 +12,10 @@ import (
 
 	"github.com/gu-io/gu/trees"
 	"github.com/gu-io/gu/trees/css"
+	"github.com/russross/blackfriday"
 )
 
-// SpaceCharacter provides text markup which contains the `&nbsp` text for
+// SpaceCharacter provides text markup which contains the '&nbsp' text for
 // a space element.
 func SpaceCharacter(count int) *trees.Markup {
 	if count < 1 {
@@ -30,6 +31,13 @@ func SpaceCharacter(count int) *trees.Markup {
 	return trees.NewText(strings.Join(spaces, ""))
 }
 
+// Markdown takes the giving string which contains markdown written contents
+// and parses to html, which then is used to generate a new markup.
+func Markdown(md string) *trees.Markup {
+	hml := blackfriday.MarkdownCommon([]byte(md))
+	return Parse(string(hml))
+}
+
 // CustomElement defines a type which returns a custom element type provided by
 // the tagname.
 func CustomElement(tag string, markup ...trees.Appliable) *trees.Markup {
@@ -43,17 +51,6 @@ func CustomElement(tag string, markup ...trees.Appliable) *trees.Markup {
 		m.Apply(e)
 	}
 	return e
-}
-
-// Guscript returns a script tag which ass specific attributes which is set with
-// specific attributes that identifies this script.
-func Guscript(path string) *trees.Markup {
-	script := trees.NewMarkup("script", false)
-	trees.NewAttr("src", path).Apply(script)
-	trees.NewAttr("gu-resource", "true").Apply(script)
-	trees.NewAttr("gu-resource-root", "true").Apply(script)
-
-	return script
 }
 
 // Text provides custom type for defining text nodes with the trees markup.
@@ -1309,7 +1306,7 @@ func SvgTextPath(markup ...trees.Appliable) *trees.Markup {
 }
 
 // SvgTitle provides the following for SVG XML elements ->
-// Each container element or graphics element in an SVG drawing can supply a <title> element containing a description string where the description is text-only. When the current SVG document fragment is rendered as SVG on visual media, <title> element is not rendered as part of the graphics. However, some user agents may, for example, display the <title> element as a tooltip. Alternate presentations are possible, both visual and aural, which display the <title> element but do not display path elements or other graphics elements. The <title> element generally improve accessibility of SVG documents
+// Each container element or graphics element in an SVG drawing can supply a <title> element containing a description string where the description is text-only. When the current SVG document fragment is rendered as SVG on visual media, <title> element is not rendered as part of the graphics. However, some user agents may, for example, display the <title> element as a tooltip. Alternate presentations are possible, both visual and aural, which display the <title> element but do not display path elements or other graphics elements. The <title> element generally improves accessibility of SVG documents.
 // https://developer.mozilla.org/en-US/docs/Web/SVG/Element/title
 func SvgTitle(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("title", false)
@@ -1491,7 +1488,7 @@ func Aside(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Audio provides the following for HTML elements ->
-// The HTML <audio> element is used to embed sound content in documents. It may contain one or more audio sources, represented using the src attribute or the <source> element; the browser will choose the most suitable one.
+// The HTML <audio> element is used to embed sound content in documents. It may contain one or more audio sources, represented using the src attribute or the <source> element: the browser will choose the most suitable one. It can also be the destination for streamed media, using a MediaStream.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio
 func Audio(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("audio", false)
@@ -1799,7 +1796,7 @@ func Div(markup ...trees.Appliable) *trees.Markup {
 }
 
 // DescriptionList provides the following for HTML elements ->
-// The HTML <dl> element encloses a list of groups of terms and descriptions. Common uses for this element are to implement a glossary or to display metadata (a list of key-value pairs).
+// The HTML <dl> element represents a description list. The element encloses a list of groups of terms and descriptions. Common uses for this element are to implement a glossary or to display metadata (a list of key-value pairs).
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dl
 func DescriptionList(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("dl", false)
@@ -1939,7 +1936,7 @@ func Header(markup ...trees.Appliable) *trees.Markup {
 }
 
 // HeadingsGroup provides the following for HTML elements ->
-// The HTML <hgroup> element represents the heading of a section. It defines a single title that participates in the outline of the document as the heading of the implicit or explicit section that it belongs to.
+// The HTML <hgroup> element represents a multi-level heading for a section of a document. It groups a set of <h1>–<h6> elements.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/hgroup
 func HeadingsGroup(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("hgroup", false)
@@ -1981,7 +1978,7 @@ func Italic(markup ...trees.Appliable) *trees.Markup {
 }
 
 // InlineFrame provides the following for HTML elements ->
-// The HTML Inline Frame Element <iframe> represents a nested browsing context, effectively embedding another HTML page into the current page. In HTML 4.01, a document may contain a head and a body or a head and a frameset, but not both a body and a frameset. However, an <iframe> can be used within a normal document body. Each browsing context has its own session history and active document. The browsing context that contains the embedded content is called the parent browsing context. The top-level browsing context (which has no parent) is typically the browser window.
+// The HTML <iframe> element represents a nested browsing context, effectively embedding another HTML page into the current page. In HTML 4.01, a document may contain a head and a body or a head and a frameset, but not both a body and a frameset. However, an <iframe> can be used within a normal document body. Each browsing context has its own session history and active document. The browsing context that contains the embedded content is called the parent browsing context. The top-level browsing context (which has no parent) is typically the browser window.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe
 func InlineFrame(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("iframe", false)
@@ -2009,7 +2006,7 @@ func Image(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Input provides the following for HTML elements ->
-// The HTML <input> element is used to create interactive controls for web-based forms in order to accept data from the user. How an <input> works varies considerably depending on the value of its type attribute.
+// The HTML <input> element is used to create interactive controls for web-based forms in order to accept data from the user.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
 func Input(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("input", true)
@@ -2107,7 +2104,7 @@ func Link(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Main provides the following for HTML elements ->
-// The HTML <main> element represents the main content of  the <body> of a document or application. The main content area consists of content that is directly related to, or expands upon the central topic of a document or the central functionality of an application.
+// The HTML <main> element represents the main content of the <body> of a document or application. The main content area consists of content that is directly related to, or expands upon the central topic of a document or the central functionality of an application.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/main
 func Main(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("main", false)
@@ -2135,7 +2132,7 @@ func Map(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Mark provides the following for HTML elements ->
-// The HTML <mark> element represents highlighted text, i.e., a run of text marked for reference purpose, due to its relevance in a particular context. For example it can be used in a page showing search results to highlight every instance of the searched-for word.
+// The HTML <mark> element represents highlighted text, i.e., a run of text marked for reference purpose, due to its relevance in a particular context.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/mark
 func Mark(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("mark", false)
@@ -2177,7 +2174,7 @@ func MenuItem(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Meta provides the following for HTML elements ->
-// The HTML <meta> element represents any metadata information that cannot be represented by one of the other HTML meta-related elements (<base>, <link>, <script>, <style> or <title>).
+// The HTML <meta> element represents metadata that cannot be represented by other HTML meta-related elements, like <base>, <link>, <script>, <style> or <title>.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta
 func Meta(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("meta", true)
@@ -2219,7 +2216,7 @@ func Navigation(markup ...trees.Appliable) *trees.Markup {
 }
 
 // NoFrames provides the following for HTML elements ->
-// <noframes> is an HTML element which is used to supporting browsers which are not able to support <frame> elements or configured to do so.
+// <noframes> is an HTML element which is used to support browsers which are not able to support <frame> elements or configured to do so.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/noframes
 func NoFrames(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("noframes", false)
@@ -2289,7 +2286,7 @@ func OptionsGroup(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Option provides the following for HTML elements ->
-// The HTML <option> element is used to create a control representing an item within a <select>, an <optgroup> or a <datalist> HTML5 element.
+// The HTML <option> element is used to define an item contained in a <select>, an <optgroup>, or a <datalist> element. As such, <option> can represent menu items in popups and other lists of items in an HTML document.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/option
 func Option(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("option", false)
@@ -2499,7 +2496,7 @@ func Script(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Section provides the following for HTML elements ->
-// The HTML <section> element represents a generic section of a document, i.e., a thematic grouping of content, typically with a heading.
+// The HTML <section> element represents a standalone section of functionality contained within an HTML document, typically with a heading, which doesn't have a more specific semantic element to represent it.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/section
 func Section(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("section", false)
@@ -2513,7 +2510,7 @@ func Section(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Select provides the following for HTML elements ->
-// The HTML <select> element represents a control that provides a menu of options.
+// The HTML <select> element represents a control that provides a menu of options:
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
 func Select(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("select", false)
@@ -2653,7 +2650,7 @@ func Superscript(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Table provides the following for HTML elements ->
-// The HTML <table> element represents tabular data —that is, information expressed via a two-dimensional data table.
+// The HTML <table> element represents tabular data — that is, information expressed via a two-dimensional data table.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table
 func Table(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("table", false)
@@ -2695,7 +2692,7 @@ func TableData(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Template provides the following for HTML elements ->
-// The HTML <template> element is a mechanism for holding client-side content that is not to be rendered when a page is loaded but may subsequently be instantiated during runtime using JavaScript.
+// Technical review completed.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template
 func Template(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("template", false)
@@ -2807,7 +2804,7 @@ func TableRow(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Track provides the following for HTML elements ->
-// The HTML <track> element is used as a child of the media elements—<audio> and <video>. It lets you specify timed text tracks (or time-based data), for example to automatically handle subtitles. The tracks are formatted in WebVTT format (.vtt files) — Web Video Text Tracks.
+// The HTML <track> element is used as a child of the media elements <audio> and <video>. It lets you specify timed text tracks (or time-based data), for example to automatically handle subtitles. The tracks are formatted in WebVTT format (.vtt files) — Web Video Text Tracks.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/track
 func Track(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("track", true)

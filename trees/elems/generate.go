@@ -155,6 +155,7 @@ import (
 
 	"github.com/gu-io/gu/trees"
 	"github.com/gu-io/gu/trees/css"
+	"github.com/russross/blackfriday"
 )
 
 // SpaceCharacter provides text markup which contains the '&nbsp' text for
@@ -171,6 +172,13 @@ func SpaceCharacter(count int) *trees.Markup {
 	}
 
 	return trees.NewText(strings.Join(spaces, ""))
+}
+
+// Markdown takes the giving string which contains markdown written contents 
+// and parses to html, which then is used to generate a new markup.
+func Markdown(md string) *trees.Markup {
+	hml := blackfriday.MarkdownCommon([]byte(md))
+	return Parse(string(hml))
 }
 
 // CustomElement defines a type which returns a custom element type provided by
@@ -261,17 +269,6 @@ func ParseIn(root string,markup string, mo ...trees.Appliable) *trees.Markup {
 	}
 
 	return mroot
-}
-
-// Guscript returns a script tag which ass specific attributes which is set with
-// specific attributes that identifies this script.
-func Guscript(path string) *trees.Markup {
-	script := trees.NewMarkup("script", false)
-	trees.NewAttr("src", path).Apply(script)
-	trees.NewAttr("gu-resource", "true").Apply(script)
-	trees.NewAttr("gu-resource-root", "true").Apply(script)
-
-	return script
 }
 
 // CSS provides a function that takes style rules which returns a stylesheet embeded into

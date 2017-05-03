@@ -26,6 +26,12 @@ var (
 		"perc": func(a, b float64) float64 {
 			return (a / b) * 100
 		},
+		"text-rhythmn": func(lineHeight int, capHeight int, fontSize int) int {
+			return ((lineHeight - capHeight) * fontSize) / 2
+		},
+		"em-text-rhythmn": func(lineHeight, capHeight, fontSize float64) float64 {
+			return ((lineHeight - capHeight) * fontSize) / 2
+		},
 	}
 )
 

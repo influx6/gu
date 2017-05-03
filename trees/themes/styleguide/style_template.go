@@ -15,9 +15,33 @@ html {
 
 /*
 ____________ Base  classes ____________________________
+ Base classes for the styleguide project.
+*/
+
+.wrap {
+  text-wrap: wrap;
+  white-space: -moz-pre-wrap;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/*
+____________ Cap height  classes ____________________________
+	Cap height defines giving sets of the first capital length hight 
+	suggestable for styles
+
+	In typography, cap height refers to the height of a capital letter above the baseline for a particular typeface.
+
+	small = 0.8, medium = 0.8, large = 0.68, extra-large = 0.68
+*/
+
+
+/*
+____________ Line height  classes ____________________________
  Letter spacing class go from highest to lowest where the highest is in positive 
    spacing value and the last in negative spacing values.
 */
+
 .letter-spacing-1 {
 	letter-spacing: 1px;
 }
@@ -32,13 +56,6 @@ ____________ Base  classes ____________________________
 
 .letter-spacing-4 {
 	letter-spacing: -2px;
-}
-
-.wrap {
-  text-wrap: wrap;
-  white-space: -moz-pre-wrap;
-  white-space: pre-wrap;
-  word-wrap: break-word;
 }
 
 /*
@@ -301,7 +318,6 @@ ____________ Color set ____________________________
 }
 {{ end }}
 
-
 /*____________ White color set ____________________________*/
 
 .background-color-white {
@@ -330,8 +346,6 @@ ____________ Color set ____________________________
 	border-color: {{$item}};
 }
 {{ end }}
-
-
 
 /*____________ Failure color set ____________________________*/
 

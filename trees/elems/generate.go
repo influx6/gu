@@ -181,6 +181,14 @@ func Markdown(md string) *trees.Markup {
 	return Parse(string(hml))
 }
 
+// MarkdownWithTemplate takes the giving template string which contains markdown  
+// go template format strings. These will be parsed with text/template and using 
+// blackfriday to parse the final output to html, which then is used to 
+// generate a new markup. Any error is returned as a <error> tag markup.
+func MarkdownWithTemplate(md string, bind interface{}) *trees.Markup {
+	return trees.MarkdownTemplate(md, bind)
+}
+
 // CustomElement defines a type which returns a custom element type provided by
 // the tagname.
 func CustomElement(tag string, markup ...trees.Appliable) *trees.Markup {

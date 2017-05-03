@@ -20,7 +20,7 @@ var DefaultComponentMakers = []ComponentItem{
 		TagName: "markdown",
 		Unwrap:  true,
 		Maker: func(fields map[string]string, template string) Renderable {
-			return elems.Markdown(template)
+			return Static(elems.Markdown(template))
 		},
 	},
 	{
@@ -30,7 +30,7 @@ var DefaultComponentMakers = []ComponentItem{
 			return Static(trees.CSSStylesheet(template, fields, theme.Stylesheet()))
 		},
 		Maker: func(fields map[string]string, template string) Renderable {
-			return Static(trees.CSSStylesheet(template, fields))
+			return Static(trees.CSSStylesheet(template, fields, nil))
 		},
 	},
 }
@@ -48,7 +48,7 @@ type ComponentMakerWithTheme func(fields map[string]string, template string, gui
 type ComponentItem struct {
 	TagName    string
 	Maker      ComponentMaker
-	MakerTheme ComponentMaker
+	MakerTheme ComponentMakerWithTheme
 	Unwrap     bool
 }
 
@@ -70,8 +70,8 @@ func NewComponentRegistry() *ComponentRegistry {
 
 // Generate returns a the component attribute with the provided markup as it's based.
 // It provides a full complete set of all items in the list.
-func (c *ComponentRegistry) Generate(markup string, attr ComponentAttr) ComponentAttr {
-	attr.Base = ParseComponent(markup, c)
+func (c *ComponentRegistry) Generate(markup string, style *styleguide.StyleGuide, attr ComponentAttr) ComponentAttr {
+	attr.Base = ParseComponent(markup, c, style)
 	return attr
 }
 
@@ -141,7 +141,7 @@ func (c *ComponentRegistry) ParseTag(tag string, fields map[string]string, templ
 	}
 
 	if cm.MakerTheme != nil {
-		return cm.MakerTheme(fields, template, c.theme, style), cm.Unwrap
+		return cm.MakerTheme(fields, template, style), cm.Unwrap
 	}
 
 	return cm.Maker(fields, template), cm.Unwrap

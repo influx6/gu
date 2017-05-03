@@ -318,7 +318,8 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 	}
 
 	if !app.attr.SkipGridCSS {
-		head = append(head, elems.CSS(grids.Get("grid.css"), nil))
+		ex := app.attr.Theme.Stylesheet()
+		head = append(head, elems.CSS(grids.Get("grid.css"), nil, ex))
 	}
 
 	for _, def := range app.globalResources {
@@ -759,8 +760,8 @@ func (v *NView) Component(attr ComponentAttr) {
 			break
 
 		case Renderable:
-			if service, ok := mo.(RegisterService); ok {
-				service.RegisterService(appServices)
+			if service, ok := mo.(RegisterServices); ok {
+				service.RegisterServices(appServices)
 			}
 
 			if renderField, _, err := reflection.StructAndEmbeddedTypeNames(mo); err == nil {
@@ -789,8 +790,8 @@ func (v *NView) Component(attr ComponentAttr) {
 		case func() Renderable:
 			rc := mo()
 
-			if service, ok := rc.(RegisterService); ok {
-				service.RegisterService(appServices)
+			if service, ok := rc.(RegisterServices); ok {
+				service.RegisterServices(appServices)
 			}
 
 			if renderField, _, err := reflection.StructAndEmbeddedTypeNames(rc); err == nil {

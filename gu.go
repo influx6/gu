@@ -117,12 +117,12 @@ type ViewUpdate struct {
 	View *NView
 }
 
-// RegisterService provides an interface which registers the provided fetcher,
+// RegisterServices provides an interface which registers the provided fetcher,
 // caching and routing system for a component. This will be called before
 // any setup of the components structure to allow users set the system they needed
 // running.
-type RegisterService interface {
-	RegisterService(Services)
+type RegisterServices interface {
+	RegisterServices(Services)
 }
 
 // Renderable provides a interface for a renderable type.

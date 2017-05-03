@@ -35,6 +35,19 @@ func ParseTemplate(markup string, binding interface{}) []*Markup {
 	return ParseTree(bu.String())
 }
 
+// ParseFirstOrMakeRoot attempts to parse the giving markup and returns the
+// element if only one else creates a div and adds all children as part of div.
+func ParseFirstOrMakeRoot(markup string) *Markup {
+	trees := ParseTree(markup)
+	if len(trees) == 1 {
+		return trees[0]
+	}
+
+	root := NewMarkup("div", false)
+	root.AddChild(trees...)
+	return root
+}
+
 // ParseToRoot passes the markup generated from the markup added to the provided
 // root.
 func ParseToRoot(root *Markup, markup string) {

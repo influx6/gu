@@ -1,9 +1,47 @@
 package trees
 
 import (
+	"bytes"
 	"crypto/rand"
 	"strings"
+	"text/template"
 )
+
+var (
+	helpers = template.FuncMap{
+		"add": func(a, b int) int {
+			return a + b
+		},
+		"multiply": func(a, b int) int {
+			return a * b
+		},
+		"subtract": func(a, b int) int {
+			return a - b
+		},
+		"divide": func(a, b int) int {
+			return a / b
+		},
+		"perc": func(a, b float64) float64 {
+			return (a / b) * 100
+		},
+	}
+)
+
+// Templated takes a giving string, parses into a template, runs against the processor and
+// parses the provided result into a markup.
+func Templated(tml string, bind interface{}, processor func(string) string) (string, error) {
+	tmp, err := template.New("templated").Funcs(helpers).Parse(tml)
+	if err != nil {
+		return "", err
+	}
+
+	var content bytes.Buffer
+	if err := tmp.Execute(&content, bind); err != nil {
+		return "", err
+	}
+
+	return processor(content.String()), nil
+}
 
 // RandString generates a set of random numbers of a set length
 func RandString(n int) string {

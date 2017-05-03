@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gu-io/gu/trees/css"
+	"github.com/russross/blackfriday"
 )
 
 // FinalizeHandle defines a function type which has the root and item concerned.
@@ -53,6 +54,22 @@ func NewText(txt string, dl ...interface{}) *Markup {
 	}
 
 	return em
+}
+
+// MarkdownTemplate returns a markup generated from a markup down string
+// which is built into a markup. If an error occured, it will be turned into
+// an error tag with the contents of the error.
+func MarkdownTemplate(tml string, bind interface{}) *Markup {
+	processed, err := Templated(tml, bind, func(in string) string {
+		return string(blackfriday.MarkdownCommon([]byte(in)))
+	})
+
+	// if error occured, return a <error> tag with error details.
+	if err != nil {
+		return ParseFirstOrMakeRoot("<error>" + err.Error() + "</error>")
+	}
+
+	return ParseFirstOrMakeRoot(processed)
 }
 
 // CSSStylesheet provides a function that takes style rules which returns a stylesheet embeded into

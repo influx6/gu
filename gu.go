@@ -35,23 +35,6 @@ func NewKey() string {
 
 //================================================================================
 
-// Services defines a struct which exposes certain fields to be accessible to
-// others.
-type Services struct {
-	AppUUID       string
-	Location      Location
-	Mounted       Subscriptions
-	Rendered      Subscriptions
-	Updated       Subscriptions
-	Unmounted     Subscriptions
-	Router        *router.Router
-	ViewRouter    router.Resolver
-	Theme         styleguide.StyleGuide
-	Notifications *notifications.AppNotification
-}
-
-//================================================================================
-
 // Location defines an interface which exposes a type which allows the retrieval
 // and setting of the location of a given display.
 type Location interface {
@@ -117,6 +100,23 @@ type ViewUpdate struct {
 	View *NView
 }
 
+//================================================================================
+
+// Services defines a struct which exposes certain fields to be accessible to
+// others.
+type Services struct {
+	AppUUID       string
+	Location      Location
+	Mounted       Subscriptions
+	Rendered      Subscriptions
+	Updated       Subscriptions
+	Unmounted     Subscriptions
+	Router        *router.Router
+	ViewRouter    router.Resolver
+	Theme         styleguide.StyleGuide
+	Notifications *notifications.AppNotification
+}
+
 // RegisterServices provides an interface which registers the provided fetcher,
 // caching and routing system for a component. This will be called before
 // any setup of the components structure to allow users set the system they needed
@@ -124,6 +124,8 @@ type ViewUpdate struct {
 type RegisterServices interface {
 	RegisterServices(Services)
 }
+
+//================================================================================
 
 // Renderable provides a interface for a renderable type.
 type Renderable interface {

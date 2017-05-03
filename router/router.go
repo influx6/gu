@@ -9,19 +9,12 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
+
+	"github.com/gu-io/gu/router/cache"
 )
 
 // Params defines a map type of key-value pairs to be sent as query parameters.
 type Params map[string]string
-
-// Cache defines a interface which exposes a cache like structure for retrieving
-// requests.
-type Cache interface {
-	Empty() error
-	Delete(string) error
-	Add(string, *http.Response) error
-	Serve(http.ResponseWriter, *http.Request) error
-}
 
 // PreprocessHandler exposes a type which implements both the http.Handler and
 // a method which pre-processes giving routes for use in a request.
@@ -34,7 +27,7 @@ type PreprocessHandler interface {
 // handler to have access to a current request and response with the underline
 // cache being used.
 type CacheHandler interface {
-	ServeAndCache(http.ResponseWriter, *http.Request, Cache) error
+	ServeAndCache(http.ResponseWriter, *http.Request, cache.Cache) error
 }
 
 // Router exposes a interface which describes a
@@ -42,11 +35,11 @@ type Router struct {
 	handler  http.Handler
 	phandler PreprocessHandler
 	chandler CacheHandler
-	cache    Cache
+	cache    cache.Cache
 }
 
 // NewRouter returns a new instance of a Router.
-func NewRouter(handler http.Handler, cache Cache) *Router {
+func NewRouter(handler http.Handler, cache cache.Cache) *Router {
 	var router Router
 	router.cache = cache
 	router.handler = handler
@@ -65,7 +58,7 @@ func NewRouter(handler http.Handler, cache Cache) *Router {
 }
 
 // Cache returns the internal cache used by the router.
-func (r *Router) Cache() Cache {
+func (r *Router) Cache() cache.Cache {
 	return r.cache
 }
 

@@ -1,6 +1,7 @@
 package memorycache
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -58,6 +59,16 @@ func (a *API) Delete(path string) error {
 	return a.DeleteRequest(cache.Request{
 		Path: path,
 	})
+}
+
+// AddData adds the giving data object into the cache.
+func (a *API) AddData(req string, res []byte) error {
+	a.pairs = append(a.pairs, cache.WebPair{
+		Request:  cache.Request{Path: req, Method: "GET"},
+		Response: cache.Response{Method: "GET", Body: *bytes.NewBuffer(res)},
+	})
+
+	return nil
 }
 
 // Add adds the giving response object into the cache.
@@ -136,8 +147,8 @@ func (a *API) GetRequest(w cache.Request) (cache.Response, error) {
 	return cache.Response{}, errors.New("Request not found")
 }
 
-// GetPath calls CacheAPI.MatchPath and passing in a default MatchAttr value.
-func (a *API) GetPath(path string) (cache.Request, cache.Response, error) {
+// Get calls CacheAPI.MatchPath and passing in a default MatchAttr value.
+func (a *API) Get(path string) (cache.Request, cache.Response, error) {
 	for _, pair := range a.pairs {
 		if pair.Request.Path == path {
 			return pair.Request, pair.Response, nil

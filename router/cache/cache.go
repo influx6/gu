@@ -15,6 +15,17 @@ type WebPair struct {
 	Response Response
 }
 
+// Cache defines a interface which exposes a cache like structure for retrieving
+// requests.
+type Cache interface {
+	Empty() error
+	Delete(string) error
+	AddData(string, []byte) error
+	Add(string, *http.Response) error
+	Get(string) (Request, Response, error)
+	Serve(http.ResponseWriter, *http.Request) error
+}
+
 // Request defines the structure which holds request fields for a given
 // request.
 type Request struct {

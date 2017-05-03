@@ -1,6 +1,7 @@
 package webcache
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
@@ -110,6 +111,14 @@ func (c *CacheAPI) AddAll(request ...string) error {
 	return <-resChan
 }
 
+// AddData adds the giving data object into the cache.
+func (c *CacheAPI) AddData(path string, data []byte) error {
+	req := cache.Request{Path: path, Method: "GET"}
+	res := cache.Response{Method: "GET", Body: *bytes.NewBuffer(data)}
+
+	return c.Put(req, res)
+}
+
 // Add the giving path and response into the cache.
 func (c *CacheAPI) Add(request string, resp *http.Response) error {
 	resChan := make(chan error, 0)
@@ -151,8 +160,8 @@ func (c *CacheAPI) Put(request cache.Request, res cache.Response) error {
 	return <-resChan
 }
 
-// GetPath calls CacheAPI.MatchPath and passing in a default MatchAttr value.
-func (c *CacheAPI) GetPath(request string) (cache.Request, cache.Response, error) {
+// Get calls CacheAPI.MatchPath and passing in a default MatchAttr value.
+func (c *CacheAPI) Get(request string) (cache.Request, cache.Response, error) {
 	wr := cache.Request{
 		Method: "GET",
 		Path:   request,

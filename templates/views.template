@@ -33,7 +33,7 @@ func Get(file string) (content string, found bool) {
 	hasExt = (fileExt == "")
 
 	// If we have a file extension then check against the given file name directly.
-	if hasExt {
+	if !hasExt {
 		content, found = htmlFiles[file]
 		return
 	}

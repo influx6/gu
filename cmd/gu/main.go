@@ -409,14 +409,14 @@ func initCommands() {
 	})
 
 	commands = append(commands, &cli.Command{
-		Name:        "views",
-		Usage:       "gu views <views-dir-name>",
+		Name:        "templates",
+		Usage:       "gu templates <views-dir-name>",
 		Description: "Generates a package which builds all internal [.html|.xhtml|.xml|.gml|.ghtml|.tml] files into a go file",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "name",
 				Aliases: []string{"n"},
-				Usage:   "name=myviews",
+				Usage:   "name=mytemplates",
 			},
 		},
 		Action: func(ctx *cli.Context) error {
@@ -436,7 +436,7 @@ func initCommands() {
 			}
 
 			if vDirName == "" && args.Len() == 0 {
-				vDirName = "views"
+				vDirName = "templates"
 			}
 
 			gopath := os.Getenv("GOPATH")

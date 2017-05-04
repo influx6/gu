@@ -189,11 +189,12 @@ func (c *ClassList) Apply(em *Markup) {
 
 		if cold, ok := old.(*ClassList); ok {
 			cold.Add(c.list...)
+		} else {
+			_, val := old.Render()
+			c.Add(val)
+			em.attrs[index] = c
 		}
 
-		_, val := old.Render()
-		c.Add(strings.Split(val, " ")...)
-		em.attrs[index] = c
 	}
 }
 

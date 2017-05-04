@@ -2,7 +2,6 @@
 // functionalities needed as desired to the specific reason which this package 
 // exists for. Feel free to change this description.
 
-//go:generate go generate ./...
 //go:generate go run generate.go
 
 package {{PKGNAME}}

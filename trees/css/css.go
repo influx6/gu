@@ -82,6 +82,13 @@ func New(rules string, extension *Rule, rs ...*Rule) *Rule {
 	return rsc
 }
 
+// UseExtension sets the css.Rule to be used for extensions and
+// returns the rule.
+func (r *Rule) UseExtension(c *Rule) *Rule {
+	r.feed = c
+	return r
+}
+
 // Add adds the giving rule into the rules depends list.
 func (r *Rule) Add(c *Rule) *Rule {
 	r.depends = append(r.depends, c)

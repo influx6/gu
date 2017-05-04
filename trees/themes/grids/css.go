@@ -16,7 +16,16 @@ import (
 
 var rules cssstyles
 
-// Get returns the giving rules from the provided
+// Must returns the giving rules from the provided style rules else panics.
+func Must(dir string) *css.Rule {
+	if rule := Get(dir); rule != nil {
+		return rule
+	}
+
+	panic(fmt.Sprintf("Rule %s not found", dir))
+}
+
+// Get returns the giving rules from the provided style rules.
 func Get(dir string) *css.Rule {
 	var target *cssstyle
 
@@ -54,10 +63,10 @@ func (s *cssstyle) Rule(root []cssstyle) *css.Rule {
 		befores = append(befores, root[before].Rule(root))
 	}
 
-	self := css.New(s.Style, befores...)
+	self := css.New(s.Style, nil, befores...)
 
 	for _, after := range s.After {
-		self = (root[after]).Rule(root).AddRoot(self)
+		self = (root[after]).Rule(root).Add(self)
 	}
 
 	return self

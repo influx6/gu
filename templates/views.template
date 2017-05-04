@@ -7,10 +7,23 @@
 package {{PKG}}
 
 import (
+	"fmt"
 	"path"
 )
 
 var htmlFiles = map[string]string{}
+
+
+// Must retrieves the giving file and the content of that giving file else 
+// panics if not found.
+func Must(file string) string {
+	if content, ok := Get(file); ok {
+		return content
+	}
+	
+	panic(fmt.Sprintf("%s file not found"))
+}
+
 
 // Get retrieves the giving file and the content of that giving file.
 func Get(file string) (content string, found bool) {

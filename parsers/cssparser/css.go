@@ -125,7 +125,7 @@ func ParseDir(dir string) (*CSSItems, error) {
 	return &items, nil
 }
 
-var allowedExtensions = []string{".css", ".gcss"}
+var allowedExtensions = []string{".xss", ".mss", ".css", ".gcss"}
 
 // validExension returns true/false if the extension provide is a valid acceptable one
 // based on the allowedExtensions string slice.

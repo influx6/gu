@@ -203,6 +203,24 @@ func (t *Treeset) init() {
 	}
 }
 
+// Services adds the giving services into the giving treeset.
+func (t *Treeset) Services(services Services) {
+	if t.Renderable != nil {
+		if st, ok := t.Renderable.(RegisterServices); ok {
+			st.RegisterServices(services)
+		}
+	}
+
+	for _, child := range t.Children {
+		child.Services(services)
+	}
+}
+
+// Apply renders the giving treeset into the provided root.
+func (t *Treeset) Apply(root *trees.Markup) {
+	root.AddChild(t.Render())
+}
+
 // Render returns a new markup instance for the Treeset.
 func (t *Treeset) Render() *trees.Markup {
 	// intialize internal renderable if required.

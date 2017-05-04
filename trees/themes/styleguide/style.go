@@ -24,8 +24,23 @@ const (
 
 var (
 	helpers = template.FuncMap{
+		"prefixInt": func(prefix string, b int) string {
+			return fmt.Sprintf("%s%d", prefix, b)
+		},
 		"add": func(a, b int) int {
 			return a + b
+		},
+		"lessThanEqual": func(a, b int) bool {
+			return a <= b
+		},
+		"greaterThanEqual": func(a, b int) bool {
+			return a >= b
+		},
+		"lessThan": func(a, b int) bool {
+			return a < b
+		},
+		"greaterThan": func(a, b int) bool {
+			return a > b
 		},
 		"multiply": func(a, b int) int {
 			return a * b
@@ -39,10 +54,10 @@ var (
 		"perc": func(a, b float64) float64 {
 			return (a / b) * 100
 		},
-		"text-rhythmn": func(lineHeight int, capHeight int, fontSize int) int {
+		"textRhythmn": func(lineHeight int, capHeight int, fontSize int) int {
 			return ((lineHeight - capHeight) * fontSize) / 2
 		},
-		"em-text-rhythmn": func(lineHeight, capHeight, fontSize float64) float64 {
+		"textRhythmnEM": func(lineHeight, capHeight, fontSize float64) float64 {
 			return ((lineHeight - capHeight) * fontSize) / 2
 		},
 	}

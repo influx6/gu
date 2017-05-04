@@ -25,6 +25,11 @@ ____________ Base  classes ____________________________
   word-wrap: break-word;
 }
 
+h1, h2, h3, h4, h5, h6, p {
+	margin: 0;
+	padding: 0;
+}
+
 /*
 ____________ Cap height  classes ____________________________
 	Cap height defines giving sets of the first capital length hight 
@@ -135,6 +140,9 @@ ____________ Base font size classes ____________________________
 
   font-size-sm: Defines font size for reducing sizes
   font-size-bg: Defines font size for increasing sizes using a scale eg MajorThirds.
+
+  Small Scale: {{ .SmallScale }}
+  Big Scale: {{ .BigScale }}
 */
 
 {{ range $key, $item := .SmallFontScale }}
@@ -148,6 +156,42 @@ ____________ Base font size classes ____________________________
 	font-size: {{$item}}em;
 }
 {{ end }}
+
+/*
+____________ Font scale set ____________________________
+ Taken: http://typecast.com/blog/a-more-modern-scale-for-web-typography
+
+*/
+
+.body-desktop {
+	font-size: 16px;
+	font-size: 1em;
+	line-height: 1.375em;
+}
+
+.body-desktop-lg {
+	font-size: 16px;
+	font-size: 1em;
+	line-height: 1.25em;
+}
+
+.body-tablet-lg {
+	font-size: 16px;
+	font-size: 1em;
+	line-height: 1.375em;
+}
+
+.body-tablet-sm {
+	font-size: 16px;
+	font-size: 1em;
+	line-height: 1.25em;
+}
+
+.body-phone {
+	font-size: 16px;
+	font-size: 1em;
+	line-height: 1.25em;
+}
 
 /*
 ____________ Color set ____________________________

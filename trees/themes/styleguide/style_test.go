@@ -30,3 +30,21 @@ func TestColor(t *testing.T) {
 	}
 	tests.Passed("Should have successfully matched hex value.")
 }
+
+// func TestStyleGuide(t *testing.T) {
+// 	sl, err := styleguide.New(styleguide.Attr{
+// 		PrimaryColor:        "#000000",
+// 		SecondaryColor:      "#000000",
+// 		PrimaryBrandColor:   "#000000",
+// 		SecondaryBrandColor: "#000000",
+// 		PrimaryWhite:        "#ffffff",
+// 		FailureColor:        "#000000",
+// 		SuccessColor:        "#000000",
+// 	})
+// 	if err != nil {
+// 		tests.Failed("Should have successfully returned new styleguide: %+q.", err)
+// 	}
+// 	tests.Passed("Should have successfully returned new styleguide.")
+
+// 	fmt.Println(sl.CSS())
+// }

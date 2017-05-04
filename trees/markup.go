@@ -598,9 +598,9 @@ type AppliableTarget struct {
 	Multiple bool
 }
 
-// ApplyTo adds the giving Appliable to the giving target/targets if multiple is set to true
+// ApplyIn adds the giving Appliable to the giving target/targets if multiple is set to true
 // and many are found and returns the a new Appliable which will perform the action.
-func ApplyTo(child Appliable, target string, multiple bool) AppliableTarget {
+func ApplyIn(child Appliable, target string, multiple bool) AppliableTarget {
 	return AppliableTarget{
 		Target:   target,
 		Request:  child,

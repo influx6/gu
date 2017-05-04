@@ -635,8 +635,22 @@ func initCommands() {
 
 			// Generate files for the project.
 			switch driver {
-			case "plain":
-				break
+			case "package", "nomain", "empty", "plain":
+				appdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_empty.template"))
+				if err != nil {
+					return err
+				}
+
+				appdata = bytes.Replace(appdata, goPathbytes, []byte(gopath), -1)
+				appdata = bytes.Replace(appdata, pkgbytes, []byte(appPackagePath), -1)
+				appdata = bytes.Replace(appdata, pkgNamebytes, []byte(packageName), -1)
+				appdata = bytes.Replace(appdata, namebytes, []byte(packageName), -1)
+
+				if err := writeFile(filepath.Join(indir, packageName, "app.go"), appdata); err != nil {
+					return err
+				}
+
+				fmt.Printf("- Adding project file: %q\n", "app.go")
 			case "nodriver", "no-driver":
 				appdata, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_nodriver.template"))
 				if err != nil {

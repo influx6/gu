@@ -21,7 +21,7 @@ func Must(file string) string {
 		return content
 	}
 	
-	panic(fmt.Sprintf("%s file not found"))
+	panic(fmt.Sprintf("File %s not found", file))
 }
 
 

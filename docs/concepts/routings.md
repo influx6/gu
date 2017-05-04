@@ -12,20 +12,39 @@ Gu provides two routing concepts for the library:
 Request Router
 ==============
 
-Router expresses a new system to allow components make requests for resources like database records, contents and assets from either the backend or frontend without much change of code. By exposing a structure which implements the Go `http` package `http.Handler`, this can be used by the router to service all request.
+```go
+type Handler interface {
+	ServeHTTP(http.ResponseWriter, *http.Request) 
+}
 
-It is special in that for a App, only one ever exists and uses the supplied `http.Handler` and `router.Cache` implementing structure to resolve requests. This allows us to drastically move apps offline by providing a `http.Handler` that services requests from some offline store or the supplied cache, or implements the processes in making requests to the remote http endpoint for the resources.
+// CacheHandler defines a handler which implements a type which allows a
+// handler to have access to a current request and response with the underline
+// cache being used.
+type CacheHandler interface {
+	ServeAndCache(http.ResponseWriter, *http.Request, cache.Cache) error
+}
 
-One major benefit of this is, the fact we easily are able to use such a system on the server without much code change, since we can swap the supplied `http.Handler`, that passes all made requests to the running server without any actually use of a `http.Client`.
+// BasicHandler which defines a type which is used to service a request and returns an error
+// if the request failed.
+type BasicHandler interface {
+	Serve(http.ResponseWriter, *http.Request) error
+}
+```
+
+Router expresses a new system to allow components make requests for resources like database records, contents and assets from either the backend or frontend without much change of code. By exposing a structure which implements any of the above interface types, this can be used by the router to service all request.
+
+It is special in that for a App, only one ever exists and uses the supplied `Handler` and `router.Cache` implementing structure to resolve requests. This allows us to drastically move apps offline by providing a `Handler` that services requests from some offline store or the supplied cache, or implements the processes in making requests to the remote http endpoint for the resources.
+
+One major benefit of this is, the fact we easily are able to use such a system on the server without much code change, since we can swap the supplied `Handler`, that passes all made requests to the running server without any actually use of a `http.Client`.
 
 This was done to provide the flexibile and massive compatibility in both usage for either client or server codebase.
 
-*Note: Now the `Cache` supplied is never updated by the router but is used to respond to request first before using the provided `http.Handler`, this approach safe guards the user has full control on how the cache operates and how it validates and invalidates requests, before allowing the router to proceed to the `http.Handler` to handle the request.*
+*Note: Now the `Cache` supplied is never updated by the router but is used to respond to request first before using the provided `Handler`, this approach safe guards the user has full control on how the cache operates and how it validates and invalidates requests, before allowing the router to proceed to the `Handler` to handle the request.*
 
 Example
 -------
 
-The `gu/router` package lets you initialize a new `router.Router` which will use the supplied `http.handler` like below:
+The `gu/router` package lets you initialize a new `router.Router` which will use the supplied `HTTPHandler` like below:
 
 ```go
 
@@ -52,9 +71,9 @@ func (serviceProvider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var mainCache := memorycache.New("in-memory-store")
 var mainRouter := router.NewRouter(serviceProvider{}, mainCache)
 
-res, _ := mainRouter.Get("/count") // res.Status == http.StatusOK
-res, _ := mainRouter.Get("/reset") // res.Status == http.StatusNoContent
-res, _ := mainRouter.Get("/users") // res.Status == http.StatusBadRequest
+res, _ := mainRouter.Get("/count", nil) // res.Status == http.StatusOK
+res, _ := mainRouter.Get("/reset", nil) // res.Status == http.StatusNoContent
+res, _ := mainRouter.Get("/users", nil) // res.Status == http.StatusBadRequest
 
 
 ```

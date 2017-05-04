@@ -16,10 +16,21 @@ import (
 // Params defines a map type of key-value pairs to be sent as query parameters.
 type Params map[string]string
 
+// HTTPHandler defines a request interface which defines a type which will be used
+// to service a http request.
+type HTTPHandler interface {
+	ServeHTTP(http.ResponseWriter, *http.Request)
+}
+
+// BasicHandler which defines a type which is used to service a request and returns an error
+// if the request failed.
+type BasicHandler interface {
+	Serve(http.ResponseWriter, *http.Request) error
+}
+
 // PreprocessHandler exposes a type which implements both the http.Handler and
 // a method which pre-processes giving routes for use in a request.
 type PreprocessHandler interface {
-	http.Handler
 	Preprocess(string) string
 }
 
@@ -32,26 +43,30 @@ type CacheHandler interface {
 
 // Router exposes a interface which describes a
 type Router struct {
-	handler  http.Handler
-	phandler PreprocessHandler
-	chandler CacheHandler
 	cache    cache.Cache
+	handler  HTTPHandler
+	chandler CacheHandler
+	phandler PreprocessHandler
 }
 
 // NewRouter returns a new instance of a Router.
-func NewRouter(handler http.Handler, cache cache.Cache) *Router {
+func NewRouter(handler interface{}, cache cache.Cache) *Router {
 	var router Router
 	router.cache = cache
-	router.handler = handler
 
-	// if we have a preprocessor then retrieve type.
 	if ph, ok := handler.(PreprocessHandler); ok {
 		router.phandler = ph
 	}
 
-	// if we have a cache handler then retrieve type.
-	if ch, ok := handler.(CacheHandler); ok {
-		router.chandler = ch
+	switch mh := handler.(type) {
+	case CacheHandler:
+		router.chandler = mh
+	case BasicHandler:
+		router.handler = NewErrorHandler(mh)
+	case HTTPHandler:
+		router.handler = mh
+	default:
+		panic("Unsupported handler type")
 	}
 
 	return &router
@@ -164,6 +179,28 @@ func (r *Router) Do(method string, path string, params Params, body io.ReadClose
 	res.Request = req
 
 	return res, nil
+}
+
+//================================================================================
+
+// ErrorHandler defines a new HTTPHandler which is used to service a request and
+// respond to a giving error that occurs.
+type ErrorHandler struct {
+	Handler BasicHandler
+}
+
+// NewErrorHandler returns a new instance of the HTTPHandler which is used to service a request
+// and respond to a giving error that occurs.
+func NewErrorHandler(bh BasicHandler) HTTPHandler {
+	return ErrorHandler{Handler: bh}
+}
+
+// ServeHTTP services the incoming request to the underline Handler supplied for the
+// basic handler.
+func (e ErrorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if err := e.Handler.Serve(w, r); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 //================================================================================

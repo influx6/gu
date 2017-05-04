@@ -2,7 +2,9 @@ package css
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -14,6 +16,31 @@ var (
 	helpers = template.FuncMap{
 		"prefixInt": func(prefix string, b int) string {
 			return fmt.Sprintf("%s%d", prefix, b)
+		},
+		"quote": func(b interface{}) string {
+			switch bo := b.(type) {
+			case string:
+				return strconv.Quote(bo)
+			case int:
+				return strconv.Quote(strconv.Itoa(bo))
+			case int64:
+				return strconv.Quote(strconv.Itoa(int(bo)))
+			case float32:
+				mo := strconv.FormatFloat(float64(bo), 'f', 4, 32)
+				return strconv.Quote(mo)
+			case float64:
+				mo := strconv.FormatFloat(bo, 'f', 4, 32)
+				return strconv.Quote(mo)
+			case rune:
+				return strconv.QuoteRune(bo)
+			default:
+				mo, err := json.Marshal(b)
+				if err != nil {
+					return err.Error()
+				}
+
+				return strconv.Quote(string(mo))
+			}
 		},
 		"add": func(a, b int) int {
 			return a + b

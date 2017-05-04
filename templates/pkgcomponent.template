@@ -37,3 +37,9 @@ func (c *{{Name}}) RegisterServices(services gu.Services)  {
 func (c {{Name}}) Render() *trees.Markup {
 	return elems.Div(property.ClassAttr("component"))
 }
+
+// Apply adds the giving components Render() result to the 
+// provided root.
+func (c {{Name}}) Apply(root *trees.Markup)  {
+	root.AddChild(c.Render())
+}

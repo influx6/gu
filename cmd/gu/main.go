@@ -363,7 +363,7 @@ func initCommands() {
 				return merr
 			}
 
-			plainPKGData, err := ioutil.ReadFile(filepath.Join(gup, "templates/plain_generated_pkg.template"))
+			plainPKGData, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/plain_generated_pkg.template"))
 			if err != nil {
 				return err
 			}

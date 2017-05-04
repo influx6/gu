@@ -7,7 +7,7 @@ based incremental scaling factors for spaces, size.
 
 */
 .dp(@prefix, @prop, @base, @scale){
-    .loop(1, @prefix, @prop, @base, @scale, 200);
+    .loop(1, @prefix, @prop, @base, @scale, 20);
 }
 
 .loop(@counter, @prefix, @prop, @base, @scale, @count) when (@counter <= @count){

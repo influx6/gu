@@ -590,6 +590,42 @@ func (e *Markup) Apply(em *Markup) {
 
 //==============================================================================
 
+// AppliableTarget defines a struct which takes a giving appliable and target
+// attempting to add the Appliable to the roots target child.
+type AppliableTarget struct {
+	Request  Appliable
+	Target   string
+	Multiple bool
+}
+
+// ApplyTo adds the giving Appliable to the giving target/targets if multiple is set to true
+// and many are found and returns the a new Appliable which will perform the action.
+func ApplyTo(child Appliable, target string, multiple bool) AppliableTarget {
+	return AppliableTarget{
+		Target:   target,
+		Request:  child,
+		Multiple: multiple,
+	}
+}
+
+// Apply will attempt to search for the target within the root and append
+// to that giving child else ignoring the call.
+func (e AppliableTarget) Apply(em *Markup) {
+	switch e.Multiple {
+	case true:
+		for _, child := range Query.QueryAll(em, e.Target) {
+			e.Request.Apply(child)
+		}
+		break
+	case false:
+		if target := Query.Query(em, e.Target); target != nil {
+			e.Request.Apply(target)
+		}
+	}
+}
+
+//==============================================================================
+
 // Clonable defines an interface for objects that can be cloned
 type Clonable interface {
 	CopyTo(*Markup)

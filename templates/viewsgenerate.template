@@ -29,7 +29,7 @@ func main() {
     var buf bytes.Buffer
 
     for path, item := range items {
-        fmt.Fprintf(&buf,"\thtmlfiles[%q] = %+q\n", path, item)
+        fmt.Fprintf(&buf,"\thtmlFiles[%q] = %+q\n", path, item)
     }
 
 	file, err := os.Create(filepath.Join(cdir, {{FILENAME}}))

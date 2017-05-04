@@ -50,21 +50,24 @@ var (
 
 // Attr defines different color and size of strings to define a specific brand.
 type Attr struct {
+	PrimaryWhite        string
+	SuccessColor        string
+	FailureColor        string
 	PrimaryColor        string
 	SecondaryColor      string
 	PrimaryBrandColor   string
 	SecondaryBrandColor string
-	PrimaryWhite        string
-	SuccessColor        string
-	FailureColor        string
-	BaseFontSize        int    // BaseFontSize for typeface using MajorThird.
-	SmallBorderRadius   int    // SmallBorderRadius for tiny components eg checkbox, radio buttons.
-	MediumBorderRadius  int    // MediaBorderRadius for buttons, inputs, etc
-	LargeBorderRadius   int    // LargeBorderRadius for components like cards, modals, etc.
-	FloatingShadow      string // shadow for floating icons, elements.
-	HoverShadow         string // shadow for over dialog etc
-	DropShadow          string // Useful for popovers/dropovers
-	BaseShadow          string // Normal shadow of elemnts
+	BaseScale           float64 // BaseScale to use for generating expansion/detraction scale.
+	MinimumScaleCount   int     // Total scale to generate small font sizes.
+	MaximumScaleCount   int     // Total scale to generate large font sizes
+	BaseFontSize        int     // BaseFontSize for typeface using the provide BaseScale.
+	SmallBorderRadius   int     // SmallBorderRadius for tiny components eg checkbox, radio buttons.
+	MediumBorderRadius  int     // MediaBorderRadius for buttons, inputs, etc
+	LargeBorderRadius   int     // LargeBorderRadius for components like cards, modals, etc.
+	FloatingShadow      string  // shadow for floating icons, elements.
+	HoverShadow         string  // shadow for over dialog etc
+	DropShadow          string  // Useful for popovers/dropovers
+	BaseShadow          string  // Normal shadow of elemnts
 }
 
 // StyleColors defines a struct which holds all possible giving brand colors utilized
@@ -94,6 +97,8 @@ type StyleGuide struct {
 	Brand          StyleColors `json:"brand"`
 	BigFontScale   []TypeSize
 	SmallFontScale []TypeSize
+	BigScale       []float64
+	SmallScale     []float64
 }
 
 // Must returns the giving style or panics if it fails.
@@ -111,6 +116,18 @@ func Must(attr Attr) StyleGuide {
 func New(attr Attr) (StyleGuide, error) {
 	if attr.BaseFontSize <= 0 {
 		attr.BaseFontSize = 16
+	}
+
+	if attr.BaseScale == 0 {
+		attr.BaseScale = GoldenRatio
+	}
+
+	if attr.MinimumScaleCount == 0 {
+		attr.MinimumScaleCount = 10
+	}
+
+	if attr.MaximumScaleCount == 0 {
+		attr.MaximumScaleCount = 20
 	}
 
 	if attr.FloatingShadow == "" {
@@ -195,7 +212,10 @@ func New(attr Attr) (StyleGuide, error) {
 		}
 	}
 
-	bg, sm := GenerateValueScale(MajorThird, 1)
+	bg, sm := GenerateValueScale(attr.BaseScale, 1, attr.MinimumScaleCount, attr.MaximumScaleCount)
+
+	style.BigScale = bg
+	style.SmallScale = sm
 
 	for _, item := range bg {
 		style.BigFontScale = append(style.BigFontScale, TypeSize(item))
@@ -553,16 +573,16 @@ const (
 	MajorThird      = 1.250
 	PerfectFourth   = 1.333
 	PerfectFifth    = 1.500
-	GoldenRation    = 1.618
+	GoldenRatio     = 1.618
 )
 
 // GenerateValueScale returns a value scale which is produced from generating
 // a slice of n values representing the given scale value and are multipled
 // by the provided base values.
-func GenerateValueScale(scale float64, base float64) ([]float64, []float64) {
+func GenerateValueScale(scale float64, base float64, minor, major int) ([]float64, []float64) {
 
 	// Generate scale based on 1.0 scale using the provided scale.
-	max, min := GenerateScale(scale, 5, 10)
+	max, min := GenerateScale(scale, minor, major)
 
 	// Multiply all scale value by the provided base.
 	Times(len(max), func(index int) {

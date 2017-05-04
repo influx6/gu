@@ -159,8 +159,6 @@ ____________ Base font size classes ____________________________
 	font-size: 0.800em;
 }
 
-
-
 .font-size-bg__0 {
 	font-size: 1.000em;
 }

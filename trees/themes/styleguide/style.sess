@@ -125,6 +125,9 @@ ____________ Base font size classes ____________________________
 
   font-size-sm: Defines font size for reducing sizes
   font-size-bg: Defines font size for increasing sizes using a scale eg MajorThirds.
+
+  Small Scale: {{ .SmallScale }}
+  Big Scale: {{ .BigScale }}
 */
 
 {{ range $key, $item := .SmallFontScale }}

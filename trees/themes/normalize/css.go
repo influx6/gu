@@ -9,6 +9,7 @@ package normalize
 
 import (
 	"encoding/json"
+	"strings"
 	"fmt"
 
 	"github.com/gu-io/gu/trees/css"
@@ -23,6 +24,19 @@ func Must(dir string) *css.Rule {
 	}
 
 	panic(fmt.Sprintf("Rule %s not found", dir))
+}
+
+// GetSource returns the style contents of the stylesheet.
+func GetSource(dir string) string {
+	for _, item := range rules {
+		if item.Path != dir {
+			continue
+		}
+
+		return item.RuleSource(rules)
+	}
+
+	return ""
 }
 
 // Get returns the giving rules from the provided style rules.
@@ -53,6 +67,23 @@ type cssstyle struct {
 	Path   string `json:"path"`
 	Before []int  `json:"before"`
 	After  []int  `json:"after"`
+}
+
+// RuleSource returns a string containing the giving rules and it's dependencies.
+func (s *cssstyle) RuleSource(root []cssstyle) string {
+	var befores []string
+
+	for _, before := range s.Before {
+		befores = append(befores, root[before].RuleSource(root))
+	}
+
+	befores = append(befores, s.Style)
+
+	for _, after := range s.After {
+		befores = append(befores, root[after].RuleSource(root))
+	}
+
+	return strings.Join(befores, "\n")
 }
 
 // Rule retrieves the giving set of rules pertaining the giving style.

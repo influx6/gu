@@ -13,6 +13,7 @@ import (
 	"github.com/gu-io/gu/trees"
 	"github.com/gu-io/gu/trees/elems"
 	"github.com/gu-io/gu/trees/themes/grids"
+	"github.com/gu-io/gu/trees/themes/normalize"
 	"github.com/gu-io/gu/trees/themes/styleguide"
 	"github.com/influx6/faux/reflection"
 )
@@ -314,7 +315,7 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 	head = append(head, elems.Meta(trees.NewAttr("gu-app-title", app.attr.Title)))
 
 	if !app.attr.SkipNormalizeCSS {
-		head = append(head, elems.Style(elems.Text(core.NormalizeCSS)))
+		head = append(head, elems.Style(elems.Text(normalize.GetSource("normalize.css"))))
 	}
 
 	if !app.attr.SkipGridCSS {

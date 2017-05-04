@@ -318,7 +318,7 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 	}
 
 	if !app.attr.SkipGridCSS {
-		head = append(head, elems.CSS(grids.Get("grid.min.css"), nil, nil))
+		head = append(head, elems.CSS(grids.Get("grid.css"), nil, nil))
 		head = append(head, elems.CSS(app.attr.Theme.Stylesheet(), nil, nil))
 	}
 

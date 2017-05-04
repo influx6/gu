@@ -341,9 +341,10 @@ func CSS(styles interface{}, bind interface{}, ext *css.Rule) *trees.Markup {
 			}
 
 			desc, _ := s.Attr("title")
-
 			text := s.Text()
-			if text == "Heading elements" {
+
+			if text == "Heading elements" || text == "<h1>–<h6>" {
+				// fmt.Printf("Write with %q\n", text)
 				writeElem(file, "h1", desc, link)
 				writeElem(file, "h2", desc, link)
 				writeElem(file, "h3", desc, link)
@@ -379,8 +380,10 @@ var badsymbs = regexp.MustCompile("-(.+)")
 func writeSVGElem(w io.Writer, name, desc, link string) {
 	var autocloser = autoclosers[name]
 	funName := elemNameMap[name]
+	// fmt.Printf("Header with %q\n", funName)
 
 	funName = restruct(funName)
+	// fmt.Printf("Header2 with %q\n", funName)
 
 	if funName == "" {
 		funName = restruct(name)
@@ -417,8 +420,10 @@ func %s(markup ...trees.Appliable) *trees.Markup {
 func writeElem(w io.Writer, name, desc, link string) {
 	var autocloser = autoclosers[name]
 	funName := elemNameMap[name]
+	// fmt.Printf("FuncName with %q\n", name)
 
 	funName = restruct(funName)
+	// fmt.Printf("FuncName2 with %q\n", funName)
 
 	if funName == "" {
 		funName = restruct(name)

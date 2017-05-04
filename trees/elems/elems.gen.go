@@ -1667,6 +1667,78 @@ func Form(markup ...trees.Appliable) *trees.Markup {
 	return e
 }
 
+// Header1 provides the following for HTML elements ->
+// The HTML <h1>–<h6> elements represent six levels of section headings. <h1> is the highest section level and <h6> is the lowest.
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements
+func Header1(markup ...trees.Appliable) *trees.Markup {
+	e := trees.NewMarkup("h1",false)
+	for _, m := range markup {
+		if m == nil { continue }
+		m.Apply(e)
+	}
+	return e
+}
+
+// Header2 provides the following for HTML elements ->
+// The HTML <h1>–<h6> elements represent six levels of section headings. <h1> is the highest section level and <h6> is the lowest.
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements
+func Header2(markup ...trees.Appliable) *trees.Markup {
+	e := trees.NewMarkup("h2",false)
+	for _, m := range markup {
+		if m == nil { continue }
+		m.Apply(e)
+	}
+	return e
+}
+
+// Header3 provides the following for HTML elements ->
+// The HTML <h1>–<h6> elements represent six levels of section headings. <h1> is the highest section level and <h6> is the lowest.
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements
+func Header3(markup ...trees.Appliable) *trees.Markup {
+	e := trees.NewMarkup("h3",false)
+	for _, m := range markup {
+		if m == nil { continue }
+		m.Apply(e)
+	}
+	return e
+}
+
+// Header4 provides the following for HTML elements ->
+// The HTML <h1>–<h6> elements represent six levels of section headings. <h1> is the highest section level and <h6> is the lowest.
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements
+func Header4(markup ...trees.Appliable) *trees.Markup {
+	e := trees.NewMarkup("h4",false)
+	for _, m := range markup {
+		if m == nil { continue }
+		m.Apply(e)
+	}
+	return e
+}
+
+// Header5 provides the following for HTML elements ->
+// The HTML <h1>–<h6> elements represent six levels of section headings. <h1> is the highest section level and <h6> is the lowest.
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements
+func Header5(markup ...trees.Appliable) *trees.Markup {
+	e := trees.NewMarkup("h5",false)
+	for _, m := range markup {
+		if m == nil { continue }
+		m.Apply(e)
+	}
+	return e
+}
+
+// Header6 provides the following for HTML elements ->
+// The HTML <h1>–<h6> elements represent six levels of section headings. <h1> is the highest section level and <h6> is the lowest.
+// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements
+func Header6(markup ...trees.Appliable) *trees.Markup {
+	e := trees.NewMarkup("h6",false)
+	for _, m := range markup {
+		if m == nil { continue }
+		m.Apply(e)
+	}
+	return e
+}
+
 // Header provides the following for HTML elements ->
 // The HTML <header> element represents a group of introductory or navigational aids. It may contain some heading elements but also other elements like a logo, a search form, and so on.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/header
@@ -2184,7 +2256,7 @@ func Select(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Slot provides the following for HTML elements ->
-// The HTML <slot> element is a placeholder inside a web component that you can fill with your own markup, with the effect of composing different DOM trees together.
+// The HTML <slot> element—part of the Web Components technology suite—is a placeholder inside a web component that you can fill with your own markup, which lets you create separate DOM trees and present them together.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot
 func Slot(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("slot",false)
@@ -2328,7 +2400,7 @@ func TableData(markup ...trees.Appliable) *trees.Markup {
 }
 
 // Template provides the following for HTML elements ->
-// Technical review completed.
+// The HTML <template> element is a mechanism for holding client-side content that is not to be rendered when a page is loaded but may subsequently be instantiated during runtime using JavaScript.
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template
 func Template(markup ...trees.Appliable) *trees.Markup {
 	e := trees.NewMarkup("template",false)

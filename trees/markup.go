@@ -590,6 +590,46 @@ func (e *Markup) Apply(em *Markup) {
 
 //==============================================================================
 
+// DeferredApply will apply a giving set of values to a giving root.
+type DeferredApply struct {
+	Request Appliable
+	Adders  []Appliable
+}
+
+// ApplyTo adds the giving Appliables to the target during calls to Apply.
+func ApplyTo(child Appliable, children ...Appliable) DeferredApply {
+	return DeferredApply{
+		Request: child,
+		Adders:  children,
+	}
+}
+
+// Apply will attempt to search for the target within the root and append
+// to that giving child else ignoring the call.
+func (d DeferredApply) Apply(em *Markup) {
+	var dummy Markup
+	dummy.allowChildren = true
+
+	d.Request.Apply(&dummy)
+
+	// If nothing was added simply ignore.
+	if len(dummy.children) == 0 {
+		return
+	}
+
+	child := dummy.children[0]
+
+	// Apply new kids.
+	for _, kid := range d.Adders {
+		kid.Apply(child)
+	}
+
+	// Apply to the real desired root.
+	child.Apply(em)
+}
+
+//==============================================================================
+
 // AppliableTarget defines a struct which takes a giving appliable and target
 // attempting to add the Appliable to the roots target child.
 type AppliableTarget struct {

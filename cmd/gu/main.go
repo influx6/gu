@@ -439,6 +439,8 @@ func initCommands() {
 				vDirName = "templates"
 			}
 
+			vDirFileName := strings.ToLower(vDirName) + ".go"
+
 			gopath := os.Getenv("GOPATH")
 			gup := filepath.Join(gopath, "src")
 			gupkg := filepath.Join(gup, gupath)
@@ -477,11 +479,11 @@ func initCommands() {
 
 			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(vDirPath), "generate.go"))
 
-			if err := writeFile(filepath.Join(vDirPath, "views.go"), plainPKGData); err != nil {
+			if err := writeFile(filepath.Join(vDirPath, vDirFileName), plainPKGData); err != nil {
 				return err
 			}
 
-			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(vDirPath), "views.go"))
+			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(vDirPath), vDirFileName))
 
 			return nil
 		},

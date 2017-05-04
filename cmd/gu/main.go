@@ -27,6 +27,7 @@ var (
 	goPathbytes     = []byte("{{GOPATH}}")
 	pkgContentbytes = []byte("{{PKG_CONTENT}}")
 	pkgNamebytes    = []byte("{{PKGNAME}}")
+	fileNamebytes   = []byte("{{FILENAME}}")
 	dirNamebytes    = []byte("{{DIRNAME}}")
 	nameLowerbytes  = []byte("{{Name_Lower}}")
 
@@ -471,6 +472,7 @@ func initCommands() {
 			vgendata = bytes.Replace(vgendata, pkgContentbytes, gendata, 1)
 			vgendata = bytes.Replace(vgendata, dirNamebytes, []byte(vDirPath), 1)
 			vgendata = bytes.Replace(vgendata, pkgNamebytes, []byte("\""+vDirName+"\""), 1)
+			vgendata = bytes.Replace(vgendata, fileNamebytes, []byte("\""+vDirFileName+"\""), 1)
 			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte(vDirName), -1)
 
 			if err := writeFile(filepath.Join(vDirPath, "generate.go"), vgendata); err != nil {

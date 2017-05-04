@@ -32,7 +32,7 @@ func main() {
         fmt.Fprintf(&buf,"\thtmlfiles[%q] = %+q\n", path, item)
     }
 
-	file, err := os.Create(filepath.Join(cdir, "views.go"))
+	file, err := os.Create(filepath.Join(cdir, {{FILENAME}}))
 	if err != nil {
 		panic("Failed to create css pkg file: "+ err.Error())
 	}

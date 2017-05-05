@@ -125,6 +125,14 @@ type RegisterServices interface {
 	RegisterServices(Services)
 }
 
+// RegisterServicable registers the giving base argument if it exposes the RegisterServices
+// interfaces and appropriates the provided services struct.
+func RegisterServicable(base interface{}, services Services) {
+	if servicableBase, ok := base.(RegisterServices); ok {
+		servicableBase.RegisterServices(services)
+	}
+}
+
 //================================================================================
 
 // Renderable provides a interface for a renderable type.

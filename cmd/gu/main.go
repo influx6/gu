@@ -206,6 +206,12 @@ func initCommands() {
 				Value:   true,
 			},
 			&cli.BoolFlag{
+				Name:    "stand-alone",
+				Aliases: []string{"stand"},
+				Usage:   "stand=true",
+				Value:   false,
+			},
+			&cli.BoolFlag{
 				Name:    "flat-file",
 				Aliases: []string{"flat"},
 				Usage:   "flat=true",
@@ -218,8 +224,13 @@ func initCommands() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+			componentName := ctx.String("component")
+			flat := ctx.Bool("flat-file")
+			standAlone := ctx.Bool("stand-alone")
+			base := ctx.Bool("base-of-components-package")
+
 			args := ctx.Args()
-			if args.Len() == 0 {
+			if args.Len() == 0 && componentName == "" {
 				return nil
 			}
 
@@ -228,15 +239,10 @@ func initCommands() {
 				return err
 			}
 
-			flat := ctx.Bool("flat-file")
-			base := ctx.Bool("base-of-components-package")
-
 			gopath := os.Getenv("GOPATH")
 			gup := filepath.Join(gopath, "src")
 			gupkg := filepath.Join(gopath, "src", gupath)
 			componentDir := filepath.Join(cdir, "components")
-
-			componentName := ctx.String("component")
 
 			if componentName == "" && args.Len() > 0 {
 				componentName = args.First()
@@ -252,15 +258,86 @@ func initCommands() {
 			componentNameLower := strings.ToLower(componentStructName)
 
 			componentPkgName := badSymbols.ReplaceAllString(componentName, "")
+			newNoComponentDir := filepath.Join(cdir, componentPkgName)
 			newComponentDir := filepath.Join(componentDir, componentPkgName)
 
 			cssDirName := "styles"
 			newComponentCSSDir := filepath.Join(newComponentDir, cssDirName)
 			newComponentCSSFilesDir := filepath.Join(newComponentCSSDir, "css")
+			newNoComponentCSSDir := filepath.Join(newNoComponentDir, cssDirName)
+			newNoComponentCSSFilesDir := filepath.Join(newNoComponentCSSDir, "css")
 
 			packagePath, err := filepath.Rel(gup, cdir)
 			if err != nil {
 				return err
+			}
+
+			cssbeforegendata, cerr := ioutil.ReadFile(filepath.Join(gupkg, "templates/css.template"))
+			if cerr != nil {
+				return cerr
+			}
+
+			cssgendata, merr := ioutil.ReadFile(filepath.Join(gupkg, "templates/cssgenerate.template"))
+			if merr != nil {
+				return merr
+			}
+
+			plainPKGData, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/plain_generated_pkg.template"))
+			if err != nil {
+				return err
+			}
+
+			if standAlone {
+				// fmt.Printf("Will to %q\n", newNoComponentDir)
+				if err = os.Mkdir(newNoComponentDir, 0777); err != nil {
+					return err
+				}
+
+				if err = os.MkdirAll(newNoComponentCSSFilesDir, 0777); err != nil {
+					return err
+				}
+
+				fmt.Printf("- Adding project package: %q\n", filepath.Join("", componentPkgName))
+				fmt.Printf("- Adding project directory: %q\n", filepath.Join("", componentPkgName, cssDirName))
+				fmt.Printf("- Adding project directory: %q\n", filepath.Join("", componentPkgName, cssDirName, "css"))
+
+				cssbeforegendata = []byte(fmt.Sprintf("%q", cssbeforegendata))
+				cssgendata = bytes.Replace(cssgendata, pkgContentbytes, cssbeforegendata, 1)
+				cssgendata = bytes.Replace(cssgendata, dirNamebytes, []byte("css"), 1)
+				cssgendata = bytes.Replace(cssgendata, pkgNamebytes, []byte("\""+cssDirName+"\""), 1)
+				plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte(cssDirName), -1)
+
+				if err = writeFile(filepath.Join(newNoComponentCSSDir, "generate.go"), cssgendata); err != nil {
+					return err
+				}
+
+				fmt.Printf("- Adding project file: %q\n", filepath.Join("", componentPkgName, "styles", "generate.go"))
+
+				if err := writeFile(filepath.Join(newNoComponentCSSDir, "css.go"), plainPKGData); err != nil {
+					return err
+				}
+
+				fmt.Printf("- Adding project file: %q\n", filepath.Join("", componentPkgName, "styles", "css.go"))
+
+				cpdata, cperr := ioutil.ReadFile(filepath.Join(gupkg, "templates/nopkgcomponent.template"))
+				if cperr != nil {
+					return cperr
+				}
+
+				cpdata = bytes.Replace(cpdata, pkgNamebytes, []byte(componentPkgName), -1)
+				cpdata = bytes.Replace(cpdata, pkgbytes, []byte(packagePath), -1)
+				cpdata = bytes.Replace(cpdata, namebytes, []byte(componentNameCap), -1)
+				cpdata = bytes.Replace(cpdata, nameLowerbytes, []byte(componentNameLower), -1)
+
+				componentFileName := fmt.Sprintf("%s.go", componentNameLower)
+				cmdir := filepath.Join(newNoComponentDir, componentFileName)
+
+				if err = writeFile(cmdir, cpdata); err != nil {
+					return err
+				}
+
+				fmt.Printf("- Adding project file: %q\n", filepath.Join("", componentPkgName, componentFileName))
+				return nil
 			}
 
 			if flat && base {
@@ -351,21 +428,6 @@ func initCommands() {
 			fmt.Printf("- Adding project package: %q\n", filepath.Join("components", componentPkgName))
 			fmt.Printf("- Adding project directory: %q\n", filepath.Join("components", componentPkgName, cssDirName))
 			fmt.Printf("- Adding project directory: %q\n", filepath.Join("components", componentPkgName, cssDirName, "css"))
-
-			cssbeforegendata, cerr := ioutil.ReadFile(filepath.Join(gupkg, "templates/css.template"))
-			if cerr != nil {
-				return cerr
-			}
-
-			cssgendata, merr := ioutil.ReadFile(filepath.Join(gupkg, "templates/cssgenerate.template"))
-			if merr != nil {
-				return merr
-			}
-
-			plainPKGData, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/plain_generated_pkg.template"))
-			if err != nil {
-				return err
-			}
 
 			cssbeforegendata = []byte(fmt.Sprintf("%q", cssbeforegendata))
 			cssgendata = bytes.Replace(cssgendata, pkgContentbytes, cssbeforegendata, 1)

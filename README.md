@@ -63,6 +63,20 @@ It is provided to both improve the workflow of the user, as well as to provide q
 - Adding project file: "tableui/tables.go"
 ```
 
+-	Creating a component as a self contained package.
+
+*This types of package generated won't call out to a root package to register themselves with the projects `Components` registry*
+
+```bash
+>  gu components new --stand=true tooltip
+- Adding project package: "tooltip"
+- Adding project directory: "tooltip/styles"
+- Adding project directory: "tooltip/styles/css"
+- Adding project file: "tooltip/styles/generate.go"
+- Adding project file: "tooltip/styles/css.go"
+- Adding project file: "tooltip/tooltip.go"
+```
+
 -	Creating a component as part of the main components package for a project.
 
 ```bash

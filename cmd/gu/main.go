@@ -413,14 +413,9 @@ func initCommands() {
 		Description: "Generates a package which builds all internal files that matches provided optional extension list into a go file",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "name",
-				Aliases: []string{"n"},
-				Usage:   "name=mytemplates",
-			},
-			&cli.StringSliceFlag{
 				Name:    "extensions",
 				Aliases: []string{"e"},
-				Usage:   "extensions=['.gob', '.loc']",
+				Usage:   "extensions='.gob, .loc'",
 			},
 		},
 		Action: func(ctx *cli.Context) error {
@@ -434,14 +429,13 @@ func initCommands() {
 				return err
 			}
 
-			extensions := ctx.StringSlice("extensions")
-
 			var extBu bytes.Buffer
 			fmt.Fprintf(&extBu, "[]string{")
 
+			extensions := strings.Split(ctx.String("extensions"), ",")
 			totalLen := len(extensions) - 1
 			for ind, ext := range extensions {
-				fmt.Fprintf(&extBu, "%q", ext)
+				fmt.Fprintf(&extBu, "%q", strings.TrimSpace(ext))
 				if ind < totalLen {
 					fmt.Fprintf(&extBu, ",")
 				}

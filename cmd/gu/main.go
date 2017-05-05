@@ -193,12 +193,9 @@ func initCommands() {
 		own package or part of the current directory.
 
 		Options:
-			- flat: This option when true, will indicate that only a .go file of that component is to be generated
-				     in the app's components package.
+			- flat: This option when true, will indicate that only a .go file of that component is to be generated in the app's components package.
 
-			- base:	This option when false, will force that component file or package to be generated right in the 
-					directory where the command was called and not in the components package.
-		
+			- base:	This option when false, will force that component file or package to be generated right in the directory where the command was called and not in the components package.
 		`,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{

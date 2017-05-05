@@ -7,6 +7,13 @@ import (
 	"github.com/gu-io/gu/trees/property"
 )
 
+// RegisterComponent adds the giving component into the provied registry for instanciation.
+func RegisterComponent(registry *gu.ComponentRegistry) {
+	registry.Register("{{Name_Lower}}", func(attr map[string]string, template string) gu.Renderable {
+		return New{{Name}}()
+	}, false)
+}
+
 // {{Name}} defines a component which implements the gu.Renderable interface.
 type {{Name}} struct{
 	gu.Reactive

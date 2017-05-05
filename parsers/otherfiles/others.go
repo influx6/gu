@@ -49,7 +49,7 @@ func walkDir(extensions []string, items map[string]string, root string, path str
 	}
 
 	// Is file an exension we allow else skip.
-	if !validExtension(extensions, filepath.Ext(path)) {
+	if len(extensions) != 0 && !validExtension(extensions, filepath.Ext(path)) {
 		return nil
 	}
 

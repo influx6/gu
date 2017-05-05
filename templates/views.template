@@ -11,7 +11,7 @@ import (
 	"path"
 )
 
-var htmlFiles = map[string]string{}
+var internalFiles = map[string]string{}
 
 
 // Must retrieves the giving file and the content of that giving file else 
@@ -26,22 +26,8 @@ func Must(file string) string {
 
 
 // Get retrieves the giving file and the content of that giving file.
-func Get(file string) (content string, found bool) {
-	var hasExt bool
-
-	fileExt := path.Ext(file)
-	hasExt = (fileExt == "")
-
-	// If we have a file extension then check against the given file name directly.
-	if !hasExt {
-		content, found = htmlFiles[file]
-		return
-	}
-
-	// Since no extension, attempt to locate file+'.html' path.
-	newFile := file + ".html"
-	content, found = htmlFiles[newFile]
-	return
+func Get(file string) (string, bool) {
+	return internalFiles[file]
 }
 
 func init(){

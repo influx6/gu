@@ -24,6 +24,7 @@ var (
 	namebytes       = []byte("{{Name}}")
 	pkgbytes        = []byte("{{PKG}}")
 	sourcebytes     = []byte("{{SOURCE}}")
+	extbytes        = []byte("{{EXTENSIONS}}")
 	goPathbytes     = []byte("{{GOPATH}}")
 	pkgContentbytes = []byte("{{PKG_CONTENT}}")
 	pkgNamebytes    = []byte("{{PKGNAME}}")
@@ -402,6 +403,109 @@ func initCommands() {
 			}
 
 			fmt.Printf("- Adding project file: %q\n", filepath.Join("components", componentPkgName, componentFileName))
+			return nil
+		},
+	})
+
+	commands = append(commands, &cli.Command{
+		Name:        "files",
+		Usage:       "gu files <dir-name>",
+		Description: "Generates a package which builds all internal files that matches provided optional extension list into a go file",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "name",
+				Aliases: []string{"n"},
+				Usage:   "name=mytemplates",
+			},
+			&cli.StringSliceFlag{
+				Name:    "extensions",
+				Aliases: []string{"e"},
+				Usage:   "extensions=['.gob', '.loc']",
+			},
+		},
+		Action: func(ctx *cli.Context) error {
+			args := ctx.Args()
+			if args.Len() == 0 {
+				return nil
+			}
+
+			cdir, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+
+			extensions := ctx.StringSlice("extensions")
+
+			var extBu bytes.Buffer
+			fmt.Fprintf(&extBu, "[]string{")
+
+			totalLen := len(extensions) - 1
+			for ind, ext := range extensions {
+				fmt.Fprintf(&extBu, "%q", ext)
+				if ind < totalLen {
+					fmt.Fprintf(&extBu, ",")
+				}
+			}
+
+			fmt.Fprintf(&extBu, "}")
+
+			vDirName := ctx.String("name")
+			if vDirName == "" && args.Len() > 0 {
+				vDirName = args.First()
+			}
+
+			if vDirName == "" && args.Len() == 0 {
+				vDirName = "templates"
+			}
+
+			vDirFileName := strings.ToLower(vDirName) + ".go"
+
+			gopath := os.Getenv("GOPATH")
+			gup := filepath.Join(gopath, "src")
+			gupkg := filepath.Join(gup, gupath)
+			vDirPath := filepath.Join(cdir, vDirName)
+
+			if err = os.MkdirAll(vDirPath, 0777); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project directory: %q\n", filepath.Base(vDirPath))
+
+			gendata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/views.template"))
+			if err != nil {
+				return err
+			}
+
+			vgendata, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/files.template"))
+			if err != nil {
+				return err
+			}
+
+			plainPKGData, err := ioutil.ReadFile(filepath.Join(gupkg, "templates/plain_generated_pkg.template"))
+			if err != nil {
+				return err
+			}
+
+			gendata = []byte(fmt.Sprintf("%q", gendata))
+			vgendata = bytes.Replace(vgendata, pkgContentbytes, gendata, 1)
+			vgendata = bytes.Replace(vgendata, dirNamebytes, []byte(vDirPath), 1)
+			vgendata = bytes.Replace(vgendata, extbytes, extBu.Bytes(), 1)
+			vgendata = bytes.Replace(vgendata, pkgNamebytes, []byte("\""+vDirName+"\""), 1)
+			vgendata = bytes.Replace(vgendata, fileNamebytes, []byte("\""+vDirFileName+"\""), 1)
+			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte(vDirName), -1)
+
+			if err := writeFile(filepath.Join(vDirPath, "generate.go"), vgendata); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(vDirPath), "generate.go"))
+
+			if err := writeFile(filepath.Join(vDirPath, vDirFileName), plainPKGData); err != nil {
+				return err
+			}
+
+			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(vDirPath), vDirFileName))
+
 			return nil
 		},
 	})

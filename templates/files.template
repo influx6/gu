@@ -9,7 +9,7 @@ import (
 	"strings"
 	"path/filepath"
 
-	"github.com/gu-io/gu/parsers/htmlfiles"
+	"github.com/gu-io/gu/parsers/otherfiles"
 )
 
 var pkgName = {{PKGNAME}}
@@ -21,7 +21,7 @@ func main() {
 		panic(err)
 	}
 
-	items, err := htmlfiles.ParseDir(cdir)
+	items, err := otherfiles.ParseDir(cdir, {{EXTENSIONS}})
 	if err != nil {
 		panic("Failed to walk html files: "+ err.Error())
 	}

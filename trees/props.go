@@ -191,7 +191,8 @@ func (c *ClassList) Apply(em *Markup) {
 			cold.Add(c.list...)
 		} else {
 			_, val := old.Render()
-			c.Add(val)
+			oldSet := c.list
+			c.list = append([]string{val}, oldSet...)
 			em.attrs[index] = c
 		}
 

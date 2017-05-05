@@ -194,7 +194,6 @@ func (m *ElementWriter) Print(e *Markup) string {
 	}
 
 	var children = []string{}
-
 	for _, ch := range e.Children() {
 		if ch.UID() == e.UID() {
 			continue
@@ -208,12 +207,7 @@ func (m *ElementWriter) Print(e *Markup) string {
 		fmt.Sprintf("<%s", e.Name()),
 		hashes,
 		attrs,
-		(func() string {
-			if len(style) != 0 {
-				return fmt.Sprintf(` style="%s"`, style)
-			}
-			return ""
-		}()),
+		fmt.Sprintf(` style=%q`, style),
 		beginbrack,
 		e.TextContent(),
 		strings.Join(children, ""),

@@ -24,6 +24,15 @@ based incremental scaling factors for spaces, size.
 /* Creates grid capable of using with list items and use -24px gutter. */
 .grids(@gutter, @letter_spacing){
 
+    // &:after{
+    //     content: " ";
+    //     font-size: 0;
+    //     visibility: hidden;
+    //     display: block;
+    //     clear: both;
+    //     height: 0;
+    // }
+
     & {
         list-style: none;
         margin: 0;
@@ -75,6 +84,7 @@ based incremental scaling factors for spaces, size.
         text-align: center;
 
         & > grid__block{
+            // float: none;
             text-align: left;
         }
     }
@@ -118,6 +128,7 @@ based incremental scaling factors for spaces, size.
         letter-spacing: normal;
         word-spacing: normal;
         padding-left: @gutter;
+        // float: left;
 
         /*Add the sizing settings for the grid blocks*/
         .sizing;

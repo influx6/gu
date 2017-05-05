@@ -419,8 +419,9 @@ func initCommands() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+			vDirName := ctx.String("name")
 			args := ctx.Args()
-			if args.Len() == 0 {
+			if args.Len() == 0 && vDirName == "" {
 				return nil
 			}
 
@@ -443,7 +444,6 @@ func initCommands() {
 
 			fmt.Fprintf(&extBu, "}")
 
-			vDirName := ctx.String("name")
 			if vDirName == "" && args.Len() > 0 {
 				vDirName = args.First()
 			}
@@ -506,7 +506,7 @@ func initCommands() {
 
 	commands = append(commands, &cli.Command{
 		Name:        "templates",
-		Usage:       "gu templates <views-dir-name>",
+		Usage:       "gu templates <dir-name>",
 		Description: "Generates a package which builds all internal [.html|.xhtml|.xml|.gml|.ghtml|.tml] files into a go file",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -516,8 +516,9 @@ func initCommands() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+			vDirName := ctx.String("name")
 			args := ctx.Args()
-			if args.Len() == 0 {
+			if args.Len() == 0 && vDirName == "" {
 				return nil
 			}
 
@@ -526,7 +527,6 @@ func initCommands() {
 				return err
 			}
 
-			vDirName := ctx.String("name")
 			if vDirName == "" && args.Len() > 0 {
 				vDirName = args.First()
 			}

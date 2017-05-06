@@ -26,7 +26,7 @@ func (server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func TestRouter(t *testing.T) {
 	router := router.NewRouter(server{}, memorycache.New("inmem"))
 
-	res, err := router.Get("/collections")
+	res, err := router.Get("/collections", nil)
 	if err != nil {
 		tests.Failed("Should have sucessesfully made request to %q", "/collections")
 	}
@@ -37,7 +37,7 @@ func TestRouter(t *testing.T) {
 	}
 	tests.Passed("Should have sucessesfully received expected response: %q", res.Status)
 
-	res, err = router.Get("/collections/count")
+	res, err = router.Get("/collections/count", nil)
 	if err != nil {
 		tests.Failed("Should have sucessesfully made request to %q", "/collections/count")
 	}

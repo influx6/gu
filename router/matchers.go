@@ -7,20 +7,24 @@ import (
 )
 
 // matchers define a lists of pattern associated with url match validators.
-var matchers = make(map[string]pattern.URIMatcher)
-var matchlock sync.RWMutex
+var matchers = struct {
+	m  map[string]pattern.URIMatcher
+	ml sync.RWMutex
+}{
+	m: make(map[string]pattern.URIMatcher),
+}
 
 // URIMatcher returns a new uri matcher if it has not being already creatd.
 func URIMatcher(path string) pattern.URIMatcher {
-	matchlock.RLock()
-	mk, ok := matchers[path]
-	matchlock.RUnlock()
+	matchers.ml.RLock()
+	mk, ok := matchers.m[path]
+	matchers.ml.RUnlock()
 
 	if !ok {
 		m := pattern.New(path)
-		matchlock.Lock()
-		matchers[path] = m
-		matchlock.Unlock()
+		matchers.ml.Lock()
+		matchers.m[path] = m
+		matchers.ml.Unlock()
 		return m
 	}
 

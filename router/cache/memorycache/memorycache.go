@@ -92,9 +92,9 @@ func (a *API) Serve(w http.ResponseWriter, r *http.Request) error {
 	// 1. Attempt to get full URI
 	// 2. Attempt to get only path
 
-	res, _, err := a.GetPath(r.URL.String())
+	res, _, err := a.Get(r.URL.String())
 	if err != nil {
-		res, _, err = a.GetPath(r.URL.Path)
+		res, _, err = a.Get(r.URL.Path)
 		if err != nil {
 			return err
 		}

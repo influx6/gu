@@ -11,22 +11,11 @@ import (
 	"strings"
 
 	"github.com/gu-io/gu/router/cache"
+	"github.com/influx6/faux/pattern"
 )
 
 // Params defines a map type of key-value pairs to be sent as query parameters.
 type Params map[string]string
-
-// HTTPHandler defines a request interface which defines a type which will be used
-// to service a http request.
-type HTTPHandler interface {
-	ServeHTTP(http.ResponseWriter, *http.Request)
-}
-
-// BasicHandler which defines a type which is used to service a request and returns an error
-// if the request failed.
-type BasicHandler interface {
-	Serve(http.ResponseWriter, *http.Request) error
-}
 
 // PreprocessHandler exposes a type which implements both the http.Handler and
 // a method which pre-processes giving routes for use in a request.
@@ -34,19 +23,32 @@ type PreprocessHandler interface {
 	Preprocess(string) string
 }
 
-// CacheHandler defines a handler which implements a type which allows a
-// handler to have access to a current request and response with the underline
-// cache being used.
-type CacheHandler interface {
-	ServeAndCache(http.ResponseWriter, *http.Request, cache.Cache) error
+// HTTPHandler defines a request interface which defines a type which will be used
+// to service a http request.
+type HTTPHandler interface {
+	ServeHTTP(http.ResponseWriter, *http.Request)
 }
 
-// Router exposes a interface which describes a
+// HTTPCacheHandler defines a handler which implements a type which allows a
+// handler to have access to a current request and response with the underline
+// cache being used.
+type HTTPCacheHandler interface {
+	ServeHTTP(http.ResponseWriter, *http.Request, cache.Cache)
+}
+
+//================================================================================
+
+// server defines an interface used to provide a concrete method
+// which returns a new path and request handler for that path.
+type server interface {
+	Match(string) (string, HTTPCacheHandler, error)
+}
+
+// Router exposes a struct which describes a multi-handler of request where
+// it
 type Router struct {
-	cache    cache.Cache
-	handler  HTTPHandler
-	chandler CacheHandler
-	phandler PreprocessHandler
+	cache cache.Cache
+	sx    server
 }
 
 // NewRouter returns a new instance of a Router.
@@ -54,17 +56,13 @@ func NewRouter(handler interface{}, cache cache.Cache) *Router {
 	var router Router
 	router.cache = cache
 
-	if ph, ok := handler.(PreprocessHandler); ok {
-		router.phandler = ph
-	}
-
-	switch mh := handler.(type) {
-	case CacheHandler:
-		router.chandler = mh
-	case BasicHandler:
-		router.handler = NewErrorHandler(mh)
-	case HTTPHandler:
-		router.handler = mh
+	switch hl := handler.(type) {
+	case Mux:
+		router.sx = NewMultiplexer(hl)
+	case HTTPCacheHandler, HTTPHandler:
+		router.sx = NewHandleMux(hl)
+	case Multiplexer:
+		router.sx = hl
 	default:
 		panic("Unsupported handler type")
 	}
@@ -115,6 +113,10 @@ func (r *Router) Get(path string, params Params) (*http.Response, error) {
 // Do performs the giving requests for a giving path with the provided body and returns the
 // response for that method.
 func (r *Router) Do(method string, path string, params Params, body io.ReadCloser) (*http.Response, error) {
+	path, handler, err := r.sx.Match(path)
+	if err != nil {
+		return nil, err
+	}
 
 	// Do we have parameters?
 	if params != nil {
@@ -128,10 +130,6 @@ func (r *Router) Do(method string, path string, params Params, body io.ReadClose
 		}
 	}
 
-	if r.phandler != nil {
-		path = r.phandler.Preprocess(path)
-	}
-
 	req, err := http.NewRequest(method, path, body)
 	if err != nil {
 		return nil, err
@@ -141,39 +139,18 @@ func (r *Router) Do(method string, path string, params Params, body io.ReadClose
 	responseRecoder := httptest.NewRecorder()
 
 	// TODO: Validate to ensure we don't need this here.
-	// var wg sync.WaitGroup
-	// wg.Add(1)
-
-	// go func() {
-	// 	defer wg.Done()
-
-	// If we have no cache, then use the internal handler.
-	if r.cache == nil {
-		r.handler.ServeHTTP(responseRecoder, req)
-
-		// return
-		res := responseRecoder.Result()
-		res.Request = req
-
-		return res, nil
+	if r.cache != nil {
+		handler.ServeHTTP(responseRecoder, req, r.cache)
 	}
 
-	// Since we have a cache, attempt to serve the request, else use the
-	// supplied http.Handler
-	if err := r.cache.Serve(responseRecoder, req); err != nil {
-
-		// If the CacheHandler is available then let it handle the request and pass
-		// in the routers cache, incase it wishes to store the request into the cache.
-		// If not, pass to normal http.handler.
-		if r.chandler != nil {
-			r.chandler.ServeAndCache(responseRecoder, req, r.cache)
-		} else {
-			r.handler.ServeHTTP(responseRecoder, req)
+	switch r.cache == nil {
+	case true:
+		handler.ServeHTTP(responseRecoder, req, nil)
+	case false:
+		if err := r.cache.Serve(responseRecoder, req); err != nil {
+			handler.ServeHTTP(responseRecoder, req, r.cache)
 		}
 	}
-	// }()
-
-	// wg.Wait()
 
 	res := responseRecoder.Result()
 	res.Request = req
@@ -183,22 +160,168 @@ func (r *Router) Do(method string, path string, params Params, body io.ReadClose
 
 //================================================================================
 
+// HandleMux defines a structure which handles the variaties in the supported request
+// handlers of the router package and encapsulates the needed behaviour calls.
+type HandleMux struct {
+	normal     HTTPHandler
+	caches     HTTPCacheHandler
+	preprocess PreprocessHandler
+}
+
+// NewHandleMux returns a new instance of a HandleMux.
+func NewHandleMux(handler interface{}) HandleMux {
+	var hm HandleMux
+
+	if ph, ok := handler.(PreprocessHandler); ok {
+		hm.preprocess = ph
+	}
+
+	switch hl := handler.(type) {
+	case HTTPCacheHandler:
+		hm.caches = hl
+	case HTTPHandler:
+		hm.normal = hl
+	default:
+		panic("Unsupported handler type")
+	}
+
+	return hm
+}
+
+// Match examines the path and returns a new path, a Mux to handle the request
+// else returns an error if one is not found.
+func (m HandleMux) Match(path string) (string, HTTPCacheHandler, error) {
+	if m.preprocess != nil {
+		return m.preprocess.Preprocess(path), m, nil
+	}
+
+	return path, m, nil
+}
+
+// ServeAndCache attempts to service request with either the cache or normal handler found within
+// itself.
+func (m HandleMux) ServeHTTP(w http.ResponseWriter, r *http.Request, c cache.Cache) {
+
+	// If we have no cache, then use the internal handler.
+	switch c == nil {
+	case true:
+		m.normal.ServeHTTP(w, r)
+		break
+	case false:
+		switch m.caches == nil {
+		case true:
+			m.normal.ServeHTTP(w, r)
+			break
+		case false:
+			m.caches.ServeHTTP(w, r, c)
+			break
+		}
+	}
+
+}
+
+//================================================================================
+
+// Mux defines a structure which giving a Matcher and a handler which implements either the
+// HTTPCacheHandler/BasicHandler/HTTPHandler and also optionally the PreprocessorHandler, where
+// request being serviced will receive a new path when called and will be used to define,
+// which part an external service will use to service a incoming relative path request.
+// Below is demonstrated a scenario where Mux can be used for to handle request for specific
+// namespace.
+// Scenrio:
+//   Mux has URI Matcher for github/*
+// When:
+//	Mux receives request for github/gu-io/buba
+//
+// If Mux has Preprocessor to to transform path to github.com/path:
+//	Then: Path returned is github.com/gu-io/buba
+//
+// If Mux has No Preprocessor
+// 	Then: Path returned is gu-io/buba.
+type Mux struct {
+	matcher pattern.URIMatcher
+	handler HandleMux
+}
+
+// NewMux returns a new instance of a mux.
+func NewMux(namespace string, handler interface{}) Mux {
+	if !strings.HasSuffix(namespace, "/*") {
+		namespace = strings.TrimSuffix(namespace, "/") + "/*"
+	}
+
+	var mx Mux
+	mx.matcher = URIMatcher(namespace)
+	mx.handler = NewHandleMux(handler)
+
+	return mx
+}
+
+// Match validates that the giving Mux matches the wanted path and
+// extracts the real path from the provided path, returning the true/false
+// if it matched the path.
+func (m *Mux) Match(path string) (string, HTTPCacheHandler, error) {
+	_, rem, ok := m.matcher.Validate(path)
+	if !ok {
+		return "", nil, errors.New("Invalid Path")
+	}
+
+	return m.handler.Match(rem)
+}
+
+//================================================================================
+
+// Multiplexer defines a struct which manages giving set of Mux and adequates
+// calls the first to match a giving request about a incoming request.
+type Multiplexer struct {
+	mux []Mux
+}
+
+// NewMultiplexer returns a new instance of a Multiplexer.
+func NewMultiplexer(mx ...Mux) Multiplexer {
+	return Multiplexer{
+		mux: mx,
+	}
+}
+
+// Match examines the path and returns a new path, a Mux to handle the request
+// else returns an error if one is not found.
+func (m Multiplexer) Match(path string) (string, HTTPCacheHandler, error) {
+	for _, item := range m.mux {
+		newPath, handler, err := item.Match(path)
+		if err != nil {
+			continue
+		}
+
+		return newPath, handler, nil
+	}
+
+	return path, nil, fmt.Errorf("Mux not found for %s", path)
+}
+
+//================================================================================
+
+// BasicHTTPHandler defines a request interface which defines a type which will be used
+// to service a http request.
+type BasicHTTPHandler interface {
+	ServeHTTP(http.ResponseWriter, *http.Request) error
+}
+
 // ErrorHandler defines a new HTTPHandler which is used to service a request and
 // respond to a giving error that occurs.
 type ErrorHandler struct {
-	Handler BasicHandler
+	Handler BasicHTTPHandler
 }
 
 // NewErrorHandler returns a new instance of the HTTPHandler which is used to service a request
 // and respond to a giving error that occurs.
-func NewErrorHandler(bh BasicHandler) HTTPHandler {
+func NewErrorHandler(bh BasicHTTPHandler) HTTPHandler {
 	return ErrorHandler{Handler: bh}
 }
 
 // ServeHTTP services the incoming request to the underline Handler supplied for the
 // basic handler.
 func (e ErrorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if err := e.Handler.Serve(w, r); err != nil {
+	if err := e.Handler.ServeHTTP(w, r); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

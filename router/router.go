@@ -57,6 +57,8 @@ func NewRouter(handler interface{}, cache cache.Cache) *Router {
 	router.cache = cache
 
 	switch hl := handler.(type) {
+	case []Mux:
+		router.sx = NewMultiplexer(hl...)
 	case Mux:
 		router.sx = NewMultiplexer(hl)
 	case HTTPCacheHandler, HTTPHandler:
@@ -137,11 +139,6 @@ func (r *Router) Do(method string, path string, params Params, body io.ReadClose
 
 	// Create a ResponseRecorder for the giving
 	responseRecoder := httptest.NewRecorder()
-
-	// TODO: Validate to ensure we don't need this here.
-	if r.cache != nil {
-		handler.ServeHTTP(responseRecoder, req, r.cache)
-	}
 
 	switch r.cache == nil {
 	case true:

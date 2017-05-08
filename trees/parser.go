@@ -108,8 +108,6 @@ func ParseTree(markup string) []*Markup {
 }
 
 func pullNode(tokens *html.Tokenizer, root *Markup) {
-	var node *Markup
-
 	for {
 		token := tokens.Next()
 
@@ -128,23 +126,24 @@ func pullNode(tokens *html.Tokenizer, root *Markup) {
 				text = "<!--" + text + "-->"
 			}
 
-			if node != nil {
-				NewText(text).Apply(node)
-				continue
-			}
+			// if node != nil {
+			// 	NewText(text).Apply(node)
+			// 	continue
+			// }
 
 			NewText(text).Apply(root)
 			continue
 
 		case html.StartTagToken, html.EndTagToken, html.SelfClosingTagToken:
-			if token == html.EndTagToken {
-				node = nil
+			tagName, hasAttr := tokens.TagName()
+
+			// fmt.Printf("Token: %#v -> %+q -> %q -> %t\n", token, token, tagName, token == html.SelfClosingTagToken)
+
+			if token == html.EndTagToken && string(tagName) == root.tagname {
 				return
 			}
 
-			tagName, hasAttr := tokens.TagName()
-
-			node = NewMarkup(string(tagName), token == html.SelfClosingTagToken)
+			node := NewMarkup(string(tagName), token == html.SelfClosingTagToken)
 			node.Apply(root)
 
 			if hasAttr {

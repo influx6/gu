@@ -471,7 +471,7 @@ func initCommands() {
 
 	commands = append(commands, &cli.Command{
 		Name:        "files",
-		Usage:       "gu files <dir-name>",
+		Usage:       "gu files -dir=myfiles -extensions='.bo .loc .gob' <pkg-name>",
 		Description: "Generates a package which builds all internal files that matches provided optional extension list into a go file",
 		Flags: []cli.Flag{
 			&cli.StringFlag{

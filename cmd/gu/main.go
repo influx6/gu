@@ -475,16 +475,26 @@ func initCommands() {
 		Description: "Generates a package which builds all internal files that matches provided optional extension list into a go file",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
+				Name:    "dir",
+				Aliases: []string{"d"},
+				Usage:   "dir=assets",
+			},
+			&cli.StringFlag{
 				Name:    "extensions",
 				Aliases: []string{"e"},
 				Usage:   "extensions='.gob, .loc'",
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+			mDirName := ctx.String("dir")
 			vDirName := ctx.String("name")
 			args := ctx.Args()
 			if args.Len() == 0 && vDirName == "" {
 				return nil
+			}
+
+			if mDirName == "" {
+				mDirName = "files"
 			}
 
 			cdir, err := os.Getwd()
@@ -520,8 +530,13 @@ func initCommands() {
 			gup := filepath.Join(gopath, "src")
 			gupkg := filepath.Join(gup, gupath)
 			vDirPath := filepath.Join(cdir, vDirName)
+			mDirPath := filepath.Join(cdir, vDirName, mDirName)
 
 			if err = os.MkdirAll(vDirPath, 0777); err != nil {
+				return err
+			}
+
+			if err = os.MkdirAll(mDirPath, 0777); err != nil {
 				return err
 			}
 
@@ -543,11 +558,13 @@ func initCommands() {
 			}
 
 			gendata = []byte(fmt.Sprintf("%q", gendata))
-			vgendata = bytes.Replace(vgendata, pkgContentbytes, gendata, 1)
-			vgendata = bytes.Replace(vgendata, dirNamebytes, []byte(vDirPath), 1)
 			vgendata = bytes.Replace(vgendata, extbytes, extBu.Bytes(), 1)
+			vgendata = bytes.Replace(vgendata, pkgContentbytes, gendata, 1)
+			vgendata = bytes.Replace(vgendata, dirNamebytes, []byte(mDirPath), 1)
+
 			vgendata = bytes.Replace(vgendata, pkgNamebytes, []byte("\""+vDirName+"\""), 1)
 			vgendata = bytes.Replace(vgendata, fileNamebytes, []byte("\""+vDirFileName+"\""), 1)
+
 			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte(vDirName), -1)
 
 			if err := writeFile(filepath.Join(vDirPath, "generate.go"), vgendata); err != nil {

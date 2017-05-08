@@ -12,8 +12,8 @@ import (
 	"github.com/gu-io/gu/shell"
 	"github.com/gu-io/gu/trees"
 	"github.com/gu-io/gu/trees/elems"
-	"github.com/gu-io/gu/trees/themes/grids"
-	"github.com/gu-io/gu/trees/themes/normalize"
+	"github.com/gu-io/gu/trees/property"
+	"github.com/gu-io/gu/trees/themes/baseline"
 	"github.com/gu-io/gu/trees/themes/styleguide"
 	"github.com/influx6/faux/reflection"
 )
@@ -34,6 +34,7 @@ type AppAttr struct {
 	Theme            styleguide.StyleGuide `json:"theme"`
 	SkipNormalizeCSS bool                  `json:"skip_normalize_css"`
 	SkipGridCSS      bool                  `json:"skip_grid_css"`
+	SkipFonts        bool                  `json:"skip_fonts"`
 }
 
 // NApp defines a struct which encapsulates all the core view management functions
@@ -315,11 +316,15 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 	head = append(head, elems.Meta(trees.NewAttr("gu-app-title", app.attr.Title)))
 
 	if !app.attr.SkipNormalizeCSS {
-		head = append(head, elems.Style(elems.Text(normalize.GetSource("normalize.css"))))
+		head = append(head, elems.Style(elems.Text(baseline.GetSource("normalize/normalize.css"))))
+	}
+
+	if !app.attr.SkipFonts {
+		head = append(head, elems.Link(property.HrefAttr("https://fonts.googleapis.com/css?family=Monoton|Noto+Sans|Noto+Serif|Roboto|Roboto+Condensed|Roboto+Mono")))
 	}
 
 	if !app.attr.SkipGridCSS {
-		head = append(head, elems.Style(elems.Text(grids.GetSource("grid.css"))))
+		head = append(head, elems.Style(elems.Text(baseline.GetSource("grids/grid.css"))))
 		head = append(head, elems.Style(elems.Text(app.attr.Theme.CSS())))
 	}
 

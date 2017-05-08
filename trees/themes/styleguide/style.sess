@@ -15,6 +15,21 @@ ____________ Base  classes ____________________________
   word-wrap: break-word;
 }
 
+.sizing {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+.clear {
+	content: " ";
+	clear: both;
+	display: block;
+	visibility: hidden;
+	height: 0;
+}
+
 h1, h2, h3, h4, h5, h6, p {
 	margin: 0;
 	padding: 0;

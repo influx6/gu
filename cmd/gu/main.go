@@ -475,8 +475,8 @@ func initCommands() {
 		Description: "Generates a package which builds all internal files that matches provided optional extension list into a go file",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "dir",
-				Aliases: []string{"d"},
+				Name:    "dirName",
+				Aliases: []string{"dir"},
 				Usage:   "dir=assets",
 			},
 			&cli.StringFlag{

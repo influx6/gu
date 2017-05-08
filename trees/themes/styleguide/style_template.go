@@ -11,6 +11,7 @@ package styleguide
 var styleTemplate = `
 html {
 	font-size: {{ .BaseFontSize }}px;
+	font-family: "Noto", "Roboto", Helvetica, sans-serif, serif;
 }
 
 /*

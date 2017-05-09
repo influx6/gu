@@ -119,7 +119,8 @@ type Attr struct {
 	SecondaryColor        string
 	PrimaryBrandColor     string
 	SecondaryBrandColor   string
-	BaseScale             float64 // BaseScale to use for generating expansion/detraction scale.
+	BaseScale             float64 // BaseScale to use for generating expansion/detraction scale for font sizes.
+	HeaderBaseScale       float64 // BaseScale to use for generating expansion/detraction scale for header h1-h6 tags.
 	MinimumScaleCount     int     // Total scale to generate small font sizes.
 	MaximumScaleCount     int     // Total scale to generate large font sizes
 	MinimumHeadScaleCount int     // Total scale to generate small font sizes.
@@ -182,8 +183,12 @@ func New(attr Attr) (StyleGuide, error) {
 		attr.BaseFontSize = 16
 	}
 
-	if attr.BaseScale == 0 {
-		attr.BaseScale = GoldenRatio
+	if attr.BaseScale <= 0 {
+		attr.BaseScale = PerfectFourth
+	}
+
+	if attr.HeaderBaseScale <= 0 {
+		attr.HeaderBaseScale = MajorThird
 	}
 
 	if attr.MinimumHeadScaleCount == 0 {
@@ -284,7 +289,7 @@ func New(attr Attr) (StyleGuide, error) {
 		}
 	}
 
-	shm, bhm := GenerateValueScale(1, attr.BaseScale, attr.MinimumHeadScaleCount, attr.MaximumHeadScaleCount)
+	shm, bhm := GenerateValueScale(1, attr.HeaderBaseScale, attr.MinimumHeadScaleCount, attr.MaximumHeadScaleCount)
 	style.BigHeaderScale = bhm
 	style.SmallHeaderScale = shm
 

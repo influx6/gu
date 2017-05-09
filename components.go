@@ -27,10 +27,10 @@ var DefaultComponentMakers = []ComponentItem{
 		TagName: "css",
 		Unwrap:  true,
 		MakerTheme: func(fields map[string]string, template string, theme *styleguide.StyleGuide) Renderable {
-			return Static(trees.CSSStylesheet(template, fields, theme.Stylesheet()))
+			return Static(trees.CSSStylesheet(template, fields, theme.Stylesheet(), false))
 		},
 		Maker: func(fields map[string]string, template string) Renderable {
-			return Static(trees.CSSStylesheet(template, fields, nil))
+			return Static(trees.CSSStylesheet(template, fields, nil, false))
 		},
 	},
 }

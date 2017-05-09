@@ -14,9 +14,6 @@ import (
 
 var (
 	helpers = template.FuncMap{
-		"prefixInt": func(prefix string, b int) string {
-			return fmt.Sprintf("%s%d", prefix, b)
-		},
 		"quote": func(b interface{}) string {
 			switch bo := b.(type) {
 			case string:
@@ -42,6 +39,9 @@ var (
 				return strconv.Quote(string(mo))
 			}
 		},
+		"prefixInt": func(prefix string, b int) string {
+			return fmt.Sprintf("%s%d", prefix, b)
+		},
 		"add": func(a, b int) int {
 			return a + b
 		},
@@ -56,6 +56,26 @@ var (
 		},
 		"greaterThan": func(a, b int) bool {
 			return a > b
+		},
+		"len": func(a interface{}) int {
+			switch real := a.(type) {
+			case []interface{}:
+				return len(real)
+			case [][]byte:
+				return len(real)
+			case []byte:
+				return len(real)
+			case []float32:
+				return len(real)
+			case []float64:
+				return len(real)
+			case []string:
+				return len(real)
+			case []int:
+				return len(real)
+			default:
+				return 0
+			}
 		},
 		"multiply": func(a, b int) int {
 			return a * b
@@ -81,6 +101,7 @@ var (
 // Rule defines the a single css rule which will be transformed and
 // converted into a usable stylesheet during rendering.
 type Rule struct {
+	plain     string
 	template  *template.Template
 	feed      *Rule
 	feedStyle *bcss.Stylesheet
@@ -107,6 +128,17 @@ func New(rules string, extension *Rule, rs ...*Rule) *Rule {
 
 	rsc.template = tmp
 	return rsc
+}
+
+// Plain returns a new instance of a Rule which uses the raw rule string instead
+// of parsing with a template has the source of the stylesheet to be parsed. No processing
+// will be done on it.
+func Plain(rule string, extension *Rule, rs ...*Rule) *Rule {
+	return &Rule{
+		plain:   rule,
+		feed:    extension,
+		depends: rs,
+	}
 }
 
 // UseExtension sets the css.Rule to be used for extensions and
@@ -175,8 +207,13 @@ func (r *Rule) Stylesheet(bind interface{}, parentNode string) (*bcss.Stylesheet
 	}
 
 	var content bytes.Buffer
-	if err := r.template.Execute(&content, bind); err != nil {
-		return nil, err
+
+	if r.template != nil {
+		if err := r.template.Execute(&content, bind); err != nil {
+			return nil, err
+		}
+	} else {
+		content.WriteString(r.plain)
 	}
 
 	sheet, err := parser.Parse(content.String())

@@ -279,11 +279,18 @@ func ParseIn(root string,markup string, mo ...trees.Appliable) *trees.Markup {
 	return mroot
 }
 
+// PlainCSS provides a function that takes style rules which returns a stylesheet embeded into
+// the provided element parent and is built on the gu/css package which collects
+// necessary details from its parent to only target where it gets mounted.
+func PlainCSS(styles interface{}, bind interface{}, ext *css.Rule) *trees.Markup {
+	return trees.CSSStylesheet(styles, bind, ext, true)
+}
+
 // CSS provides a function that takes style rules which returns a stylesheet embeded into
 // the provided element parent and is built on the gu/css package which collects
 // necessary details from its parent to only target where it gets mounted.
 func CSS(styles interface{}, bind interface{}, ext *css.Rule) *trees.Markup {
-	return trees.CSSStylesheet(styles, bind, ext)
+	return trees.CSSStylesheet(styles, bind, ext, false)
 }
 `)
 

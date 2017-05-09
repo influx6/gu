@@ -59,12 +59,16 @@ func NewRouter(handler interface{}, cache cache.Cache) *Router {
 	switch hl := handler.(type) {
 	case []Mux:
 		router.sx = NewMultiplexer(hl...)
+		break
 	case Mux:
 		router.sx = NewMultiplexer(hl)
+		break
 	case HTTPCacheHandler, HTTPHandler:
 		router.sx = NewHandleMux(hl)
+		break
 	case Multiplexer:
 		router.sx = hl
+		break
 	default:
 		panic("Unsupported handler type")
 	}
@@ -176,8 +180,10 @@ func NewHandleMux(handler interface{}) HandleMux {
 	switch hl := handler.(type) {
 	case HTTPCacheHandler:
 		hm.caches = hl
+		break
 	case HTTPHandler:
 		hm.normal = hl
+		break
 	default:
 		panic("Unsupported handler type")
 	}

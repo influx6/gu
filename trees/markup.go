@@ -80,13 +80,17 @@ func CSSStylesheet(styles interface{}, bind interface{}, ext *css.Rule, plain bo
 
 	switch so := styles.(type) {
 	case string:
-		if plain {
+		switch plain {
+		case true:
 			rs = css.Plain(so, ext)
-		} else {
+		case false:
 			rs = css.New(so, ext)
 		}
+		break
 	case *css.Rule:
 		rs = so
+		rs.UseExtension(ext)
+		break
 	default:
 		panic("Invalid Acceptable type: Only string or *css.Rule")
 	}

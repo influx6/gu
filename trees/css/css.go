@@ -102,10 +102,10 @@ var (
 // converted into a usable stylesheet during rendering.
 type Rule struct {
 	plain     string
-	template  *template.Template
 	feed      *Rule
-	feedStyle *bcss.Stylesheet
 	depends   []*Rule
+	feedStyle *bcss.Stylesheet
+	template  *template.Template
 }
 
 // New returns a new instance of a Rule which provides capability to parse
@@ -144,6 +144,10 @@ func Plain(rule string, extension *Rule, rs ...*Rule) *Rule {
 // UseExtension sets the css.Rule to be used for extensions and
 // returns the rule.
 func (r *Rule) UseExtension(c *Rule) *Rule {
+	if c == nil {
+		return r
+	}
+
 	r.feed = c
 	return r
 }
@@ -157,6 +161,7 @@ func (r *Rule) Add(c *Rule) *Rule {
 // extend attempts to pull a giving set of classes and assigns into
 // a target class.
 func (r *Rule) extend(item string) string {
+	// fmt.Printf("Find: %q %#v\n", item, r.feed)
 	if r.feedStyle == nil {
 		return ""
 	}
@@ -177,6 +182,8 @@ func (r *Rule) extend(item string) string {
 		}
 		break
 	}
+
+	// fmt.Printf("Attr: %q -> %+q\n", item, attrs)
 
 	return strings.Join(attrs, "\n")
 }

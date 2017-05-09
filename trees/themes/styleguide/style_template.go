@@ -47,6 +47,29 @@ h1, h2, h3, h4, h5, h6, p {
 }
 
 /*
+____________ Line height  classes ____________________________
+	Line height defines giving sets of the first capital length hight 
+	suggestable for styles
+
+	In typography, cap height refers to the height of a capital letter above the baseline for a particular typeface.
+
+	print = 1.25em, Desktop(Large, Normal) = 1.3756, Tablet(Large) = 1.3756, Phone = 1.25
+
+*/
+
+.line-height-print, .line-height-phone {
+	line-height: 1.25;
+}
+
+.line-height-deskop, .line-height-desktop-large {
+	line-height: 1.3756;
+}
+
+.line-height-tablet {
+	line-height: 1.3756;
+}
+
+/*
 ____________ Cap height  classes ____________________________
 	Cap height defines giving sets of the first capital length hight 
 	suggestable for styles
@@ -55,6 +78,7 @@ ____________ Cap height  classes ____________________________
 
 	small = 0.8, medium = 0.8, large = 0.68, extra-large = 0.68
 */
+
 
 
 /*

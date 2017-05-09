@@ -69,6 +69,26 @@ var (
 		"greaterThan": func(a, b int) bool {
 			return a > b
 		},
+		"len": func(a interface{}) int {
+			switch real := a.(type) {
+			case []interface{}:
+				return len(real)
+			case [][]byte:
+				return len(real)
+			case []byte:
+				return len(real)
+			case []float32:
+				return len(real)
+			case []float64:
+				return len(real)
+			case []string:
+				return len(real)
+			case []int:
+				return len(real)
+			default:
+				return 0
+			}
+		},
 		"multiply": func(a, b int) int {
 			return a * b
 		},
@@ -92,24 +112,26 @@ var (
 
 // Attr defines different color and size of strings to define a specific brand.
 type Attr struct {
-	PrimaryWhite        string
-	SuccessColor        string
-	FailureColor        string
-	PrimaryColor        string
-	SecondaryColor      string
-	PrimaryBrandColor   string
-	SecondaryBrandColor string
-	BaseScale           float64 // BaseScale to use for generating expansion/detraction scale.
-	MinimumScaleCount   int     // Total scale to generate small font sizes.
-	MaximumScaleCount   int     // Total scale to generate large font sizes
-	BaseFontSize        int     // BaseFontSize for typeface using the provide BaseScale.
-	SmallBorderRadius   int     // SmallBorderRadius for tiny components eg checkbox, radio buttons.
-	MediumBorderRadius  int     // MediaBorderRadius for buttons, inputs, etc
-	LargeBorderRadius   int     // LargeBorderRadius for components like cards, modals, etc.
-	FloatingShadow      string  // shadow for floating icons, elements.
-	HoverShadow         string  // shadow for over dialog etc
-	DropShadow          string  // Useful for popovers/dropovers
-	BaseShadow          string  // Normal shadow of elemnts
+	PrimaryWhite          string
+	SuccessColor          string
+	FailureColor          string
+	PrimaryColor          string
+	SecondaryColor        string
+	PrimaryBrandColor     string
+	SecondaryBrandColor   string
+	BaseScale             float64 // BaseScale to use for generating expansion/detraction scale.
+	MinimumScaleCount     int     // Total scale to generate small font sizes.
+	MaximumScaleCount     int     // Total scale to generate large font sizes
+	MinimumHeadScaleCount int     // Total scale to generate small font sizes.
+	MaximumHeadScaleCount int     // Total scale to generate large font sizes
+	BaseFontSize          int     // BaseFontSize for typeface using the provide BaseScale.
+	SmallBorderRadius     int     // SmallBorderRadius for tiny components eg checkbox, radio buttons.
+	MediumBorderRadius    int     // MediaBorderRadius for buttons, inputs, etc
+	LargeBorderRadius     int     // LargeBorderRadius for components like cards, modals, etc.
+	FloatingShadow        string  // shadow for floating icons, elements.
+	HoverShadow           string  // shadow for over dialog etc
+	DropShadow            string  // Useful for popovers/dropovers
+	BaseShadow            string  // Normal shadow of elemnts
 }
 
 // StyleColors defines a struct which holds all possible giving brand colors utilized
@@ -136,11 +158,11 @@ func (t TypeSize) String() string {
 // StyleGuide represent the fullset of brand style properties for the project.
 type StyleGuide struct {
 	Attr
-	Brand          StyleColors `json:"brand"`
-	BigFontScale   []TypeSize
-	SmallFontScale []TypeSize
-	BigScale       []float64
-	SmallScale     []float64
+	Brand            StyleColors `json:"brand"`
+	SmallFontScale   []float64
+	BigFontScale     []float64
+	SmallHeaderScale []float64
+	BigHeaderScale   []float64
 }
 
 // Must returns the giving style or panics if it fails.
@@ -164,12 +186,20 @@ func New(attr Attr) (StyleGuide, error) {
 		attr.BaseScale = GoldenRatio
 	}
 
+	if attr.MinimumHeadScaleCount == 0 {
+		attr.MinimumHeadScaleCount = 4
+	}
+
+	if attr.MaximumHeadScaleCount == 0 {
+		attr.MaximumHeadScaleCount = 6
+	}
+
 	if attr.MinimumScaleCount == 0 {
 		attr.MinimumScaleCount = 10
 	}
 
 	if attr.MaximumScaleCount == 0 {
-		attr.MaximumScaleCount = 20
+		attr.MaximumScaleCount = 10
 	}
 
 	if attr.FloatingShadow == "" {
@@ -254,18 +284,13 @@ func New(attr Attr) (StyleGuide, error) {
 		}
 	}
 
-	bg, sm := GenerateValueScale(attr.BaseScale, 1, attr.MinimumScaleCount, attr.MaximumScaleCount)
+	shm, bhm := GenerateValueScale(1, attr.BaseScale, attr.MinimumHeadScaleCount, attr.MaximumHeadScaleCount)
+	style.BigHeaderScale = bhm
+	style.SmallHeaderScale = shm
 
-	style.BigScale = bg
-	style.SmallScale = sm
-
-	for _, item := range bg {
-		style.BigFontScale = append(style.BigFontScale, TypeSize(item))
-	}
-
-	for _, item := range sm {
-		style.SmallFontScale = append(style.SmallFontScale, TypeSize(item))
-	}
+	sm, bg := GenerateValueScale(1, attr.BaseScale, attr.MinimumScaleCount, attr.MaximumScaleCount)
+	style.BigFontScale = bg
+	style.SmallFontScale = sm
 
 	return style, nil
 }
@@ -618,60 +643,36 @@ const (
 	GoldenRatio     = 1.618
 )
 
-// GenerateValueScale returns a value scale which is produced from generating
-// a slice of n values representing the given scale value and are multipled
-// by the provided base values.
-func GenerateValueScale(scale float64, base float64, minor, major int) ([]float64, []float64) {
-
-	// Generate scale based on 1.0 scale using the provided scale.
-	max, min := GenerateScale(scale, minor, major)
-
-	// Multiply all scale value by the provided base.
-	Times(len(max), func(index int) {
-		max[index-1] = max[index-1] * base
-	})
-
-	// Multiply all scale value by the provided base.
-	Times(len(min), func(index int) {
-		min[index-1] = min[index-1] * base
-	})
-
-	return max, min
-}
-
-// GenerateScale returns a slice of values which are the a combination of
+// GenerateValueScale returns a slice of values which are the a combination of
 // a reducing + increasing scaled values of the provided scale generated from
 // using the base initial 1.0 value against an ever incremental 1.0*(scale * n)
 // or 1.0 / (scale *n) value, where n is the ever increasing index.
-func GenerateScale(scale float64, minorCount int, majorCount int) ([]float64, []float64) {
-	var scales []float64
-
-	minorScales := make([]float64, minorCount)
+func GenerateValueScale(base float64, scale float64, minorCount int, majorCount int) ([]float64, []float64) {
+	var major, minor []float64
 
 	Times(minorCount, func(index int) {
-		scaled := 1.0
+		if index > 1 {
+			prevValue := minor[len(minor)-1]
+			minor = append(minor, prevValue/scale)
+			return
+		}
 
-		Times(index, func(_ int) {
-			scaled *= scale
-		})
-
-		minorLen := len(minorScales)
-		minorScales[minorLen-index] = 1.0 / scaled
+		minor = append(minor, base/scale)
 	})
 
-	scales = append(scales, 1.0)
+	major = append(major, 1.0)
 
 	Times(majorCount, func(index int) {
-		scaled := 1.0
+		if index > 1 {
+			prevValue := major[index-1]
+			major = append(major, prevValue*scale)
+			return
+		}
 
-		Times(index, func(_ int) {
-			scaled *= scale
-		})
-
-		scales = append(scales, scaled)
+		major = append(major, base*scale)
 	})
 
-	return scales, minorScales
+	return minor, major
 }
 
 // Times using the provided count, runs the function (n-1) number of times, since

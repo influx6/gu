@@ -147,18 +147,27 @@ ____________ Base font size classes ____________________________
   font-size-sm: Defines font size for reducing sizes
   font-size-bg: Defines font size for increasing sizes using a scale eg MajorThirds.
 
-  Small Scale: {{ .SmallScale }}
-  Big Scale: {{ .BigScale }}
 */
+{{ range $key, $item := .SmallHeaderScale }}
+.small-heading-{{add $key 1}}{{if greaterThanEqual $key 0 }}, h{{add $key 7}} {{end}}{
+	font-size: {{$item}}em;
+}
+{{ end }}
+
+{{ range $key, $item := .BigHeaderScale }}
+.big-heading-{{add $key 1}}{{if lessThan $key 6 }}, h{{subtract 6 $key}} {{end}}{
+	font-size: {{$item}}em;
+}
+{{ end }}
 
 {{ range $key, $item := .SmallFontScale }}
-.font-size-sm__{{ $key }} {
+.small-font-{{ add $key 1 }} {
 	font-size: {{$item}}em;
 }
 {{ end }}
 
 {{ range $key, $item := .BigFontScale }}
-.font-size-bg__{{ $key }} {
+.big-font-{{ add $key 1 }} {
 	font-size: {{$item}}em;
 }
 {{ end }}

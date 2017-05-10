@@ -357,14 +357,12 @@ func (t Tones) String() string {
 //================================================================================================
 
 var (
-	lnScale     = []float64{0.19, 0.25, 0.30}
-	normalScale = []float64{0.09, 0.15, 0.30}
-	midScale    = []float64{0.035, 0.13, 0.23}
-
-	lowScale    = []float64{0.009, 0.016, 0.025, 0.035}
-	darkerScale = []float64{-0.05, -0.70}
-
-	satuScale = []float64{0, 0, 0.00, 0.00}
+	satuScale   = []float64{0, 0, 0.00, 0.00, 0.0, 0.0}
+	lnScale     = []float64{0.19, 0.25, 0.30, 0.45, 0.50}
+	normalScale = []float64{0.09, 0.15, 0.30, 0.40, 0.50}
+	midScale    = []float64{0.035, 0.13, 0.23, 0.33, 0.43}
+	lowScale    = []float64{0.009, 0.016, 0.025, 0.030, 0.035}
+	darkerScale = []float64{-0.05, -0.25, -0.50, -0.70, -0.80}
 )
 
 // HamonicsFrom uses the above scale to return a slice of new Colors based on the provided

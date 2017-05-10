@@ -88,6 +88,7 @@ based incremental scaling factors for spaces, size.
   vertical-align: top;
   letter-spacing: normal;
   word-spacing: normal;
+  position: relative;
   /*Add the sizing settings for the grid blocks*/
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -173,6 +174,7 @@ based incremental scaling factors for spaces, size.
   vertical-align: top;
   letter-spacing: normal;
   word-spacing: normal;
+  position: relative;
   /*Add the sizing settings for the grid blocks*/
   box-sizing: border-box;
   -webkit-box-sizing: border-box;

@@ -561,6 +561,7 @@ func initCommands() {
 			gendata = []byte(fmt.Sprintf("%q", gendata))
 			vgendata = bytes.Replace(vgendata, extbytes, extBu.Bytes(), 1)
 			vgendata = bytes.Replace(vgendata, pkgContentbytes, gendata, 1)
+			vgendata = bytes.Replace(vgendata, filesDirNamebytes, []byte(mDirName), 1)
 
 			vgendata = bytes.Replace(vgendata, pkgNamebytes, []byte("\""+vDirName+"\""), 1)
 			vgendata = bytes.Replace(vgendata, fileNamebytes, []byte("\""+vDirFileName+"\""), 1)

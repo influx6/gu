@@ -5,7 +5,6 @@ package main
 import (
 	"fmt"
 	"bytes"
-	"os"
 	"strings"
 	"path/filepath"
 
@@ -16,12 +15,7 @@ var pkgName = {{PKGNAME}}
 var pkg = {{PKG_CONTENT}}
 
 func main() {
-	cdir, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
-	items, err := otherfiles.ParseDir(cdir, {{EXTENSIONS}})
+	items, err := otherfiles.ParseDir(filepath.Join("./", "{{FILESDIRNAME}}"), {{EXTENSIONS}})
 	if err != nil {
 		panic("Failed to walk html files: "+ err.Error())
 	}
@@ -32,7 +26,7 @@ func main() {
         fmt.Fprintf(&buf,"\tinternalFiles[%q] = %+q\n", path, item)
     }
 
-	file, err := os.Create(filepath.Join(cdir, {{FILENAME}}))
+	file, err := os.Create(filepath.Join("./", {{FILENAME}}))
 	if err != nil {
 		panic("Failed to create css pkg file: "+ err.Error())
 	}

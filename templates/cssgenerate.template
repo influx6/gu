@@ -27,7 +27,7 @@ func main() {
 	}
 
 
-	file, err := os.Create(filepath.Join(cdir, "css.go"))
+	file, err := os.Create(filepath.Join("./", "css.go"))
 	if err != nil {
 		panic("Failed to create css pkg file: "+ err.Error())
 	}

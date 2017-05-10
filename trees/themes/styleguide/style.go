@@ -13,6 +13,7 @@ import (
 	colorful "github.com/lucasb-eyer/go-colorful"
 )
 
+// contains different constants used within the package.
 const (
 	shadowLarge    = "0px 20px 40px 4px rgba(0, 0, 0, 0.51)"
 	shadowPopDrops = "0px 9px 30px 2px rgba(0, 0, 0, 0.51)"
@@ -22,6 +23,15 @@ const (
 	smallBorderRadius  = 2
 	mediumBorderRadius = 4
 	largeBorderRadius  = 8
+
+	AugmentedFourth = 1.414
+	MinorSecond     = 1.067
+	MajorSecond     = 1.125
+	MinorThird      = 1.200
+	MajorThird      = 1.250
+	PerfectFourth   = 1.333
+	PerfectFifth    = 1.500
+	GoldenRatio     = 1.618
 )
 
 var (
@@ -356,54 +366,38 @@ func (t Tones) String() string {
 
 //================================================================================================
 
-var (
-	satuScale   = []float64{0, 0, 0.00, 0.00, 0.0, 0.0}
-	lnScale     = []float64{0.19, 0.25, 0.30, 0.45, 0.50}
-	normalScale = []float64{0.09, 0.15, 0.30, 0.40, 0.50}
-	midScale    = []float64{0.035, 0.13, 0.23, 0.33, 0.43}
-	lowScale    = []float64{0.009, 0.016, 0.025, 0.030, 0.035}
-	darkerScale = []float64{-0.05, -0.25, -0.50, -0.70, -0.80}
-)
-
 // HamonicsFrom uses the above scale to return a slice of new Colors based on the provided
 // HamonyScale set.
 func HamonicsFrom(c Color) Tones {
-	var colors []Color
 
 	var scale []float64
 
-	switch {
-	case c.Luminosity < 0.3:
-		scale = lnScale
-	case c.Luminosity > 0.9:
-		scale = lowScale
-	case c.Luminosity > 0.5:
-		scale = midScale
-	default:
-		scale = normalScale
-	}
+	min, max := GenerateValueScale(0.1, MajorThird, 6, 11)
 
-	var darkers []Color
-	for _, scale := range darkerScale {
-		darkers = append(darkers, MultiplicativeLumination(c, scale))
-	}
+	Reverse(len(min), func(index int) {
+		scale = append(scale, min[index])
+	})
 
-	for i := len(darkers) - 1; i > 0; i-- {
-		colors = append(colors, darkers[i])
-	}
+	scale = append(scale, max...)
 
-	for index, scale := range scale {
-		var next Color
+	var colors []Color
 
-		if len(colors) > 0 {
-			next = colors[len(colors)-1]
-		} else {
-			next = c
+	// TODO(alex): Should we have another scale for saturation?
+	for _, scale := range scale {
+		if scale > 1 {
+			scale = 1
 		}
 
-		saturateScale := satuScale[index]
+		newColor := colorful.Hsl(c.Hue, c.Saturation, scale)
+		h, s, l := newColor.Hsl()
 
-		colors = append(colors, AdditiveSaturation(AdditiveLumination(next, scale), saturateScale))
+		colors = append(colors, Color{
+			C:          newColor,
+			Hue:        h,
+			Saturation: s,
+			Luminosity: l,
+			Alpha:      c.Alpha,
+		})
 	}
 
 	var t Tones
@@ -416,25 +410,10 @@ func HamonicsFrom(c Color) Tones {
 // AdditiveSaturation adds the provided scale to the colors saturation value
 // returning a new color suited to match.
 func AdditiveSaturation(c Color, scale float64) Color {
-	// fmt.Printf("AS: H: %.4f S: %.4f L: %.4f \n", c.Hue, c.Saturation, c.Luminosity)
 	newLumen := c.Saturation + scale
+
 	if newLumen > 1 {
-
-		// Use the difference to reduce the lightness.
-		diff := 1 - c.Luminosity
-		if diff > 0 {
-			newLum := c.Luminosity + (diff / 2)
-
-			// fmt.Printf("Diff: %.4f : %.4f -> %.4f : %.4f \n", diff, diff/2, c.Luminosity, newLum)
-
-			if newLum > 1 {
-				newLumen = 0.999
-			} else {
-				newLumen = newLum
-			}
-		} else {
-			newLumen = 0.999
-		}
+		newLumen = 1
 	}
 
 	if newLumen < 0 {
@@ -460,26 +439,16 @@ func AdditiveSaturation(c Color, scale float64) Color {
 func MultiplicativeSaturation(c Color, scale float64) Color {
 	newLuma := (c.Saturation * scale)
 	newLumen := c.Saturation + newLuma
+
 	if newLumen > 1 {
-
-		// Use the difference to reduce the lightness.
-		diff := 1 - c.Luminosity
-		if diff > 0 {
-			newLum := c.Luminosity + (diff / 2)
-
-			// fmt.Printf("Diff: %.4f : %.4f -> %.4f : %.4f \n", diff, diff/2, c.Luminosity, newLum)
-
-			if newLum > 1 {
-				newLumen = 0.999
-			} else {
-				newLumen = newLum
-			}
-		} else {
-			newLumen = 0.999
-		}
+		newLumen = 1
 	}
 
-	newColor := colorful.Hsl(c.Hue, c.Saturation, newLumen)
+	if newLumen < 0 {
+		newLumen = 0
+	}
+
+	newColor := colorful.Hsl(c.Hue, newLumen, c.Luminosity)
 	h, s, l := newColor.Hsl()
 
 	return Color{
@@ -494,26 +463,10 @@ func MultiplicativeSaturation(c Color, scale float64) Color {
 // AdditiveLumination adds the provided scale to the colors Luminouse value
 // returning a new color suited to match.
 func AdditiveLumination(c Color, scale float64) Color {
-	// fmt.Printf("AL: H: %.4f S: %.4f L: %.4f  -> S: %.4f\n", c.Hue, c.Saturation, c.Luminosity, scale)
-
 	newLumen := c.Luminosity + scale
+
 	if newLumen > 1 {
-
-		// Use the difference to reduce the lightness.
-		diff := 1 - c.Luminosity
-		if diff > 0 {
-			newLum := c.Luminosity + (diff / 2)
-
-			// fmt.Printf("Diff: %.4f : %.4f -> %.4f : %.4f \n", diff, diff/2, c.Luminosity, newLum)
-
-			if newLum > 1 {
-				newLumen = 0.999
-			} else {
-				newLumen = newLum
-			}
-		} else {
-			newLumen = 0.999
-		}
+		newLumen = 1
 	}
 
 	if newLumen < 0 {
@@ -542,20 +495,7 @@ func MultiplicativeLumination(c Color, scale float64) Color {
 	newLumen := c.Luminosity + newLum
 
 	if newLumen > 1 {
-
-		// Use the difference to reduce the lightness.
-		diff := 1 - c.Luminosity
-		if diff > 0 {
-			newLum := c.Luminosity + (diff / 2)
-
-			if newLum > 1 {
-				newLumen = 0.999
-			} else {
-				newLumen = newLum
-			}
-		} else {
-			newLumen = 0.999
-		}
+		newLumen = 1
 	}
 
 	if newLumen < 0 {
@@ -634,18 +574,6 @@ func ColorFrom(value string) (Color, error) {
 
 //==================================================================================
 
-// contains different constants of different accepted sclaes.
-const (
-	AugmentedFourth = 1.414
-	MinorSecond     = 1.067
-	MajorSecond     = 1.125
-	MinorThird      = 1.200
-	MajorThird      = 1.250
-	PerfectFourth   = 1.333
-	PerfectFifth    = 1.500
-	GoldenRatio     = 1.618
-)
-
 // GenerateValueScale returns a slice of values which are the a combination of
 // a reducing + increasing scaled values of the provided scale generated from
 // using the base initial 1.0 value against an ever incremental 1.0*(scale * n)
@@ -663,7 +591,7 @@ func GenerateValueScale(base float64, scale float64, minorCount int, majorCount 
 		minor = append(minor, base/scale)
 	})
 
-	major = append(major, 1.0)
+	major = append(major, base)
 
 	Times(majorCount, func(index int) {
 		if index > 1 {
@@ -683,5 +611,13 @@ func GenerateValueScale(base float64, scale float64, minorCount int, majorCount 
 func Times(n int, fn func(int)) {
 	for i := 0; i < n; i++ {
 		fn(i + 1)
+	}
+}
+
+// Reverse using the provided count, runs the function (n-1) number of times, since
+// it starts from zero.
+func Reverse(n int, fn func(int)) {
+	for i := n; i > 0; i-- {
+		fn(i - 1)
 	}
 }

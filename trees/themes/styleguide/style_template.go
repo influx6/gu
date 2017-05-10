@@ -42,6 +42,20 @@ ____________ Base  classes ____________________________
 	font-size: 0;
 }
 
+.item-center {
+    display: flex;
+    flex-direction: row;
+    align-self:center;
+}
+
+.content-center {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-self:center;
+    align-items: center;
+}
+
 h1, h2, h3, h4, h5, h6, p {
 	margin: 0;
 	padding: 0;

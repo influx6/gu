@@ -27,7 +27,8 @@ func Must(file string) string {
 
 // Get retrieves the giving file and the content of that giving file.
 func Get(file string) (string, bool) {
-	return internalFiles[file]
+	item, ok := internalFiles[file]
+	return item, ok
 }
 
 func init(){

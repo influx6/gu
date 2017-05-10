@@ -39,11 +39,17 @@ ____________ Base  classes ____________________________
 	display: block;
 	visibility: hidden;
 	height: 0;
+	font-size: 0;
 }
 
 h1, h2, h3, h4, h5, h6, p {
 	margin: 0;
 	padding: 0;
+}
+
+a, a:hover, a:active, a:visited{
+	color: #000;
+	text-decoration: none;
 }
 
 /*
@@ -159,15 +165,15 @@ ____________ Base shadowdrop classes ____________________________
 	box-shadow: {{ .BaseShadow }};
 }
 
-.shadow__dropdown {
+.shadow-dropdown {
 	box-shadow: {{ .DropShadow }};
 }
 
-.shadow__hover {
+.shadow-hover {
 	box-shadow: {{ .HoverShadow }};
 }
 
-.shadow__elevated {
+.shadow-elevated {
 	box-shadow: {{ .FloatingShadow }};
 }
 
@@ -325,7 +331,9 @@ ____________ Color set ____________________________
 }
 {{ end }}
 
-/*____________ Secondary color set ____________________________*/
+/*____________ Secondary color set ____________________________
+
+*/
 
 .color-secondary {
 	color: {{.Brand.Secondary.Base}};
@@ -382,7 +390,9 @@ ____________ Color set ____________________________
 {{ end }}
 
 
-/*____________ Success color set ____________________________*/
+/*____________ Success color set ____________________________
+
+*/
 
 .brand-success {
 	color: {{.Brand.Success.Base}};
@@ -411,7 +421,9 @@ ____________ Color set ____________________________
 }
 {{ end }}
 
-/*____________ White color set ____________________________*/
+/*____________ White color set ____________________________
+
+*/
 
 .background-color-white {
 	background: {{.Brand.White.Base}};
@@ -440,7 +452,9 @@ ____________ Color set ____________________________
 }
 {{ end }}
 
-/*____________ Failure color set ____________________________*/
+/*____________ Failure color set ____________________________
+
+*/
 
 .background-color-failure {
 	background: {{.Brand.Failure.Base}};
@@ -469,4 +483,6 @@ ____________ Color set ____________________________
 }
 {{ end }}
 
-/*______________________________________________________________________*/`
+/*______________________________________________________________________
+
+*/`

@@ -22,8 +22,6 @@ based incremental scaling factors for spaces, size.
   list-style: none;
   margin: 0;
   padding: 0;
-  letter-spacing: -0.24em;
-  margin-left: -24px;
   /* Have grid not use any gutter. */
   /* Reverse grid items ordering to right-to-left instead of left-to-right.*/
   /* Move grid items to fill up all available space. */
@@ -35,8 +33,8 @@ based incremental scaling factors for spaces, size.
   /* Aligns grid items to use less gutter by dividing the gutter by 2*/
   /* Define class for individual grid blocks and have it fill full width when in mobile mode*/
 }
-html.opera .grid24 {
-  word-spacing: -0.34em;
+.grid24.shift {
+  margin-left: -24px;
 }
 .grid24 .grid-nogutter {
   margin-left: 0;
@@ -45,60 +43,62 @@ html.opera .grid24 {
   direction: rtl;
   text-align: left;
 }
-.grid24 .grid-rev > grid__block {
+.grid24 .grid-rev > .grid-block {
   direction: ltr;
   text-align: left;
 }
 .grid24 .grid-full {
   margin-left: 0;
 }
-.grid24 .grid-full > grid__block {
+.grid24 .grid-full > .grid-block {
   padding-left: 0;
 }
 .grid24 .grid-right {
   text-align: right;
 }
-.grid24 .grid-right > grid__block {
+.grid24 .grid-right > .grid-block {
   text-align: left;
 }
 .grid24 .grid-center {
   text-align: center;
 }
-.grid24 .grid-center > grid__block {
+.grid24 .grid-center > .grid-block {
   text-align: left;
 }
-.grid24 .grid-bottom > grid__block {
+.grid24 .grid-bottom > .grid-block {
   vertical-align: bottom;
 }
-.grid24 .grid-middle > grid__block {
+.grid24 .grid-middle > .grid-block {
   vertical-align: middle;
 }
 .grid24 .grid-wide {
   margin-left: -48px;
 }
-.grid24 .grid-wide > grid__block {
+.grid24 .grid-wide > .grid-block {
   padding-left: 48px;
 }
 .grid24 .grid-narrow {
   margin-left: -12px;
 }
-.grid24 .grid-narrow > grid__block {
+.grid24 .grid-narrow > .grid-block {
   padding-left: 12px;
 }
-.grid24 .grid--block {
+.grid24 .grid-block {
   display: inline-block;
   vertical-align: top;
   letter-spacing: normal;
   word-spacing: normal;
-  padding-left: 24px;
   /*Add the sizing settings for the grid blocks*/
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
   -o-box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
+.grid24 .grid-block.unshift {
+  padding-left: 24px;
+}
 @media (max-width: 480px) {
-  .grid24 .grid--block {
+  .grid24 .grid-block {
     width: 100%;
   }
 }
@@ -107,8 +107,6 @@ html.opera .grid24 {
   list-style: none;
   margin: 0;
   padding: 0;
-  letter-spacing: -0.32em;
-  margin-left: -32px;
   /* Have grid not use any gutter. */
   /* Reverse grid items ordering to right-to-left instead of left-to-right.*/
   /* Move grid items to fill up all available space. */
@@ -120,8 +118,8 @@ html.opera .grid24 {
   /* Aligns grid items to use less gutter by dividing the gutter by 2*/
   /* Define class for individual grid blocks and have it fill full width when in mobile mode*/
 }
-html.opera .grid32 {
-  word-spacing: -0.42em;
+.grid32.shift {
+  margin-left: -32px;
 }
 .grid32 .grid-nogutter {
   margin-left: 0;
@@ -130,60 +128,62 @@ html.opera .grid32 {
   direction: rtl;
   text-align: left;
 }
-.grid32 .grid-rev > grid__block {
+.grid32 .grid-rev > .grid-block {
   direction: ltr;
   text-align: left;
 }
 .grid32 .grid-full {
   margin-left: 0;
 }
-.grid32 .grid-full > grid__block {
+.grid32 .grid-full > .grid-block {
   padding-left: 0;
 }
 .grid32 .grid-right {
   text-align: right;
 }
-.grid32 .grid-right > grid__block {
+.grid32 .grid-right > .grid-block {
   text-align: left;
 }
 .grid32 .grid-center {
   text-align: center;
 }
-.grid32 .grid-center > grid__block {
+.grid32 .grid-center > .grid-block {
   text-align: left;
 }
-.grid32 .grid-bottom > grid__block {
+.grid32 .grid-bottom > .grid-block {
   vertical-align: bottom;
 }
-.grid32 .grid-middle > grid__block {
+.grid32 .grid-middle > .grid-block {
   vertical-align: middle;
 }
 .grid32 .grid-wide {
   margin-left: -64px;
 }
-.grid32 .grid-wide > grid__block {
+.grid32 .grid-wide > .grid-block {
   padding-left: 64px;
 }
 .grid32 .grid-narrow {
   margin-left: -16px;
 }
-.grid32 .grid-narrow > grid__block {
+.grid32 .grid-narrow > .grid-block {
   padding-left: 16px;
 }
-.grid32 .grid--block {
+.grid32 .grid-block {
   display: inline-block;
   vertical-align: top;
   letter-spacing: normal;
   word-spacing: normal;
-  padding-left: 32px;
   /*Add the sizing settings for the grid blocks*/
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
   -o-box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
+.grid32 .grid-block.unshift {
+  padding-left: 32px;
+}
 @media (max-width: 480px) {
-  .grid32 .grid--block {
+  .grid32 .grid-block {
     width: 100%;
   }
 }
@@ -319,6 +319,63 @@ html.opera .grid32 {
 .device .eleven-twelveth {
   width: 91.66666667%;
 }
+.device .one-twenthy {
+  width: 5%;
+}
+.device .two-twenthy {
+  width: 10%;
+}
+.device .three-twenthy {
+  width: 15%;
+}
+.device .four-twenthy {
+  width: 20%;
+}
+.device .five-twenthy {
+  width: 25%;
+}
+.device .six-twenthy {
+  width: 30%;
+}
+.device .seventh-twenthy {
+  width: 35%;
+}
+.device .eight-twenthy {
+  width: 40%;
+}
+.device .nine-twenthy {
+  width: 45%;
+}
+.device .ten-twenthy {
+  width: 50%;
+}
+.device .eleven-twenthy {
+  width: 55%;
+}
+.device .twelve-twenthy {
+  width: 60%;
+}
+.device .thirteen-twenthy {
+  width: 65%;
+}
+.device .fourteen-twenthy {
+  width: 70%;
+}
+.device .fifteen-twenthy {
+  width: 75%;
+}
+.device .sixteen-twenthy {
+  width: 80%;
+}
+.device .seventeen-twenthy {
+  width: 85%;
+}
+.device .eighten-twenthy {
+  width: 90%;
+}
+.device .ninteen-twenthy {
+  width: 95%;
+}
 .device .push-one-whole {
   left: 100%;
 }
@@ -448,6 +505,63 @@ html.opera .grid32 {
 .device .push-eleven-twelveth {
   left: 91.66666667%;
 }
+.device .push-one-twenthy {
+  right: 8.33333333%;
+}
+.device .push-two-twenthy {
+  right: 16.66666667%;
+}
+.device .push-three-twenthy {
+  right: 25%;
+}
+.device .push-four-twenthy {
+  right: 33.33333333%;
+}
+.device .push-five-twenthy {
+  right: 41.66666667%;
+}
+.device .push-six-twenthy {
+  right: 50%;
+}
+.device .push-seventh-twenthy {
+  right: 58.33333333%;
+}
+.device .push-eight-twenthy {
+  right: 66.66666667%;
+}
+.device .push-nine-twenthy {
+  right: 75%;
+}
+.device .push-ten-twenthy {
+  right: 83.33333333%;
+}
+.device .push-eleven-twenthy {
+  right: 91.66666667%;
+}
+.device .push-twelve-twenthy {
+  right: 91.66666667%;
+}
+.device .push-thirteen-twenthy {
+  right: 91.66666667%;
+}
+.device .push-fourteen-twenthy {
+  right: 91.66666667%;
+}
+.device .push-fifteen-twenthy {
+  right: 91.66666667%;
+}
+.device .push-sixteen-twenthy {
+  right: 91.66666667%;
+}
+.device .push-seventeen-twenthy {
+  right: 91.66666667%;
+}
+.device .push-eighteen-twenthy {
+  right: 91.66666667%;
+}
+.device .push-ninteen-twenthy {
+  right: 91.66666667%;
+}
 .device .pull-one-whole {
   right: 100%;
 }
@@ -575,6 +689,63 @@ html.opera .grid32 {
   right: 83.33333333%;
 }
 .device .pull-eleven-twelveth {
+  right: 91.66666667%;
+}
+.device .pull-one-twenthy {
+  right: 8.33333333%;
+}
+.device .pull-two-twenthy {
+  right: 16.66666667%;
+}
+.device .pull-three-twenthy {
+  right: 25%;
+}
+.device .pull-four-twenthy {
+  right: 33.33333333%;
+}
+.device .pull-five-twenthy {
+  right: 41.66666667%;
+}
+.device .pull-six-twenthy {
+  right: 50%;
+}
+.device .pull-seventh-twenthy {
+  right: 58.33333333%;
+}
+.device .pull-eight-twenthy {
+  right: 66.66666667%;
+}
+.device .pull-nine-twenthy {
+  right: 75%;
+}
+.device .pull-ten-twenthy {
+  right: 83.33333333%;
+}
+.device .pull-eleven-twenthy {
+  right: 91.66666667%;
+}
+.device .pull-twelve-twenthy {
+  right: 91.66666667%;
+}
+.device .pull-thirteen-twenthy {
+  right: 91.66666667%;
+}
+.device .pull-fourteen-twenthy {
+  right: 91.66666667%;
+}
+.device .pull-fifteen-twenthy {
+  right: 91.66666667%;
+}
+.device .pull-sixteen-twenthy {
+  right: 91.66666667%;
+}
+.device .pull-seventeen-twenthy {
+  right: 91.66666667%;
+}
+.device .pull-eighteen-twenthy {
+  right: 91.66666667%;
+}
+.device .pull-ninteen-twenthy {
   right: 91.66666667%;
 }
 @media (max-width: 480px) {
@@ -707,6 +878,63 @@ html.opera .grid32 {
   .device .palm-eleven-twelveth {
     width: 91.66666667%;
   }
+  .device .palm-one-twenthy {
+    width: 5%;
+  }
+  .device .palm-two-twenthy {
+    width: 10%;
+  }
+  .device .palm-three-twenthy {
+    width: 15%;
+  }
+  .device .palm-four-twenthy {
+    width: 20%;
+  }
+  .device .palm-five-twenthy {
+    width: 25%;
+  }
+  .device .palm-six-twenthy {
+    width: 30%;
+  }
+  .device .palm-seventh-twenthy {
+    width: 35%;
+  }
+  .device .palm-eight-twenthy {
+    width: 40%;
+  }
+  .device .palm-nine-twenthy {
+    width: 45%;
+  }
+  .device .palm-ten-twenthy {
+    width: 50%;
+  }
+  .device .palm-eleven-twenthy {
+    width: 55%;
+  }
+  .device .palm-twelve-twenthy {
+    width: 60%;
+  }
+  .device .palm-thirteen-twenthy {
+    width: 65%;
+  }
+  .device .palm-fourteen-twenthy {
+    width: 70%;
+  }
+  .device .palm-fifteen-twenthy {
+    width: 75%;
+  }
+  .device .palm-sixteen-twenthy {
+    width: 80%;
+  }
+  .device .palm-seventeen-twenthy {
+    width: 85%;
+  }
+  .device .palm-eighten-twenthy {
+    width: 90%;
+  }
+  .device .palm-ninteen-twenthy {
+    width: 95%;
+  }
 }
 @media (min-width: 481px) and (max-width: 1023px) {
   .device .lap-one-whole {
@@ -837,6 +1065,63 @@ html.opera .grid32 {
   }
   .device .lap-eleven-twelveth {
     width: 91.66666667%;
+  }
+  .device .lap-one-twenthy {
+    width: 5%;
+  }
+  .device .lap-two-twenthy {
+    width: 10%;
+  }
+  .device .lap-three-twenthy {
+    width: 15%;
+  }
+  .device .lap-four-twenthy {
+    width: 20%;
+  }
+  .device .lap-five-twenthy {
+    width: 25%;
+  }
+  .device .lap-six-twenthy {
+    width: 30%;
+  }
+  .device .lap-seventh-twenthy {
+    width: 35%;
+  }
+  .device .lap-eight-twenthy {
+    width: 40%;
+  }
+  .device .lap-nine-twenthy {
+    width: 45%;
+  }
+  .device .lap-ten-twenthy {
+    width: 50%;
+  }
+  .device .lap-eleven-twenthy {
+    width: 55%;
+  }
+  .device .lap-twelve-twenthy {
+    width: 60%;
+  }
+  .device .lap-thirteen-twenthy {
+    width: 65%;
+  }
+  .device .lap-fourteen-twenthy {
+    width: 70%;
+  }
+  .device .lap-fifteen-twenthy {
+    width: 75%;
+  }
+  .device .lap-sixteen-twenthy {
+    width: 80%;
+  }
+  .device .lap-seventeen-twenthy {
+    width: 85%;
+  }
+  .device .lap-eighten-twenthy {
+    width: 90%;
+  }
+  .device .lap-ninteen-twenthy {
+    width: 95%;
   }
 }
 @media (max-width: 1023px) {
@@ -969,6 +1254,63 @@ html.opera .grid32 {
   .device .portable-eleven-twelveth {
     width: 91.66666667%;
   }
+  .device .portable-one-twenthy {
+    width: 5%;
+  }
+  .device .portable-two-twenthy {
+    width: 10%;
+  }
+  .device .portable-three-twenthy {
+    width: 15%;
+  }
+  .device .portable-four-twenthy {
+    width: 20%;
+  }
+  .device .portable-five-twenthy {
+    width: 25%;
+  }
+  .device .portable-six-twenthy {
+    width: 30%;
+  }
+  .device .portable-seventh-twenthy {
+    width: 35%;
+  }
+  .device .portable-eight-twenthy {
+    width: 40%;
+  }
+  .device .portable-nine-twenthy {
+    width: 45%;
+  }
+  .device .portable-ten-twenthy {
+    width: 50%;
+  }
+  .device .portable-eleven-twenthy {
+    width: 55%;
+  }
+  .device .portable-twelve-twenthy {
+    width: 60%;
+  }
+  .device .portable-thirteen-twenthy {
+    width: 65%;
+  }
+  .device .portable-fourteen-twenthy {
+    width: 70%;
+  }
+  .device .portable-fifteen-twenthy {
+    width: 75%;
+  }
+  .device .portable-sixteen-twenthy {
+    width: 80%;
+  }
+  .device .portable-seventeen-twenthy {
+    width: 85%;
+  }
+  .device .portable-eighten-twenthy {
+    width: 90%;
+  }
+  .device .portable-ninteen-twenthy {
+    width: 95%;
+  }
 }
 @media (min-width: 1024px) {
   .device .desktop-one-whole {
@@ -1099,6 +1441,63 @@ html.opera .grid32 {
   }
   .device .desktop-eleven-twelveth {
     width: 91.66666667%;
+  }
+  .device .desktop-one-twenthy {
+    width: 5%;
+  }
+  .device .desktop-two-twenthy {
+    width: 10%;
+  }
+  .device .desktop-three-twenthy {
+    width: 15%;
+  }
+  .device .desktop-four-twenthy {
+    width: 20%;
+  }
+  .device .desktop-five-twenthy {
+    width: 25%;
+  }
+  .device .desktop-six-twenthy {
+    width: 30%;
+  }
+  .device .desktop-seventh-twenthy {
+    width: 35%;
+  }
+  .device .desktop-eight-twenthy {
+    width: 40%;
+  }
+  .device .desktop-nine-twenthy {
+    width: 45%;
+  }
+  .device .desktop-ten-twenthy {
+    width: 50%;
+  }
+  .device .desktop-eleven-twenthy {
+    width: 55%;
+  }
+  .device .desktop-twelve-twenthy {
+    width: 60%;
+  }
+  .device .desktop-thirteen-twenthy {
+    width: 65%;
+  }
+  .device .desktop-fourteen-twenthy {
+    width: 70%;
+  }
+  .device .desktop-fifteen-twenthy {
+    width: 75%;
+  }
+  .device .desktop-sixteen-twenthy {
+    width: 80%;
+  }
+  .device .desktop-seventeen-twenthy {
+    width: 85%;
+  }
+  .device .desktop-eighten-twenthy {
+    width: 90%;
+  }
+  .device .desktop-ninteen-twenthy {
+    width: 95%;
   }
 }
 .texts.line-height.4dp .px.dp1 {

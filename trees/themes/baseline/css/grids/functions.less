@@ -24,25 +24,14 @@ based incremental scaling factors for spaces, size.
 /* Creates grid capable of using with list items and use -24px gutter. */
 .grids(@gutter, @letter_spacing){
 
-    // &:after{
-    //     content: " ";
-    //     font-size: 0;
-    //     visibility: hidden;
-    //     display: block;
-    //     clear: both;
-    //     height: 0;
-    // }
-
     & {
         list-style: none;
         margin: 0;
         padding: 0;
-        letter-spacing: -@letter_spacing;
-        margin-left:(-@gutter);
+    }
 
-        html.opera & {
-            word-spacing: -(@letter_spacing+0.1em);
-        }
+    &.shift {
+        margin-left:(-@gutter);
     }
 
     /* Have grid not use any gutter. */
@@ -55,7 +44,7 @@ based incremental scaling factors for spaces, size.
         direction: rtl;
         text-align: left;
 
-        & > grid__block{
+        & > .grid-block{
             direction: ltr;
             text-align: left;
         }
@@ -65,7 +54,7 @@ based incremental scaling factors for spaces, size.
     .grid-full{
         margin-left:0;
 
-        & > grid__block{
+        & > .grid-block{
             padding-left: 0;
         }
     }
@@ -74,7 +63,7 @@ based incremental scaling factors for spaces, size.
     .grid-right{
         text-align: right;
 
-        & > grid__block{
+        & > .grid-block{
             text-align: left;
         }
     }
@@ -83,22 +72,21 @@ based incremental scaling factors for spaces, size.
     .grid-center{
         text-align: center;
 
-        & > grid__block{
-            // float: none;
+        & > .grid-block{
             text-align: left;
         }
     }
 
     /* Aligns grid items to occupy bottom space as possible */
     .grid-bottom{
-        & > grid__block {
+        & > .grid-block {
             vertical-align: bottom;
         }
     }
 
     /* Aligns grid items to occupy center space as possible */
     .grid-middle{
-        & > grid__block {
+        & > .grid-block {
             vertical-align: middle;
         }
     }
@@ -107,7 +95,7 @@ based incremental scaling factors for spaces, size.
     .grid-wide{
         margin-left: -(@gutter*2);
 
-        & > grid__block {
+        & > .grid-block {
             padding-left: @gutter*2;
         }
     }
@@ -116,19 +104,21 @@ based incremental scaling factors for spaces, size.
     .grid-narrow{
         margin-left: -(@gutter/2);
 
-        & > grid__block {
+        & > .grid-block {
             padding-left: @gutter/2;
         }
     }
 
     /* Define class for individual grid blocks and have it fill full width when in mobile mode*/
-    .grid--block {
+    .grid-block {
         display: inline-block;
         vertical-align: top;
         letter-spacing: normal;
         word-spacing: normal;
-        padding-left: @gutter;
-        // float: left;
+
+        &.unshift{
+            padding-left: @gutter;
+        }
 
         /*Add the sizing settings for the grid blocks*/
         .sizing;
@@ -232,6 +222,25 @@ based incremental scaling factors for spaces, size.
     .push-ten-twelveth{.pushRange(12,10);}
     .push-eleven-twelveth{.pushRange(12,11);}
 
+    .push-one-twenthy{ .pullRange(12); }
+    .push-two-twenthy{.pullRange(12,2);}
+    .push-three-twenthy{.pullRange(12,3);}
+    .push-four-twenthy{.pullRange(12,4);}
+    .push-five-twenthy{.pullRange(12,5);}
+    .push-six-twenthy{.pullRange(12,6);}
+    .push-seventh-twenthy{.pullRange(12,7);}
+    .push-eight-twenthy{.pullRange(12,8);}
+    .push-nine-twenthy{.pullRange(12,9);}
+    .push-ten-twenthy{.pullRange(12,10);}
+    .push-eleven-twenthy{.pullRange(12,11);}
+    .push-twelve-twenthy{.pullRange(12,11);}
+    .push-thirteen-twenthy{.pullRange(12,11);}
+    .push-fourteen-twenthy{.pullRange(12,11);}
+    .push-fifteen-twenthy{.pullRange(12,11);}
+    .push-sixteen-twenthy{.pullRange(12,11);}
+    .push-seventeen-twenthy{.pullRange(12,11);}
+    .push-eighteen-twenthy{.pullRange(12,11);}
+    .push-ninteen-twenthy{.pullRange(12,11);}
 };
 
 
@@ -280,6 +289,26 @@ based incremental scaling factors for spaces, size.
     .pull-nine-twelveth{.pullRange(12,9);}
     .pull-ten-twelveth{.pullRange(12,10);}
     .pull-eleven-twelveth{.pullRange(12,11);}
+
+    .pull-one-twenthy{ .pullRange(12); }
+    .pull-two-twenthy{.pullRange(12,2);}
+    .pull-three-twenthy{.pullRange(12,3);}
+    .pull-four-twenthy{.pullRange(12,4);}
+    .pull-five-twenthy{.pullRange(12,5);}
+    .pull-six-twenthy{.pullRange(12,6);}
+    .pull-seventh-twenthy{.pullRange(12,7);}
+    .pull-eight-twenthy{.pullRange(12,8);}
+    .pull-nine-twenthy{.pullRange(12,9);}
+    .pull-ten-twenthy{.pullRange(12,10);}
+    .pull-eleven-twenthy{.pullRange(12,11);}
+    .pull-twelve-twenthy{.pullRange(12,11);}
+    .pull-thirteen-twenthy{.pullRange(12,11);}
+    .pull-fourteen-twenthy{.pullRange(12,11);}
+    .pull-fifteen-twenthy{.pullRange(12,11);}
+    .pull-sixteen-twenthy{.pullRange(12,11);}
+    .pull-seventeen-twenthy{.pullRange(12,11);}
+    .pull-eighteen-twenthy{.pullRange(12,11);}
+    .pull-ninteen-twenthy{.pullRange(12,11);}
 
 };
 
@@ -336,6 +365,25 @@ based incremental scaling factors for spaces, size.
     .ten-twelveth{.range(12,10);}
     .eleven-twelveth{.range(12,11);}
 
+    .one-twenthy{ .range(20); }
+    .two-twenthy{.range(20,2);}
+    .three-twenthy{.range(20,3);}
+    .four-twenthy{.range(20,4);}
+    .five-twenthy{.range(20,5);}
+    .six-twenthy{.range(20,6);}
+    .seventh-twenthy{.range(20,7);}
+    .eight-twenthy{.range(20,8);}
+    .nine-twenthy{.range(20,9);}
+    .ten-twenthy{.range(20,10);}
+    .eleven-twenthy{.range(20,11);}
+    .twelve-twenthy{.range(20,12);}
+    .thirteen-twenthy{.range(20,13);}
+    .fourteen-twenthy{.range(20,14);}
+    .fifteen-twenthy{.range(20,15);}
+    .sixteen-twenthy{.range(20,16);}
+    .seventeen-twenthy{.range(20,17);}
+    .eighten-twenthy{.range(20,18);}
+    .ninteen-twenthy{.range(20,19);}
 };
 
 .desktop-devices(){
@@ -391,6 +439,25 @@ based incremental scaling factors for spaces, size.
     .desktop-ten-twelveth{.range(12,10);}
     .desktop-eleven-twelveth{.range(12,11);}
 
+    .desktop-one-twenthy{ .range(20); }
+    .desktop-two-twenthy{.range(20,2);}
+    .desktop-three-twenthy{.range(20,3);}
+    .desktop-four-twenthy{.range(20,4);}
+    .desktop-five-twenthy{.range(20,5);}
+    .desktop-six-twenthy{.range(20,6);}
+    .desktop-seventh-twenthy{.range(20,7);}
+    .desktop-eight-twenthy{.range(20,8);}
+    .desktop-nine-twenthy{.range(20,9);}
+    .desktop-ten-twenthy{.range(20,10);}
+    .desktop-eleven-twenthy{.range(20,11);}
+    .desktop-twelve-twenthy{.range(20,12);}
+    .desktop-thirteen-twenthy{.range(20,13);}
+    .desktop-fourteen-twenthy{.range(20,14);}
+    .desktop-fifteen-twenthy{.range(20,15);}
+    .desktop-sixteen-twenthy{.range(20,16);}
+    .desktop-seventeen-twenthy{.range(20,17);}
+    .desktop-eighten-twenthy{.range(20,18);}
+    .desktop-ninteen-twenthy{.range(20,19);}
 };
 
 .lap-devices(){
@@ -445,6 +512,26 @@ based incremental scaling factors for spaces, size.
     .lap-nine-twelveth{.range(12,9);}
     .lap-ten-twelveth{.range(12,10);}
     .lap-eleven-twelveth{.range(12,11);}
+
+    .lap-one-twenthy{ .range(20); }
+    .lap-two-twenthy{.range(20,2);}
+    .lap-three-twenthy{.range(20,3);}
+    .lap-four-twenthy{.range(20,4);}
+    .lap-five-twenthy{.range(20,5);}
+    .lap-six-twenthy{.range(20,6);}
+    .lap-seventh-twenthy{.range(20,7);}
+    .lap-eight-twenthy{.range(20,8);}
+    .lap-nine-twenthy{.range(20,9);}
+    .lap-ten-twenthy{.range(20,10);}
+    .lap-eleven-twenthy{.range(20,11);}
+    .lap-twelve-twenthy{.range(20,12);}
+    .lap-thirteen-twenthy{.range(20,13);}
+    .lap-fourteen-twenthy{.range(20,14);}
+    .lap-fifteen-twenthy{.range(20,15);}
+    .lap-sixteen-twenthy{.range(20,16);}
+    .lap-seventeen-twenthy{.range(20,17);}
+    .lap-eighten-twenthy{.range(20,18);}
+    .lap-ninteen-twenthy{.range(20,19);}
 
 };
 
@@ -501,6 +588,26 @@ based incremental scaling factors for spaces, size.
     .palm-ten-twelveth{.range(12,10);}
     .palm-eleven-twelveth{.range(12,11);}
 
+    .palm-one-twenthy{ .range(20); }
+    .palm-two-twenthy{.range(20,2);}
+    .palm-three-twenthy{.range(20,3);}
+    .palm-four-twenthy{.range(20,4);}
+    .palm-five-twenthy{.range(20,5);}
+    .palm-six-twenthy{.range(20,6);}
+    .palm-seventh-twenthy{.range(20,7);}
+    .palm-eight-twenthy{.range(20,8);}
+    .palm-nine-twenthy{.range(20,9);}
+    .palm-ten-twenthy{.range(20,10);}
+    .palm-eleven-twenthy{.range(20,11);}
+    .palm-twelve-twenthy{.range(20,12);}
+    .palm-thirteen-twenthy{.range(20,13);}
+    .palm-fourteen-twenthy{.range(20,14);}
+    .palm-fifteen-twenthy{.range(20,15);}
+    .palm-sixteen-twenthy{.range(20,16);}
+    .palm-seventeen-twenthy{.range(20,17);}
+    .palm-eighten-twenthy{.range(20,18);}
+    .palm-ninteen-twenthy{.range(20,19);}
+
 };
 
 .portable-devices(){
@@ -556,4 +663,23 @@ based incremental scaling factors for spaces, size.
     .portable-ten-twelveth{.range(12,10);}
     .portable-eleven-twelveth{.range(12,11);}
 
+    .portable-one-twenthy{ .range(20); }
+    .portable-two-twenthy{.range(20,2);}
+    .portable-three-twenthy{.range(20,3);}
+    .portable-four-twenthy{.range(20,4);}
+    .portable-five-twenthy{.range(20,5);}
+    .portable-six-twenthy{.range(20,6);}
+    .portable-seventh-twenthy{.range(20,7);}
+    .portable-eight-twenthy{.range(20,8);}
+    .portable-nine-twenthy{.range(20,9);}
+    .portable-ten-twenthy{.range(20,10);}
+    .portable-eleven-twenthy{.range(20,11);}
+    .portable-twelve-twenthy{.range(20,12);}
+    .portable-thirteen-twenthy{.range(20,13);}
+    .portable-fourteen-twenthy{.range(20,14);}
+    .portable-fifteen-twenthy{.range(20,15);}
+    .portable-sixteen-twenthy{.range(20,16);}
+    .portable-seventeen-twenthy{.range(20,17);}
+    .portable-eighten-twenthy{.range(20,18);}
+    .portable-ninteen-twenthy{.range(20,19);}
 };

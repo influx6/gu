@@ -16,12 +16,7 @@ var pkgName = {{PKGNAME}}
 var pkg = {{PKG_CONTENT}}
 
 func main() {
-	cdir, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
-	items, err := cssparser.ParseDir(filepath.Join(cdir, "{{DIRNAME}}"))
+	items, err := cssparser.ParseDir(filepath.Join("./", "{{DIRNAME}}"))
 	if err != nil {
 		panic("Failed to walk CSS directories: "+ err.Error())
 	}

@@ -21,7 +21,7 @@ func main() {
 		panic(err)
 	}
 
-	items, err := htmlfiles.ParseDir(files.Join(cdir, "{{FILESDIRNAME}}"))
+	items, err := htmlfiles.ParseDir(filepath.Join(cdir, "{{FILESDIRNAME}}"))
 	if err != nil {
 		panic("Failed to walk html files: "+ err.Error())
 	}

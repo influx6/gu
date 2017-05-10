@@ -21,16 +21,17 @@ var (
 	defaultName = "manifests"
 	commands    = []*cli.Command{}
 
-	namebytes       = []byte("{{Name}}")
-	pkgbytes        = []byte("{{PKG}}")
-	sourcebytes     = []byte("{{SOURCE}}")
-	extbytes        = []byte("{{EXTENSIONS}}")
-	goPathbytes     = []byte("{{GOPATH}}")
-	pkgContentbytes = []byte("{{PKG_CONTENT}}")
-	pkgNamebytes    = []byte("{{PKGNAME}}")
-	fileNamebytes   = []byte("{{FILENAME}}")
-	dirNamebytes    = []byte("{{DIRNAME}}")
-	nameLowerbytes  = []byte("{{Name_Lower}}")
+	namebytes         = []byte("{{Name}}")
+	pkgbytes          = []byte("{{PKG}}")
+	sourcebytes       = []byte("{{SOURCE}}")
+	extbytes          = []byte("{{EXTENSIONS}}")
+	goPathbytes       = []byte("{{GOPATH}}")
+	pkgContentbytes   = []byte("{{PKG_CONTENT}}")
+	pkgNamebytes      = []byte("{{PKGNAME}}")
+	fileNamebytes     = []byte("{{FILENAME}}")
+	filesDirNamebytes = []byte("{{FILESDIRNAME}}")
+	dirNamebytes      = []byte("{{DIRNAME}}")
+	nameLowerbytes    = []byte("{{Name_Lower}}")
 
 	gupath = "github.com/gu-io/gu"
 
@@ -560,11 +561,9 @@ func initCommands() {
 			gendata = []byte(fmt.Sprintf("%q", gendata))
 			vgendata = bytes.Replace(vgendata, extbytes, extBu.Bytes(), 1)
 			vgendata = bytes.Replace(vgendata, pkgContentbytes, gendata, 1)
-			vgendata = bytes.Replace(vgendata, dirNamebytes, []byte(mDirPath), 1)
 
 			vgendata = bytes.Replace(vgendata, pkgNamebytes, []byte("\""+vDirName+"\""), 1)
 			vgendata = bytes.Replace(vgendata, fileNamebytes, []byte("\""+vDirFileName+"\""), 1)
-
 			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte(vDirName), -1)
 
 			if err := writeFile(filepath.Join(vDirPath, "generate.go"), vgendata); err != nil {
@@ -585,7 +584,7 @@ func initCommands() {
 
 	commands = append(commands, &cli.Command{
 		Name:        "templates",
-		Usage:       "gu templates <dir-name>",
+		Usage:       "gu templates --dirName layouts templates",
 		Description: "Generates a package which builds all internal [.html|.xhtml|.xml|.gml|.ghtml|.tml] files into a go file",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -593,8 +592,14 @@ func initCommands() {
 				Aliases: []string{"n"},
 				Usage:   "name=mytemplates",
 			},
+			&cli.StringFlag{
+				Name:    "dirName",
+				Aliases: []string{"dir"},
+				Usage:   "dir=assets",
+			},
 		},
 		Action: func(ctx *cli.Context) error {
+			mDirName := ctx.String("dirName")
 			vDirName := ctx.String("name")
 			args := ctx.Args()
 			if args.Len() == 0 && vDirName == "" {
@@ -604,6 +609,10 @@ func initCommands() {
 			cdir, err := os.Getwd()
 			if err != nil {
 				return err
+			}
+
+			if mDirName == "" {
+				mDirName = "layouts"
 			}
 
 			if vDirName == "" && args.Len() > 0 {
@@ -620,8 +629,13 @@ func initCommands() {
 			gup := filepath.Join(gopath, "src")
 			gupkg := filepath.Join(gup, gupath)
 			vDirPath := filepath.Join(cdir, vDirName)
+			mDirPath := filepath.Join(cdir, vDirName, mDirName)
 
 			if err = os.MkdirAll(vDirPath, 0777); err != nil {
+				return err
+			}
+
+			if err = os.MkdirAll(mDirPath, 0777); err != nil {
 				return err
 			}
 
@@ -644,7 +658,8 @@ func initCommands() {
 
 			gendata = []byte(fmt.Sprintf("%q", gendata))
 			vgendata = bytes.Replace(vgendata, pkgContentbytes, gendata, 1)
-			vgendata = bytes.Replace(vgendata, dirNamebytes, []byte(vDirPath), 1)
+			vgendata = bytes.Replace(vgendata, filesDirNamebytes, []byte(mDirName), 1)
+
 			vgendata = bytes.Replace(vgendata, pkgNamebytes, []byte("\""+vDirName+"\""), 1)
 			vgendata = bytes.Replace(vgendata, fileNamebytes, []byte("\""+vDirFileName+"\""), 1)
 			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte(vDirName), -1)
@@ -773,7 +788,7 @@ func initCommands() {
 			fmt.Printf("- Adding project file: %q\n", "components/components.go")
 
 			manifestDirPath := filepath.Join(appDir, "manifests")
-			if err = os.Mkdir(manifestDirPath, 0777); err != nil {
+			if err = os.MkdirAll(manifestDirPath, 0777); err != nil {
 				return err
 			}
 

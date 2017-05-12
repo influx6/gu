@@ -25,7 +25,6 @@ const (
 	largeBorderRadius  = 8
 
 	AugmentedFourth = 1.414
-	MinorFlat       = 1.013
 	MinorSecond     = 1.067
 	MajorSecond     = 1.125
 	MinorThird      = 1.200
@@ -33,6 +32,10 @@ const (
 	PerfectFourth   = 1.333
 	PerfectFifth    = 1.500
 	GoldenRatio     = 1.618
+
+	LuminFlat     = 1.015
+	LuminFat      = 1.200
+	LuminFatThird = 1.246
 )
 
 var (
@@ -373,10 +376,12 @@ func HamonicsFrom(c Color) Tones {
 
 	var scale []float64
 
-	min, max := GenerateValueScale(0.1, MajorThird, 6, 10)
+	min, max := GenerateValueScale(0.1, LuminFatThird, 3, 10)
 
 	lastItem := max[len(max)-1]
-	_, inmax := GenerateValueScale(lastItem, MinorFlat, 0, 6)
+	_, inmax := GenerateValueScale(lastItem, LuminFlat, 0, 6)
+
+	inmax = inmax[1:]
 
 	Reverse(len(min), func(index int) {
 		scale = append(scale, min[index])

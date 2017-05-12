@@ -1,7 +1,6 @@
 package styleguide_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/gu-io/gu/trees/themes/styleguide"
@@ -32,16 +31,16 @@ func TestColor(t *testing.T) {
 	tests.Passed("Should have successfully matched hex value.")
 }
 
-func TestColorScale(t *testing.T) {
-	color, err := styleguide.ColorFrom("#f4f4f4")
-	if err != nil {
-		tests.Failed("Should have successfully returned hsl value for hashed color: %+q.", err)
-	}
-	tests.Passed("Should have successfully returned hsl value for hashed color.")
+// func TestColorScale(t *testing.T) {
+// 	color, err := styleguide.ColorFrom("#f4f4f4")
+// 	if err != nil {
+// 		tests.Failed("Should have successfully returned hsl value for hashed color: %+q.", err)
+// 	}
+// 	tests.Passed("Should have successfully returned hsl value for hashed color.")
 
-	tones := styleguide.HamonicsFrom(color)
-	fmt.Printf("Tone: %s -> %d\n", tones, len(tones.Grades))
-}
+// 	tones := styleguide.HamonicsFrom(color)
+// 	fmt.Printf("Tone: %s -> %d\n", tones, len(tones.Grades))
+// }
 
 // func TestStyleGuide(t *testing.T) {
 // 	sl, err := styleguide.New(styleguide.Attr{

@@ -35,7 +35,7 @@ const (
 
 	LuminFlat     = 1.015
 	LuminFat      = 1.200
-	LuminFatThird = 1.246
+	LuminFatThird = 1.245
 )
 
 var (
@@ -376,10 +376,10 @@ func HamonicsFrom(c Color) Tones {
 
 	var scale []float64
 
-	min, max := GenerateValueScale(0.1, LuminFatThird, 3, 10)
+	min, max := GenerateValueScale(0.1, LuminFatThird, 1, 10)
 
 	lastItem := max[len(max)-1]
-	_, inmax := GenerateValueScale(lastItem, LuminFlat, 0, 6)
+	_, inmax := GenerateValueScale(lastItem, LuminFlat, 0, 8)
 
 	inmax = inmax[1:]
 

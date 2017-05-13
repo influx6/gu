@@ -15,7 +15,7 @@ var _ = Components.Register("{{Name_Lower}}", func(attr map[string]string, templ
 // {{Name}} defines a component which implements the gu.Renderable interface.
 type {{Name}} struct{
 	gu.Reactive
-	services gu.Services
+	Services gu.Services
 }
 
 // New{{Name}} returns a new instance of {{Name}} component.
@@ -29,7 +29,7 @@ func New{{Name}}() *{{Name}} {
 // objects that provide different functionality to the component can be 
 // recieved and accessed by the component.
 func (c *{{Name}}) RegisterServices(services gu.Services)  {
-	c.services = services
+	c.Services = services
 }
 
 // Apply adds the giving components Render() result to the 

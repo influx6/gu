@@ -20,6 +20,11 @@ const (
 	shadowHovers   = "0px 13px 30px 5px rgba(0, 0, 0, 0.58)"
 	shadowNormal   = "0px 13px 20px 2px rgba(0, 0, 0, 0.45)"
 
+	AnimationCurveFastOutSlowIn   = "cubic-bezier(0.4, 0, 0.2, 1) !default"
+	AnimationCurveLinearOutSlowIn = "cubic-bezier(0, 0, 0.2, 1) !default"
+	AnimationCurveFastOutLinearIn = "cubic-bezier(0.4, 0, 1, 1) !default"
+	AnimationCurveDefault         = AnimationCurveFastOutSlowIn + "!default"
+
 	smallBorderRadius  = 2
 	mediumBorderRadius = 4
 	largeBorderRadius  = 8
@@ -126,27 +131,31 @@ var (
 
 // Attr defines different color and size of strings to define a specific brand.
 type Attr struct {
-	PrimaryWhite          string
-	SuccessColor          string
-	FailureColor          string
-	PrimaryColor          string
-	SecondaryColor        string
-	PrimaryBrandColor     string
-	SecondaryBrandColor   string
-	BaseScale             float64 // BaseScale to use for generating expansion/detraction scale for font sizes.
-	HeaderBaseScale       float64 // BaseScale to use for generating expansion/detraction scale for header h1-h6 tags.
-	MinimumScaleCount     int     // Total scale to generate small font sizes.
-	MaximumScaleCount     int     // Total scale to generate large font sizes
-	MinimumHeadScaleCount int     // Total scale to generate small font sizes.
-	MaximumHeadScaleCount int     // Total scale to generate large font sizes
-	BaseFontSize          int     // BaseFontSize for typeface using the provide BaseScale.
-	SmallBorderRadius     int     // SmallBorderRadius for tiny components eg checkbox, radio buttons.
-	MediumBorderRadius    int     // MediaBorderRadius for buttons, inputs, etc
-	LargeBorderRadius     int     // LargeBorderRadius for components like cards, modals, etc.
-	FloatingShadow        string  // shadow for floating icons, elements.
-	HoverShadow           string  // shadow for over dialog etc
-	DropShadow            string  // Useful for popovers/dropovers
-	BaseShadow            string  // Normal shadow of elemnts
+	PrimaryWhite                  string
+	SuccessColor                  string
+	FailureColor                  string
+	PrimaryColor                  string
+	SecondaryColor                string
+	PrimaryBrandColor             string
+	SecondaryBrandColor           string
+	AnimationCurveDefault         string
+	AnimationCurveFastOutLinearIn string
+	AnimationCurveFastOutSlowIn   string
+	AnimationCurveLinearOutSlowIn string
+	BaseScale                     float64 // BaseScale to use for generating expansion/detraction scale for font sizes.
+	HeaderBaseScale               float64 // BaseScale to use for generating expansion/detraction scale for header h1-h6 tags.
+	MinimumScaleCount             int     // Total scale to generate small font sizes.
+	MaximumScaleCount             int     // Total scale to generate large font sizes
+	MinimumHeadScaleCount         int     // Total scale to generate small font sizes.
+	MaximumHeadScaleCount         int     // Total scale to generate large font sizes
+	BaseFontSize                  int     // BaseFontSize for typeface using the provide BaseScale.
+	SmallBorderRadius             int     // SmallBorderRadius for tiny components eg checkbox, radio buttons.
+	MediumBorderRadius            int     // MediaBorderRadius for buttons, inputs, etc
+	LargeBorderRadius             int     // LargeBorderRadius for components like cards, modals, etc.
+	FloatingShadow                string  // shadow for floating icons, elements.
+	HoverShadow                   string  // shadow for over dialog etc
+	DropShadow                    string  // Useful for popovers/dropovers
+	BaseShadow                    string  // Normal shadow of elemnts
 }
 
 // StyleColors defines a struct which holds all possible giving brand colors utilized
@@ -253,6 +262,22 @@ func New(attr Attr) (StyleGuide, error) {
 	style.Attr = attr
 
 	var err error
+
+	if attr.AnimationCurveDefault == "" {
+		attr.AnimationCurveDefault = AnimationCurveDefault
+	}
+
+	if attr.AnimationCurveFastOutLinearIn == "" {
+		attr.AnimationCurveFastOutLinearIn = AnimationCurveFastOutLinearIn
+	}
+
+	if attr.AnimationCurveFastOutSlowIn == "" {
+		attr.AnimationCurveFastOutSlowIn = AnimationCurveFastOutSlowIn
+	}
+
+	if attr.AnimationCurveLinearOutSlowIn == "" {
+		attr.AnimationCurveLinearOutSlowIn = AnimationCurveLinearOutSlowIn
+	}
 
 	if attr.PrimaryColor != "" {
 		style.Brand.Primary, err = NewTones(attr.PrimaryColor)

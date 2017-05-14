@@ -24,6 +24,7 @@ func (c *CSSItems) Generate() []map[string]interface{} {
 	for _, style := range c.Styles {
 		var before, after []int
 
+		// fmt.Printf("Collecting: %q -> %+q\n", style.Path, style.Includes)
 		for _, include := range style.Includes {
 			var addr, hook string
 
@@ -181,19 +182,25 @@ func walkDir(items *CSSItems, root string, path string, info os.FileInfo, err er
 	reader := bytes.NewReader(data)
 	bufReader := bufio.NewReader(reader)
 
-	if line, err := bufReader.ReadString('\n'); err == nil {
-		if strings.Contains(line, "#include") {
-			line = strings.TrimSpace(line)
-			line = strings.TrimPrefix(line, "/*")
-			line = strings.TrimSuffix(line, "*/")
-			line = strings.TrimSpace(line)
-			line = strings.TrimPrefix(line, "#include")
-			line = strings.TrimSpace(line)
+	line, err := bufReader.ReadString('\n')
+	if err != nil && line == "" {
+		return nil
+	}
 
-			files := strings.SplitN(line, ",", -1)
-			for _, file := range files {
-				item.Includes = append(item.Includes, strings.TrimSpace(file))
+	if strings.Contains(line, "#include") {
+		line = strings.TrimSpace(line)
+		line = strings.TrimPrefix(line, "/*")
+		line = strings.TrimSuffix(line, "*/")
+		line = strings.TrimSpace(line)
+		line = strings.TrimPrefix(line, "#include")
+		line = strings.TrimSpace(line)
+
+		files := strings.SplitN(line, ",", -1)
+		for _, file := range files {
+			if file == "" {
+				continue
 			}
+			item.Includes = append(item.Includes, strings.TrimSpace(file))
 		}
 	}
 

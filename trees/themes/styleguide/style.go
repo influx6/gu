@@ -230,6 +230,22 @@ func New(attr Attr) (StyleGuide, error) {
 		attr.MaximumScaleCount = 10
 	}
 
+	if attr.AnimationCurveDefault == "" {
+		attr.AnimationCurveDefault = AnimationCurveDefault
+	}
+
+	if attr.AnimationCurveFastOutLinearIn == "" {
+		attr.AnimationCurveFastOutLinearIn = AnimationCurveFastOutLinearIn
+	}
+
+	if attr.AnimationCurveFastOutSlowIn == "" {
+		attr.AnimationCurveFastOutSlowIn = AnimationCurveFastOutSlowIn
+	}
+
+	if attr.AnimationCurveLinearOutSlowIn == "" {
+		attr.AnimationCurveLinearOutSlowIn = AnimationCurveLinearOutSlowIn
+	}
+
 	if attr.FloatingShadow == "" {
 		attr.FloatingShadow = shadowLarge
 	}
@@ -262,22 +278,6 @@ func New(attr Attr) (StyleGuide, error) {
 	style.Attr = attr
 
 	var err error
-
-	if attr.AnimationCurveDefault == "" {
-		attr.AnimationCurveDefault = AnimationCurveDefault
-	}
-
-	if attr.AnimationCurveFastOutLinearIn == "" {
-		attr.AnimationCurveFastOutLinearIn = AnimationCurveFastOutLinearIn
-	}
-
-	if attr.AnimationCurveFastOutSlowIn == "" {
-		attr.AnimationCurveFastOutSlowIn = AnimationCurveFastOutSlowIn
-	}
-
-	if attr.AnimationCurveLinearOutSlowIn == "" {
-		attr.AnimationCurveLinearOutSlowIn = AnimationCurveLinearOutSlowIn
-	}
 
 	if attr.PrimaryColor != "" {
 		style.Brand.Primary, err = NewTones(attr.PrimaryColor)

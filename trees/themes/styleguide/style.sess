@@ -170,7 +170,7 @@ ____________ Base shadowdrop classes ____________________________
   shadow-ambient-shadow-opacity: 0.12 !default;
 */
 
-.focus-shadow() {
+.focus-shadow {
   box-shadow: 0 0 8px rgba(0,0,0,.18),0 8px 16px rgba(0,0,0,.36);
 }
 

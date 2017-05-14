@@ -37,25 +37,25 @@ func main() {
 		var afterBu, beforeBu bytes.Buffer
 
 		if after, ok := item["after"].([]int); ok {
-			afterBu.WriteString("[")
+			afterBu.WriteString("[]int{")
 
 			for _, ai := range after {
 				fmt.Fprintf(&afterBu, "%d", ai)
 				fmt.Fprintf(&afterBu, ",")
 			}
 
-			afterBu.WriteString("]")
+			afterBu.WriteString("}")
 		}
 
 		if before, ok := item["before"].([]int); ok {
-			beforeBu.WriteString("[")
+			beforeBu.WriteString("[]int{")
 
 			for _, ai := range before {
 				fmt.Fprintf(&beforeBu, "%d", ai)
 				fmt.Fprintf(&beforeBu, ",")
 			}
 
-			beforeBu.WriteString("]")
+			beforeBu.WriteString("}")
 		}
 
 		fmt.Fprintf(&bu, cssPart, item["style"], item["path"], afterBu.String(), beforeBu.String())

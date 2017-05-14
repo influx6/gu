@@ -104,7 +104,5 @@ func (s *cssstyle) Rule(root []cssstyle) *css.Rule {
 }
 
 func init (){
-  if err := json.Unmarshal([]byte({{STYLES}}),&rules); err != nil {
-  	fmt.Printf("Failed to unmarshal styles: %+q\n", err)
-  }
+{{STYLES}}
 }

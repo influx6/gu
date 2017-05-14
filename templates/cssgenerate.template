@@ -32,10 +32,11 @@ func main() {
 	}
 
 	var bu bytes.Buffer
+
 	for _, item := range items.Generate() {
 		var afterBu, beforeBu bytes.Buffer
 
-		if after, ok :=  item["after"].([]int); ok {
+		if after, ok := item["after"].([]int); ok {
 			afterBu.WriteString("[")
 
 			for _, ai := range after {
@@ -46,10 +47,10 @@ func main() {
 			afterBu.WriteString("]")
 		}
 
-		if before, ok :=  item["before"].([]int); ok {
+		if before, ok := item["before"].([]int); ok {
 			beforeBu.WriteString("[")
 
-			for _, ai := range after {
+			for _, ai := range before {
 				fmt.Fprintf(&beforeBu, "%d", ai)
 				fmt.Fprintf(&beforeBu, ",")
 			}
@@ -60,17 +61,15 @@ func main() {
 		fmt.Fprintf(&bu, cssPart, item["style"], item["path"], afterBu.String(), beforeBu.String())
 	}
 
-
 	file, err := os.Create(filepath.Join("./", "css.go"))
 	if err != nil {
-		panic("Failed to create css pkg file: "+ err.Error())
+		panic("Failed to create css pkg file: " + err.Error())
 	}
 
 	defer file.Close()
 
-	quoted := fmt.Sprintf("%+q", rd)
-	pkg = strings.Replace(pkg,"{{PKG}}", pkgName, -1)
-	pkg = strings.Replace(pkg,"{{STYLES}}", bu.String(), -1)
-
+	pkg = strings.Replace(pkg, "{{PKG}}", pkgName, -1)
+	pkg = strings.Replace(pkg, "{{STYLES}}", bu.String(), -1)
+	
 	file.Write([]byte(pkg))
 }

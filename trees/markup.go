@@ -579,7 +579,9 @@ func (e *Markup) AddChild(child ...*Markup) {
 // allowing the callback to process the child has needed.
 func (e *Markup) EachChild(fn func(*Markup)) {
 	for _, ch := range e.children {
-		ch.EachChild(ch)
+		fn(ch)
+
+		ch.EachChild(fn)
 	}
 }
 

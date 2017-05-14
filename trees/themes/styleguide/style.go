@@ -20,10 +20,10 @@ const (
 	shadowHovers   = "0px 13px 30px 5px rgba(0, 0, 0, 0.58)"
 	shadowNormal   = "0px 13px 20px 2px rgba(0, 0, 0, 0.45)"
 
-	AnimationCurveFastOutSlowIn   = "cubic-bezier(0.4, 0, 0.2, 1) !default"
-	AnimationCurveLinearOutSlowIn = "cubic-bezier(0, 0, 0.2, 1) !default"
-	AnimationCurveFastOutLinearIn = "cubic-bezier(0.4, 0, 1, 1) !default"
-	AnimationCurveDefault         = AnimationCurveFastOutSlowIn + "!default"
+	AnimationCurveFastOutSlowIn   = "cubic-bezier(0.4, 0, 0.2, 1)"
+	AnimationCurveLinearOutSlowIn = "cubic-bezier(0, 0, 0.2, 1)"
+	AnimationCurveFastOutLinearIn = "cubic-bezier(0.4, 0, 1, 1)"
+	AnimationCurveDefault         = AnimationCurveFastOutSlowIn
 
 	smallBorderRadius  = 2
 	mediumBorderRadius = 4

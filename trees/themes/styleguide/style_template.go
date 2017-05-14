@@ -66,6 +66,7 @@ a, a:hover, a:active, a:visited{
 	text-decoration: none;
 }
 
+
 /*
 ____________ Line height  classes ____________________________
 	Line height defines giving sets of the first capital length hight 
@@ -173,7 +174,58 @@ ____________ Base shadowdrop classes ____________________________
   .shadow__drop: For shadow effects for dropdown/popovers type elements.
   .shadow__hover: For shadow effects for hovers. 
   .shadow__elevanted: For shadow effects for elevated modals, cards, etc
+
+  shadow-key-umbra-opacity: 0.2 !default;
+  shadow-key-penumbra-opacity: 0.14 !default;
+  shadow-ambient-shadow-opacity: 0.12 !default;
 */
+
+.focus-shadow {
+  box-shadow: 0 0 8px rgba(0,0,0,.18),0 8px 16px rgba(0,0,0,.36);
+}
+
+.shadow-2dp {
+	box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+              0 3px 1px -2px rgba(0, 0, 0, 0.2),
+              0 1px 5px 0 rgba(0, 0, 0, 0.12);
+}
+
+.shadow-3dp {
+  box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.14),
+              0 3px 3px -2px rgba(0, 0, 0, 0.2),
+              0 1px 8px 0 rgba(0, 0, 0, 0.12);
+}
+
+.shadow-4dp {
+  box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14),
+              0 1px 10px 0 rgba(0, 0, 0, 0.12),
+              0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+.shadow-6dp {
+  box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14),
+              0 1px 18px 0 rgba(0, 0, 0, 0.12),
+              0 3px 5px -1px rgba(0, 0, 0, 0.2);
+}
+
+.shadow-8dp {
+  box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14),
+              0 3px 14px 2px rgba(0, 0, 0, 0.12),
+              0 5px 5px -3px rgba(0, 0, 0, 0.2);
+}
+
+.shadow-16dp {
+  box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14),
+              0  6px 30px 5px rgba(0, 0, 0, 0.12),
+              0  8px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+.shadow-24dp {
+  box-shadow: 0  9px 46px  8px rgba(0, 0, 0, 0.14),
+              0 11px 15px -7px rgba(0, 0, 0, 0.12),
+              0 24px 38px  3px rgba(0, 0, 0, 0.2);
+}
+
 
 .shadow {
 	box-shadow: {{ .BaseShadow }};
@@ -260,6 +312,158 @@ ____________ Font scale set ____________________________
 	font-size: 16px;
 	font-size: 1em;
 	line-height: 1.25em;
+}
+
+.title-font {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.title-font-contrast {
+    opacity: 0.87;
+}
+
+.subheadline-font {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.04em;
+}
+
+.subheadline-font-contrast {
+    opacity: 0.87;
+}
+
+.subheadline2-font {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 28px;
+  letter-spacing: 0.04em;
+}
+
+.subheadline2-font-contrast {
+    opacity: 0.87;
+}
+
+.body-font {
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.body-font-contrast {
+    opacity: 0.87;
+}
+
+.body1-font {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0;
+}
+
+.body1-font-contrast {
+    opacity: 0.87;
+}
+
+.headline-font {
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 32px;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.headline-font-contrast {
+    opacity: 0.87;
+}
+
+.caption-font {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.caption-font-contrast {
+    opacity: 0.54;
+}
+
+.caption-font-contrast {
+    opacity: 0.54;
+}
+
+.blockquote-font {
+  position: relative;
+  font-size: 24px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+}
+
+.blockquote-font-contrast {
+    opacity: 0.54;
+}
+
+.blockquote-font:before, .blockquote-font-contrast:before {
+    position: absolute;
+    left: -0.5em;
+    content: '“';
+}
+
+.blockquote-font:after, .blockquote-font-contrast:after {
+    content: '”';
+    margin-left: -0.05em;
+}
+
+.menu-font {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.menu-font-with-contrast {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+  opacity: 0.87;
+}
+
+.button-font {
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.button-font-with-contrast {
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  line-height: 1;
+  letter-spacing: 0;
+  opacity: 0.87;
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  word-wrap: normal;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
 }
 
 /*

@@ -27,6 +27,14 @@ func New{{Name}}() *{{Name}} {
   }
 }
 
+// New{{Name}}WithService returns a new instance of {{Name}} component provided the given Services object.
+func New{{Name}}WithService(services gu.Services) *{{Name}} {
+  return &{{Name}}{
+  	Services: services,
+  	Reactive: gu.NewReactive(),
+  }
+}
+
 // RegisterServices is created so that the Services struct which contains 
 // objects that provide different functionality to the component can be 
 // recieved and accessed by the component.

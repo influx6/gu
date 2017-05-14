@@ -575,6 +575,14 @@ func (e *Markup) AddChild(child ...*Markup) {
 	}
 }
 
+// EachChild iterates all children from this giving root down with all childrens
+// allowing the callback to process the child has needed.
+func (e *Markup) EachChild(fn func(*Markup)) {
+	for _, ch := range e.children {
+		ch.EachChild(ch)
+	}
+}
+
 // Children returns the children list for the element
 func (e *Markup) Children() []*Markup {
 	return e.children

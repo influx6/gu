@@ -3,7 +3,7 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -14,6 +14,16 @@ import (
 
 var pkgName = {{PKGNAME}}
 var pkg = {{PKG_CONTENT}}
+var cssPart = `
+	
+	rules = append(rules, cssstyle{
+		Style: %q,
+		Path: %q,
+		After: %s,
+		Before: %s,
+	})
+
+`
 
 func main() {
 	items, err := cssparser.ParseDir(filepath.Join("./", "{{DIRNAME}}"))
@@ -21,9 +31,33 @@ func main() {
 		panic("Failed to walk CSS directories: "+ err.Error())
 	}
 
-	rd, err := json.MarshalIndent(items.Generate(), "", "\t")
-	if err != nil {
-		panic("Failed to Marshal CSS File struct: "+ err.Error())
+	var bu bytes.Buffer
+	for _, item := range items.Generate() {
+		var afterBu, beforeBu bytes.Buffer
+
+		if after, ok :=  item["after"].([]int); ok {
+			afterBu.WriteString("[")
+
+			for _, ai := range after {
+				fmt.Fprintf(&afterBu, "%d", ai)
+				fmt.Fprintf(&afterBu, ",")
+			}
+
+			afterBu.WriteString("]")
+		}
+
+		if before, ok :=  item["before"].([]int); ok {
+			beforeBu.WriteString("[")
+
+			for _, ai := range after {
+				fmt.Fprintf(&beforeBu, "%d", ai)
+				fmt.Fprintf(&beforeBu, ",")
+			}
+
+			beforeBu.WriteString("]")
+		}
+
+		fmt.Fprintf(&bu, cssPart, item["style"], item["path"], afterBu.String(), beforeBu.String())
 	}
 
 
@@ -36,7 +70,7 @@ func main() {
 
 	quoted := fmt.Sprintf("%+q", rd)
 	pkg = strings.Replace(pkg,"{{PKG}}", pkgName, -1)
-	pkg = strings.Replace(pkg,"{{STYLES}}", quoted, -1)
+	pkg = strings.Replace(pkg,"{{STYLES}}", bu.String(), -1)
 
 	file.Write([]byte(pkg))
 }

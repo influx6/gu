@@ -32,6 +32,7 @@ var (
 	filesDirNamebytes = []byte("{{FILESDIRNAME}}")
 	dirNamebytes      = []byte("{{DIRNAME}}")
 	nameLowerbytes    = []byte("{{Name_Lower}}")
+	idLowerNamebytes  = []byte("{{NAME_LOWER_ID}}")
 
 	gupath = "github.com/gu-io/gu"
 
@@ -329,6 +330,7 @@ func initCommands() {
 				cpdata = bytes.Replace(cpdata, pkgbytes, []byte(packagePath), -1)
 				cpdata = bytes.Replace(cpdata, namebytes, []byte(componentNameCap), -1)
 				cpdata = bytes.Replace(cpdata, nameLowerbytes, []byte(componentNameLower), -1)
+				cpdata = bytes.Replace(cpdata, idLowerNamebytes, []byte(componentNameLower[:1]), -1)
 
 				componentFileName := fmt.Sprintf("%s.go", componentNameLower)
 				cmdir := filepath.Join(newNoComponentDir, componentFileName)

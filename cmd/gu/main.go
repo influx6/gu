@@ -32,7 +32,7 @@ var (
 	filesDirNamebytes = []byte("{{FILESDIRNAME}}")
 	dirNamebytes      = []byte("{{DIRNAME}}")
 	nameLowerbytes    = []byte("{{Name_Lower}}")
-	idLowerNamebytes  = []byte("{{NAME_LOWER_ID}}")
+	idLowerNamebytes  = []byte("{{Name_Lower_Id}}")
 
 	gupath = "github.com/gu-io/gu"
 

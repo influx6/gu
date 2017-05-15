@@ -352,14 +352,15 @@ func main(){
 
 import (
   "github.com/gu-io/gu/elems"
-  "github.com/gu-io/gu/events"
+	"github.com/gu-io/gu/eventx"
+	"github.com/gu-io/gu/trees/elems/events"
 )
 
 func main(){
 		div := elems.Div(
 		elems.Span(elems.Text("Click me")),
     events.ClickEvent(func(event trees.EventObject, root *trees.Markup){
-      mouseEvent := event.Underlying().(*events.MouseEvent)
+      mouseEvent := event.Underlying().(*eventx.MouseEvent)
       // do something.....
     })
   )

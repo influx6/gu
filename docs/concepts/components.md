@@ -30,7 +30,8 @@ Any `Type` which implements the `Renderable` type is considered a Component and 
 
 import (
 	"github.com/gu-io/gu/trees"
-	"github.com/gu-io/gu/events"
+	"github.com/gu-io/gu/eventx"
+	"github.com/gu-io/gu/trees/elems/events"
 	"github.com/gu-io/gu/trees/elems"
 	"github.com/gu-io/gu/trees/property"
 )
@@ -60,7 +61,7 @@ func (g *Greeting) Render() *trees.Markup {
 				property.PlaceholderAttr("Enter your Name"),
 				property.TypeAttr("text"),
 				events.ChangeEvent(func(ev trees.EventObject, root *trees.Markup) {
-					changeEvent := ev.Underling.(*event.ChangeEvent)
+					changeEvent := ev.Underling.(*eventx.ChangeEvent)
 					g.change(changeEvent.Value)
 				}),
 			),
@@ -125,6 +126,8 @@ Gu heavily depends on interfaces as a means of extending the capability of Compo
 
 import (
 	"github.com/gu-io/gu/trees"
+	"github.com/gu-io/gu/eventx"
+	"github.com/gu-io/gu/trees/elems/events"
 	"github.com/gu-io/gu/trees/elems"
 	"github.com/gu-io/gu/trees/property"
 )
@@ -163,7 +166,7 @@ func (g *Greeting) Render() *trees.Markup {
 				property.PlaceholderAttr("Enter your Name"),
 				property.TypeAttr("text"),
 				events.ChangeEvent(func(ev trees.EventObject, root *trees.Markup) {
-					changeEvent := ev.Underling.(*event.ChangeEvent)
+					changeEvent := ev.Underling.(*eventx.ChangeEvent)
 					g.change(changeEvent.Value)
 				}),
 			),

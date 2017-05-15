@@ -43,7 +43,7 @@ func (c *{{Name}}) RegisterServices(services gu.Services)  {
 
 // Render returns the markup for this {{Name}} component.
 func (c {{Name}}) Render() *trees.Markup {
-	return elems.Div(property.ClassAttr("component"))
+	return elems.Div(property.ClassAttr("component","{{Name_Lower}}"))
 }
 
 // Apply adds the giving components Render() result to the 

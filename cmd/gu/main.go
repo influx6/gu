@@ -353,6 +353,7 @@ func initCommands() {
 
 				cpdata = bytes.Replace(cpdata, namebytes, []byte(componentNameCap), -1)
 				cpdata = bytes.Replace(cpdata, nameLowerbytes, []byte(componentNameLower), -1)
+				cpdata = bytes.Replace(cpdata, idLowerNamebytes, []byte(componentNameLower[:2]), -1)
 
 				componentFileName := fmt.Sprintf("%s.go", componentNameLower)
 
@@ -407,6 +408,7 @@ func initCommands() {
 				cpdata = bytes.Replace(cpdata, pkgbytes, []byte(componentsPackagePath), -1)
 				cpdata = bytes.Replace(cpdata, namebytes, []byte(componentNameCap), -1)
 				cpdata = bytes.Replace(cpdata, nameLowerbytes, []byte(componentNameLower), -1)
+				cpdata = bytes.Replace(cpdata, idLowerNamebytes, []byte(componentNameLower[:2]), -1)
 
 				componentFileName := fmt.Sprintf("%s.go", componentNameLower)
 
@@ -459,6 +461,7 @@ func initCommands() {
 			cpdata = bytes.Replace(cpdata, pkgbytes, []byte(packagePath), -1)
 			cpdata = bytes.Replace(cpdata, namebytes, []byte(componentNameCap), -1)
 			cpdata = bytes.Replace(cpdata, nameLowerbytes, []byte(componentNameLower), -1)
+			cpdata = bytes.Replace(cpdata, idLowerNamebytes, []byte(componentNameLower[:2]), -1)
 
 			componentFileName := fmt.Sprintf("%s.go", componentNameLower)
 			cmdir := filepath.Join(newComponentDir, componentFileName)

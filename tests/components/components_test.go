@@ -39,7 +39,7 @@ func TestComponent(t *testing.T) {
 				</root-template>
 			</hello>
 		</div>
-	`)
+	`, nil)
 
 	// Component prints:
 	// <div data-gen="gu" class="bomb" data-field="lexus">

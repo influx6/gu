@@ -103,7 +103,11 @@ func (c *ComponentRegistry) ParseByTemplate(markup string, m interface{}, style 
 
 // Parse returns a new Renderable from the giving markup.
 func (c *ComponentRegistry) Parse(markup string, style *styleguide.StyleGuide, m ...interface{}) Renderable {
-	return ParseComponent(fmt.Sprintf(markup, m...), c, style)
+	if len(m) != 0 && m != nil {
+		return ParseComponent(fmt.Sprintf(markup, m...), c, style)
+	}
+
+	return ParseComponent(markup, c, style)
 }
 
 // Add adds the giving set of possible item/items of the Acceptable type into

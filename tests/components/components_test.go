@@ -1,4 +1,4 @@
-package components
+package components_test
 
 import (
 	"testing"
@@ -23,8 +23,7 @@ func (h *hello) Render() *trees.Markup {
 func TestComponent(t *testing.T) {
 	trees.SetMode(trees.Pretty)
 
-	expected := "<div data-gen=\"gu\"  data-field=\"lexus\"  class=\"bomb\"><hello data-gen=\"gu\"><div data-gen=\"gu\">Welcome to the world \"Alex Thunderbot\"</div></hello></div>"
-	expected2 := "<div data-gen=\"gu\"  class=\"bomb\"  data-field=\"lexus\"><hello data-gen=\"gu\"><div data-gen=\"gu\">Welcome to the world \"Alex Thunderbot\"</div></hello></div>"
+	expected := "<div data-gen=\"gu\"  class=\"bomb\"  data-field=\"lexus\" style=\"\"><hello data-gen=\"gu\" style=\"\">Welcome to the world \"Alex Thunderbot\"</hello></div>"
 
 	registry := gu.NewComponentRegistry()
 	registry.Register("hello", func(fields map[string]string, template string) gu.Renderable {
@@ -41,16 +40,10 @@ func TestComponent(t *testing.T) {
 		</div>
 	`, nil)
 
-	// Component prints:
-	// <div data-gen="gu" class="bomb" data-field="lexus">
-	// 	<hello data-gen="gu">
-	// 		<div data-gen="gu">Welcome to the world "Alex Thunderbot"</div>
-	// 	</hello>
-	// </div>
-
-	if val := component.Render().HTML(); val != expected && val != expected2 {
-		t.Logf("\t\tRecieved: %q\n", val)
-		t.Logf("\t\tExpected: %q\n", expected)
+	val := component.Render().HTML()
+	if val != expected {
+		tests.Info("Recieved: %+q", val)
+		tests.Info("Expected: %+q", expected)
 		tests.Failed("Should have rendered expected markup")
 	}
 	tests.Passed("Should have rendered expected markup")

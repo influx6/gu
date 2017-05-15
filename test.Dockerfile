@@ -1,17 +1,18 @@
 FROM golang:latest
 
-ADD . /go/src/github.com/gu-io/gu
-
-WORKDIR /go/src/github.com/gu-io/gu
 
 # Run go get
-RUN go get -v 
+RUN go get -u -v github.com/gu-io/gu/...
+
 
 # Install gometalinter
 RUN go get -u -v github.com/alecthomas/gometalinter
 
 # Install missing lint tools
 RUN gometalinter --install
+
+# Switch to gu-io/gu directory
+WORKDIR /go/src/github.com/gu-io/gu
 
 # Run go tests
 RUN go test -v ./drivers/...

@@ -2,6 +2,12 @@ package property
 
 import "github.com/gu-io/gu/trees"
 
+// CustomStyle returns a new Style with the giving name and
+// value.
+func CustomStyle(name, value string) trees.Property {
+	return trees.NewCSSStyle(name, value)
+}
+
 // BackgroundStyle provides the color style value
 func BackgroundStyle(value string) trees.Property {
 	return trees.NewCSSStyle("background", value)

@@ -2,6 +2,12 @@ package property
 
 import "github.com/gu-io/gu/trees"
 
+// CustomAttr returns a new Attribute with the giving name and
+// value.
+func CustomAttr(name, val string) trees.Property {
+	return &trees.Attribute{Name: name, Value: val}
+}
+
 // NameAttr defines attributes of type "Name" for html element types.
 func NameAttr(val string) trees.Property {
 	return &trees.Attribute{Name: "name", Value: val}

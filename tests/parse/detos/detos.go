@@ -1,3 +1,5 @@
+//+build ignore
+
 // Package detos defines a series of component for the detos project
 //
 //shell:component:global

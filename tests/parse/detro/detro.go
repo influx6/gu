@@ -1,3 +1,5 @@
+//+build ignore
+
 package detro
 
 // DetroComponent defines a component to provide a detro type.

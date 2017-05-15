@@ -1,4 +1,6 @@
-package components_test
+//+build ignore
+
+package components
 
 import (
 	"testing"

@@ -1,3 +1,5 @@
+//+build ignore
+
 // Package manifests is auto-generated and should not be modified by hand.
 // This package contains a virtual file system for generate resources which are not accessed
 // through a remote endpoint (i.e those resources generated from the manifests that are local in the

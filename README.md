@@ -2,6 +2,7 @@ Gu
 ==
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/gu-io/gu)](https://goreportcard.com/report/github.com/gu-io/gu)
+[![Build Status](https://travis-ci.org/gu-io/gu.svg?branch=master)](https://travis-ci.org/gu-io/gu)
 
 A component rendering library for Go. It efficiently renders standard HTML both on the frontend and backend.
 

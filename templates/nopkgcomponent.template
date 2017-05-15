@@ -38,17 +38,17 @@ func New{{Name}}WithService(services gu.Services) *{{Name}} {
 // RegisterServices is created so that the Services struct which contains 
 // objects that provide different functionality to the component can be 
 // recieved and accessed by the component.
-func (c *{{Name}}) RegisterServices(services gu.Services)  {
-	c.Services = services
+func ({{Name_Lower_Id}} *{{Name}}) RegisterServices(services gu.Services)  {
+	{{Name_Lower_Id}}.Services = services
 }
 
 // Render returns the markup for this {{Name}} component.
-func (c {{Name}}) Render() *trees.Markup {
+func ({{Name_Lower_Id}} {{Name}}) Render() *trees.Markup {
 	return elems.Div(property.ClassAttr("component","{{Name_Lower}}"))
 }
 
 // Apply adds the giving components Render() result to the 
 // provided root.
-func (c {{Name}}) Apply(root *trees.Markup)  {
-	root.AddChild(c.Render())
+func ({{Name_Lower_Id}} {{Name}}) Apply(root *trees.Markup)  {
+	root.AddChild({{Name_Lower_Id}}.Render())
 }

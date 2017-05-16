@@ -111,7 +111,7 @@ var (
 			}
 
 			return fmt.Sprintf(`
-				transition-duration: %.4f;
+				transition-duration: %.4fs;
 				transition-timing-function: %s;
 			`, duration, animationCurveDefault)
 		},
@@ -121,7 +121,7 @@ var (
 			}
 
 			return fmt.Sprintf(`
-				transition-duration: %.4f;
+				transition-duration: %.4fs;
 				transition-timing-function: %s;
 			`, duration, animationCurveFastOutLinearIn)
 		},
@@ -131,7 +131,7 @@ var (
 			}
 
 			return fmt.Sprintf(`
-				transition-duration: %.4f;
+				transition-duration: %.4fs;
 				transition-timing-function: %s;
 			`, duration, animationCurveFastOutSlowIn)
 		},
@@ -141,7 +141,7 @@ var (
 			}
 
 			return fmt.Sprintf(`
-				transition-duration: %.4f;
+				transition-duration: %.4fs;
 				transition-timing-function: %s;
 			`, duration, animationCurveLinearOutSlowIn)
 		},

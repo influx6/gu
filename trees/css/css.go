@@ -13,6 +13,11 @@ import (
 )
 
 var (
+	animationCurveFastOutSlowIn   = "cubic-bezier(0.4, 0, 0.2, 1)"
+	animationCurveLinearOutSlowIn = "cubic-bezier(0, 0, 0.2, 1)"
+	animationCurveFastOutLinearIn = "cubic-bezier(0.4, 0, 1, 1)"
+	animationCurveDefault         = AnimationCurveFastOutSlowIn
+
 	helpers = template.FuncMap{
 		"quote": func(b interface{}) string {
 			switch bo := b.(type) {
@@ -94,6 +99,51 @@ var (
 		},
 		"textRhythmnEM": func(lineHeight, capHeight, fontSize float64) float64 {
 			return ((lineHeight - capHeight) * fontSize) / 2
+		},
+		"dialogWidth": func(unit int) string {
+			return fmt.Sprintf(`
+				with: %dpx;
+			`, unit*56)
+		},
+		"animationDefault": func(duration float32) string {
+			if duration < 0 {
+				duration = 0.2
+			}
+
+			return fmt.Sprintf(`
+				transition-duration: %.4f;
+				transition-timing-function: %s;
+			`, duration, animationCurveDefault)
+		},
+		"animationFastOutLinearIn": func(duration float32) string {
+			if duration < 0 {
+				duration = 0.2
+			}
+
+			return fmt.Sprintf(`
+				transition-duration: %.4f;
+				transition-timing-function: %s;
+			`, duration, animationCurveFastOutLinearIn)
+		},
+		"animationFastOutSlowIn": func(duration float32) string {
+			if duration < 0 {
+				duration = 0.2
+			}
+
+			return fmt.Sprintf(`
+				transition-duration: %.4f;
+				transition-timing-function: %s;
+			`, duration, animationCurveFastOutSlowIn)
+		},
+		"animationLinearOutSlowIn": func(duration float32) string {
+			if duration < 0 {
+				duration = 0.2
+			}
+
+			return fmt.Sprintf(`
+				transition-duration: %.4f;
+				transition-timing-function: %s;
+			`, duration, animationCurveLinearOutSlowIn)
 		},
 	}
 )

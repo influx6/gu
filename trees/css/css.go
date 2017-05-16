@@ -105,6 +105,18 @@ var (
 				width: %dpx;
 			`, unit*56)
 		},
+		"animationDefaultProperty": func() string {
+			return animationCurveDefault
+		},
+		"animationFastOutLinearInProperty": func() string {
+			return animationCurveFastOutLinearIn
+		},
+		"animationFastOutSlowInProperty": func() string {
+			return animationCurveFastOutSlowIn
+		},
+		"animationLinearOutSlowInProperty": func() string {
+			return animationCurveLinearOutSlowIn
+		},
 		"animationDefault": func(duration float32) string {
 			if duration < 0 {
 				duration = 0.2

@@ -102,7 +102,7 @@ var (
 		},
 		"dialogWidth": func(unit int) string {
 			return fmt.Sprintf(`
-				with: %dpx;
+				width: %dpx;
 			`, unit*56)
 		},
 		"animationDefault": func(duration float32) string {

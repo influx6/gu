@@ -142,20 +142,21 @@ type Attr struct {
 	AnimationCurveFastOutLinearIn string
 	AnimationCurveFastOutSlowIn   string
 	AnimationCurveLinearOutSlowIn string
-	BaseScale                     float64 // BaseScale to use for generating expansion/detraction scale for font sizes.
-	HeaderBaseScale               float64 // BaseScale to use for generating expansion/detraction scale for header h1-h6 tags.
-	MinimumScaleCount             int     // Total scale to generate small font sizes.
-	MaximumScaleCount             int     // Total scale to generate large font sizes
-	MinimumHeadScaleCount         int     // Total scale to generate small font sizes.
-	MaximumHeadScaleCount         int     // Total scale to generate large font sizes
-	BaseFontSize                  int     // BaseFontSize for typeface using the provide BaseScale.
-	SmallBorderRadius             int     // SmallBorderRadius for tiny components eg checkbox, radio buttons.
-	MediumBorderRadius            int     // MediaBorderRadius for buttons, inputs, etc
-	LargeBorderRadius             int     // LargeBorderRadius for components like cards, modals, etc.
-	FloatingShadow                string  // shadow for floating icons, elements.
-	HoverShadow                   string  // shadow for over dialog etc
-	DropShadow                    string  // Useful for popovers/dropovers
-	BaseShadow                    string  // Normal shadow of elemnts
+	BaseScale                     float64             // BaseScale to use for generating expansion/detraction scale for font sizes.
+	HeaderBaseScale               float64             // BaseScale to use for generating expansion/detraction scale for header h1-h6 tags.
+	MinimumScaleCount             int                 // Total scale to generate small font sizes.
+	MaximumScaleCount             int                 // Total scale to generate large font sizes
+	MinimumHeadScaleCount         int                 // Total scale to generate small font sizes.
+	MaximumHeadScaleCount         int                 // Total scale to generate large font sizes
+	BaseFontSize                  int                 // BaseFontSize for typeface using the provide BaseScale.
+	SmallBorderRadius             int                 // SmallBorderRadius for tiny components eg checkbox, radio buttons.
+	MediumBorderRadius            int                 // MediaBorderRadius for buttons, inputs, etc
+	LargeBorderRadius             int                 // LargeBorderRadius for components like cards, modals, etc.
+	FloatingShadow                string              // shadow for floating icons, elements.
+	HoverShadow                   string              // shadow for over dialog etc
+	DropShadow                    string              // Useful for popovers/dropovers
+	BaseShadow                    string              // Normal shadow of elemnts
+	MaterialPalettes              map[string][]string `json:"palettes"`
 }
 
 // StyleColors defines a struct which holds all possible giving brand colors utilized
@@ -202,6 +203,10 @@ func Must(attr Attr) StyleGuide {
 // New returns a new StyleGuide object which generates the necessary css
 // styles to utilize the defined style within any project.
 func New(attr Attr) (StyleGuide, error) {
+	if attr.MaterialPalettes == nil || len(attr.MaterialPalettes) == 0 {
+		attr.MaterialPalettes = MaterialPalettes
+	}
+
 	if attr.BaseFontSize <= 0 {
 		attr.BaseFontSize = 16
 	}

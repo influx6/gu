@@ -243,6 +243,28 @@ ____________ Base shadowdrop classes ____________________________
 	box-shadow: {{ .FloatingShadow }};
 }
 
+
+/* Google's material pallete color sets */
+
+{{ range $key, $set := .MaterialPalettes }}
+  {{ range $index, $color := $set }}
+
+  {{ $count := multiply $index 100}}
+.colors-background-{{$key}}-{{ add $count 100 }} {
+  background: rgba({{ $color}}, 1);
+}
+
+.colors-border-{{$key}}-{{  add $count 100 }} {
+  border-color: rgba({{ $color}}, 1);
+}
+
+.colors-color-{{$key}}-{{  add $count 100 }} {
+  color: rgba({{ $color}}, 1);
+}
+
+  {{ end }}
+{{ end }}
+
 /*
 ____________ Base font size classes ____________________________
 

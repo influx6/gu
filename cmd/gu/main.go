@@ -37,38 +37,6 @@ var (
 	gupath = "github.com/gu-io/gu"
 
 	usage = `Provides a CLi tool which allows deployment and generation of project files for use in development.`
-
-	aferoTemplate = `// Package %s is auto-generated and should not be modified by hand.
-// This package contains a virtual file system for generate resources which are not accessed
-// through a remote endpoint (i.e those resources generated from the manifests that are local in the
-// filesystem and are not marked as remote in access).
-package %s
-
-import (
-	"path/filepath"
-
-	"github.com/spf13/afero"
-)
-
-// AppFS defines the global handler for which all assets generated from manifests
-// files which are not remote resources are provided as binary embedded assets.
-var AppFS = afero.NewMemMapFs()
-
-// addFile adds a giving file name into the file system.
-func addFile(path string, content []byte){
-	dir, _ := filepath.Split(path)
-	if dir != "" {
-		AppFS.MkdirAll(dir,0755)
-	}
-
-	afero.WriteFile(AppFS, path, content, 0644)
-}
-
-func init(){
-%+s
-}
-
-`
 )
 
 func main() {

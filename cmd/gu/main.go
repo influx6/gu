@@ -192,12 +192,12 @@ func initCommands() {
 	subcommands = append(subcommands, &cli.Command{
 		Name:  "new",
 		Usage: "gu new <component-name>",
-		Description: `Generates a new boiler code component package or file, which can be set to be in it's own package or part of the current directory.
+		Description: `Generates a new boilerplate for giving component name.
 
 		Options:
-			- flat: This option when true, will indicate that only a .go file of that component is to be generated in the app's components package.
-			- base:	This option when false, will force that component package to be generated right in the directory where the command was called and not in the components package.
-			- stand: This option when true will enforce only component package with css generation be created.
+			- flat: When true will generate only a .go file for component. (Default: False)
+			- stand: When true will generaly only go package with css style. (Default: False)
+			- base:	When true will check for components dir first before generating go package. (Default: True)
 		`,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{

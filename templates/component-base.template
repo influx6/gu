@@ -27,10 +27,10 @@ func New{{Name}}() *{{Name}} {
 
 // New{{Name}}WithService returns a new instance of {{Name}} component provided the given Services object.
 func New{{Name}}WithService(services gu.Services) *{{Name}} {
-  return &{{Name}}{
-  	Services: services,
-  	Reactive: gu.NewReactive(),
-  }
+	{{Name_Lower_Id}} := New()
+	{{Name_Lower_Id}}.Services = services
+
+	return {{Name_Lower_Id}}
 }
 
 // RegisterServices is created so that the Services struct which contains 

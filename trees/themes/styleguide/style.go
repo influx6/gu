@@ -231,40 +231,40 @@ func (style *StyleGuide) Init() error {
 	if style.Attr.PrimaryBrandColor != "" {
 		style.Brand.PrimaryBrand, err = NewTones(style.Attr.PrimaryBrandColor)
 		if err != nil {
-			return errors.New("Invalid primary brand color")
+			return errors.New("Invalid primary brand color: " + err.Error())
 		}
 	}
 
 	if style.Attr.SecondaryBrandColor != "" {
 		style.Brand.SecondaryBrand, err = NewTones(style.Attr.SecondaryBrandColor)
 		if err != nil {
-			return errors.New("Invalid secondary brand color")
+			return errors.New("Invalid secondary brand color: " + err.Error())
 		}
 	}
 
 	style.Brand.Primary, err = NewTones(style.Attr.PrimaryColor)
 	if err != nil {
-		return errors.New("Invalid primary color")
+		return errors.New("Invalid primary color: " + err.Error())
 	}
 
 	style.Brand.Secondary, err = NewTones(style.Attr.SecondaryColor)
 	if err != nil {
-		return errors.New("Invalid secondary color")
+		return errors.New("Invalid secondary color: " + err.Error())
 	}
 
 	style.Brand.White, err = NewTones(style.Attr.PrimaryWhite)
 	if err != nil {
-		return errors.New("Invalid primary white tone color")
+		return errors.New("Invalid white color: " + err.Error())
 	}
 
 	style.Brand.Success, err = NewTones(style.Attr.SuccessColor)
 	if err != nil {
-		return errors.New("Invalid success color")
+		return errors.New("Invalid success color: " + err.Error())
 	}
 
 	style.Brand.Failure, err = NewTones(style.Attr.FailureColor)
 	if err != nil {
-		return errors.New("Invalid failure color")
+		return errors.New("Invalid failure color: " + err.Error())
 	}
 
 	style.inited = true
@@ -337,23 +337,23 @@ func initAttr(attr Attr) Attr {
 	}
 
 	if attr.PrimaryColor == "" {
-		attr.PrimaryColor = MaterialPalettes["blue"][5]
+		attr.PrimaryColor = fmt.Sprintf("rgb(%s)", MaterialPalettes["blue"][5])
 	}
 
 	if attr.SecondaryColor == "" {
-		attr.SecondaryColor = MaterialPalettes["deep-purple"][5]
+		attr.SecondaryColor = fmt.Sprintf("rgb(%s)", MaterialPalettes["deep-purple"][5])
 	}
 
 	if attr.PrimaryWhite == "" {
-		attr.PrimaryWhite = MaterialPalettes["white"][0]
+		attr.PrimaryWhite = fmt.Sprintf("rgb(%s)", MaterialPalettes["white"][0])
 	}
 
 	if attr.SuccessColor == "" {
-		attr.SuccessColor = MaterialPalettes["green"][5]
+		attr.SuccessColor = fmt.Sprintf("rgb(%s)", MaterialPalettes["green"][5])
 	}
 
 	if attr.FailureColor == "" {
-		attr.FailureColor = MaterialPalettes["red"][5]
+		attr.FailureColor = fmt.Sprintf("rgb(%s)", MaterialPalettes["red"][5])
 	}
 
 	if attr.BaseFontSize <= 0 {

@@ -625,6 +625,10 @@ func ApplyTo(child Appliable, children ...Appliable) DeferredApply {
 // Apply will attempt to search for the target within the root and append
 // to that giving child else ignoring the call.
 func (d DeferredApply) Apply(em *Markup) {
+	if em == nil {
+		return
+	}
+
 	var dummy Markup
 	dummy.allowChildren = true
 
@@ -669,6 +673,10 @@ func ApplyIn(child Appliable, target string, multiple bool) AppliableTarget {
 // Apply will attempt to search for the target within the root and append
 // to that giving child else ignoring the call.
 func (e AppliableTarget) Apply(em *Markup) {
+	if em == nil {
+		return
+	}
+
 	switch e.Multiple {
 	case true:
 		for _, child := range Query.QueryAll(em, e.Target) {

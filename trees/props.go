@@ -2,8 +2,6 @@ package trees
 
 import "strings"
 
-//==============================================================================
-
 // Property defines the interface for attributes in trees.
 // It provides a apply and RenderAttribute which returns the key
 // and value for that attribute.
@@ -13,27 +11,29 @@ type Property interface {
 	Render() (string, string)
 }
 
-// WhenElse checks if the first is a non-nil and returns else returns the second
-// property instead.
-func WhenElse(first Property, other Property) Property {
-	if first != nil {
-		return first
+//==============================================================================
+
+// If returns the markup when the giving state is true.
+func If(state bool, m func() *Markup) *Markup {
+	if !state {
+		return nil
 	}
 
-	return other
+	return m()
 }
 
-// MarkupWhenElse returns the first markup if its not nil else the second.
-func MarkupWhenElse(first, other *Markup) *Markup {
-	if first != nil {
-		return first
+// IfProperty returns the property when the giving state is true.
+func IfProperty(state bool, m func() Property) Property {
+	if !state {
+		return nil
 	}
 
-	return other
+	return m()
 }
 
-// MarkupWhen returns the first or other markup when the giving state is false or true.
-func MarkupWhen(state bool, first, other *Markup) *Markup {
+// WhenProperty checks if the giving state is true and returns the first property else
+// returns the second.
+func WhenProperty(state bool, first Property, other Property) Property {
 	if state {
 		return first
 	}
@@ -41,27 +41,8 @@ func MarkupWhen(state bool, first, other *Markup) *Markup {
 	return other
 }
 
-// MarkupIf returns the markup when the giving state is true.
-func MarkupIf(state bool, m *Markup) *Markup {
-	if !state {
-		return nil
-	}
-
-	return m
-}
-
-// If returns the property when the giving state is true.
-func If(state bool, m Property) Property {
-	if !state {
-		return nil
-	}
-
-	return m
-}
-
-// When checks if the giving state is true and returns the first property else
-// returns the second.
-func When(state bool, first Property, other Property) Property {
+// When returns the first or other markup when the giving state is false or true.
+func When(state bool, first, other *Markup) *Markup {
 	if state {
 		return first
 	}

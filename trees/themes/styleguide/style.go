@@ -188,6 +188,7 @@ type StyleGuide struct {
 	BigFontScale     []float64
 	SmallHeaderScale []float64
 	BigHeaderScale   []float64
+	inited           bool
 }
 
 // Must returns the giving style or panics if it fails.
@@ -203,8 +204,156 @@ func Must(attr Attr) StyleGuide {
 // New returns a new StyleGuide object which generates the necessary css
 // styles to utilize the defined style within any project.
 func New(attr Attr) (StyleGuide, error) {
+	var style StyleGuide
+
+	if err := style.Init(); err != nil {
+		return style, err
+	}
+
+	return style, nil
+}
+
+// Init initializes the style guide and all internal properties into
+// appropriate defaults and states.
+func (style *StyleGuide) Init() error {
+	var err error
+
+	style.Attr = initAttr(style.Attr)
+
+	shm, bhm := GenerateValueScale(1, style.Attr.HeaderBaseScale, style.Attr.MinimumHeadScaleCount, style.Attr.MaximumHeadScaleCount)
+	style.BigHeaderScale = bhm
+	style.SmallHeaderScale = shm
+
+	sm, bg := GenerateValueScale(1, style.Attr.BaseScale, style.Attr.MinimumScaleCount, style.Attr.MaximumScaleCount)
+	style.BigFontScale = bg
+	style.SmallFontScale = sm
+
+	if style.Attr.PrimaryBrandColor != "" {
+		style.Brand.PrimaryBrand, err = NewTones(style.Attr.PrimaryBrandColor)
+		if err != nil {
+			return errors.New("Invalid primary brand color")
+		}
+	}
+
+	if style.Attr.SecondaryBrandColor != "" {
+		style.Brand.SecondaryBrand, err = NewTones(style.Attr.SecondaryBrandColor)
+		if err != nil {
+			return errors.New("Invalid secondary brand color")
+		}
+	}
+
+	style.Brand.Primary, err = NewTones(style.Attr.PrimaryColor)
+	if err != nil {
+		return errors.New("Invalid primary color")
+	}
+
+	style.Brand.Secondary, err = NewTones(style.Attr.SecondaryColor)
+	if err != nil {
+		return errors.New("Invalid secondary color")
+	}
+
+	style.Brand.White, err = NewTones(style.Attr.PrimaryWhite)
+	if err != nil {
+		return errors.New("Invalid primary white tone color")
+	}
+
+	style.Brand.Success, err = NewTones(style.Attr.SuccessColor)
+	if err != nil {
+		return errors.New("Invalid success color")
+	}
+
+	style.Brand.Failure, err = NewTones(style.Attr.FailureColor)
+	if err != nil {
+		return errors.New("Invalid failure color")
+	}
+
+	style.inited = true
+	return err
+}
+
+// Ready returns true/false whether the giving style guide has being
+// initialized.
+func (style *StyleGuide) Ready() bool {
+	return style.inited
+}
+
+// Stylesheet returns a css.Rule object which contains the styleguide style
+// rules.
+func (style *StyleGuide) Stylesheet() *css.Rule {
+	return css.New(style.CSS(), nil)
+}
+
+// CSS returns a css style content for usage with a css stylesheet.
+func (style *StyleGuide) CSS() string {
+	tml, err := template.New("styleguide").Funcs(helpers).Parse(styleTemplate)
+	if err != nil {
+		return err.Error()
+	}
+
+	var buf bytes.Buffer
+	if terr := tml.Execute(&buf, style); terr != nil {
+		return terr.Error()
+	}
+
+	return buf.String()
+}
+
+//================================================================================================
+
+// Tones defines the set of color tones generated for a base color using the Hamonic tone
+// sets, it provides a very easily set of color variations for use in styles.
+type Tones struct {
+	Base   Color   `json:"base"`
+	Grades []Color `json:"tones"`
+}
+
+// NewTones returns a new Tones object representing the provided color tones if
+// the value provided is a valid color.
+func NewTones(base string) (Tones, error) {
+	c, err := ColorFrom(base)
+	if err != nil {
+		return Tones{}, err
+	}
+
+	return HamonicsFrom(c), nil
+}
+
+// JSON returns the string representation of the provided tone.
+func (t Tones) JSON() string {
+	return fmt.Sprintf(`{
+	"base": %q,
+	"grades": %+q
+  }`, t.Base, t.Grades)
+}
+
+// String returns the string representation of the provided tone.
+func (t Tones) String() string {
+	return fmt.Sprintf(`%q %q`, t.Base, t.Grades)
+}
+
+func initAttr(attr Attr) Attr {
 	if attr.MaterialPalettes == nil || len(attr.MaterialPalettes) == 0 {
 		attr.MaterialPalettes = MaterialPalettes
+	}
+
+	if attr.PrimaryColor == "" {
+		attr.PrimaryColor = MaterialPalettes["blue"][5]
+	}
+
+	if attr.SecondaryColor == "" {
+		attr.SecondaryColor = MaterialPalettes["deep-purple"][5]
+	}
+
+	if attr.PrimaryWhite == "" {
+		attr.PrimaryWhite = MaterialPalettes["white"][0]
+	}
+
+	if attr.SuccessColor == "" {
+		attr.SuccessColor = MaterialPalettes["green"][5]
+	}
+
+	if attr.FailureColor == "" {
+		attr.FailureColor = MaterialPalettes["red"][5]
 	}
 
 	if attr.BaseFontSize <= 0 {
@@ -279,123 +428,7 @@ func New(attr Attr) (StyleGuide, error) {
 		attr.LargeBorderRadius = largeBorderRadius
 	}
 
-	var style StyleGuide
-	style.Attr = attr
-
-	var err error
-
-	if attr.PrimaryColor != "" {
-		style.Brand.Primary, err = NewTones(attr.PrimaryColor)
-		if err != nil {
-			return StyleGuide{}, errors.New("Invalid primary color")
-		}
-	}
-
-	if attr.SecondaryColor != "" {
-		style.Brand.Secondary, err = NewTones(attr.SecondaryColor)
-		if err != nil {
-			return StyleGuide{}, errors.New("Invalid secondary color")
-		}
-	}
-
-	if attr.PrimaryBrandColor != "" {
-		style.Brand.PrimaryBrand, err = NewTones(attr.PrimaryBrandColor)
-		if err != nil {
-			return StyleGuide{}, errors.New("Invalid primary brand color")
-		}
-	}
-
-	if attr.SecondaryBrandColor != "" {
-		style.Brand.SecondaryBrand, err = NewTones(attr.SecondaryBrandColor)
-		if err != nil {
-			return StyleGuide{}, errors.New("Invalid secondary brand color")
-		}
-	}
-
-	if attr.PrimaryWhite != "" {
-		style.Brand.White, err = NewTones(attr.PrimaryWhite)
-		if err != nil {
-			return StyleGuide{}, errors.New("Invalid primary white tone color")
-		}
-	}
-
-	if attr.SuccessColor != "" {
-		style.Brand.Success, err = NewTones(attr.SuccessColor)
-		if err != nil {
-			return StyleGuide{}, errors.New("Invalid success color")
-		}
-	}
-
-	if attr.FailureColor != "" {
-		style.Brand.Failure, err = NewTones(attr.FailureColor)
-		if err != nil {
-			return StyleGuide{}, errors.New("Invalid failure color")
-		}
-	}
-
-	shm, bhm := GenerateValueScale(1, attr.HeaderBaseScale, attr.MinimumHeadScaleCount, attr.MaximumHeadScaleCount)
-	style.BigHeaderScale = bhm
-	style.SmallHeaderScale = shm
-
-	sm, bg := GenerateValueScale(1, attr.BaseScale, attr.MinimumScaleCount, attr.MaximumScaleCount)
-	style.BigFontScale = bg
-	style.SmallFontScale = sm
-
-	return style, nil
-}
-
-// Stylesheet returns a css.Rule object which contains the styleguide style
-// rules.
-func (sc *StyleGuide) Stylesheet() *css.Rule {
-	return css.New(sc.CSS(), nil)
-}
-
-// CSS returns a css style content for usage with a css stylesheet.
-func (sc *StyleGuide) CSS() string {
-	tml, err := template.New("styleguide").Funcs(helpers).Parse(styleTemplate)
-	if err != nil {
-		return err.Error()
-	}
-
-	var buf bytes.Buffer
-	if terr := tml.Execute(&buf, sc); terr != nil {
-		return terr.Error()
-	}
-
-	return buf.String()
-}
-
-//================================================================================================
-
-// Tones defines the set of color tones generated for a base color using the Hamonic tone
-// sets, it provides a very easily set of color variations for use in styles.
-type Tones struct {
-	Base   Color   `json:"base"`
-	Grades []Color `json:"tones"`
-}
-
-// NewTones returns a new Tones object representing the provided color tones if
-// the value provided is a valid color.
-func NewTones(base string) (Tones, error) {
-	c, err := ColorFrom(base)
-	if err != nil {
-		return Tones{}, err
-	}
-
-	return HamonicsFrom(c), nil
-}
-
-// JSON returns the string representation of the provided tone.
-func (t Tones) JSON() string {
-	return fmt.Sprintf(`{
-	"base": %q,
-	"grades": %+q
-  }`, t.Base, t.Grades)
-}
-
-// String returns the string representation of the provided tone.
-func (t Tones) String() string {
-	return fmt.Sprintf(`%q %q`, t.Base, t.Grades)
+	return attr
 }
 
 //================================================================================================
@@ -413,7 +446,7 @@ func HamonicsFrom(c Color) Tones {
 
 	inmax = inmax[1:]
 
-	Reverse(len(min), func(index int) {
+	reverse(len(min), func(index int) {
 		scale = append(scale, min[index])
 	})
 
@@ -621,7 +654,7 @@ func ColorFrom(value string) (Color, error) {
 func GenerateValueScale(base float64, scale float64, minorCount int, majorCount int) ([]float64, []float64) {
 	var major, minor []float64
 
-	Times(minorCount, func(index int) {
+	times(minorCount, func(index int) {
 		if index > 1 {
 			prevValue := minor[len(minor)-1]
 			minor = append(minor, prevValue/scale)
@@ -633,7 +666,7 @@ func GenerateValueScale(base float64, scale float64, minorCount int, majorCount 
 
 	major = append(major, base)
 
-	Times(majorCount, func(index int) {
+	times(majorCount, func(index int) {
 		if index > 1 {
 			prevValue := major[index-1]
 			major = append(major, prevValue*scale)
@@ -646,17 +679,13 @@ func GenerateValueScale(base float64, scale float64, minorCount int, majorCount 
 	return minor, major
 }
 
-// Times using the provided count, runs the function (n-1) number of times, since
-// it starts from zero.
-func Times(n int, fn func(int)) {
+func times(n int, fn func(int)) {
 	for i := 0; i < n; i++ {
 		fn(i + 1)
 	}
 }
 
-// Reverse using the provided count, runs the function (n-1) number of times, since
-// it starts from zero.
-func Reverse(n int, fn func(int)) {
+func reverse(n int, fn func(int)) {
 	for i := n; i > 0; i-- {
 		fn(i - 1)
 	}

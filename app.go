@@ -27,33 +27,31 @@ type Resource struct {
 
 // AppAttr defines a struct for
 type AppAttr struct {
-	Name             string                `json:"name"`
-	Title            string                `json:"title"`
-	Manifests        []shell.AppManifest   `json:"manifests, omitempty"`
-	Router           *router.Router        `json:"-"`
-	Theme            styleguide.StyleGuide `json:"theme"`
-	SkipNormalizeCSS bool                  `json:"skip_normalize_css"`
-	SkipGridCSS      bool                  `json:"skip_grid_css"`
-	SkipFonts        bool                  `json:"skip_fonts"`
+	SkipNormalizeCSS bool
+	SkipGridCSS      bool
+	SkipTheme        bool
+	SkipFonts        bool
+	Name             string
+	Title            string
+	Router           *router.Router
+	Manifests        []shell.AppManifest
+	Theme            styleguide.StyleGuide
 }
 
 // NApp defines a struct which encapsulates all the core view management functions
 // for views.
 type NApp struct {
-	uuid          string
-	attr          AppAttr
-	location      Location
-	router        *router.Router
-	notifications *notifications.AppNotification
-	active        bool
-
-	local       []shell.AppManifest
-	views       []*NView
-	activeViews []*NView
-
+	active          bool
+	uuid            string
+	attr            AppAttr
+	location        Location
+	views           []*NView
+	activeViews     []*NView
 	globalResources []Resource
-
-	tree *trees.Markup
+	tree            *trees.Markup
+	router          *router.Router
+	local           []shell.AppManifest
+	notifications   *notifications.AppNotification
 }
 
 // App creates a new app structure to rendering gu components.
@@ -62,6 +60,13 @@ func App(attr AppAttr) *NApp {
 	app.attr = attr
 	app.uuid = NewKey()
 	app.router = attr.Router
+
+	// If theme is not ready, initialize and panic on error.
+	if !attr.Theme.Ready() {
+		if err := attr.Theme.Init(); err != nil {
+			panic(err)
+		}
+	}
 
 	// Add local notification channel for this giving app.
 	app.notifications = notifications.New(app.uuid)
@@ -325,6 +330,9 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 
 	if !app.attr.SkipGridCSS {
 		head = append(head, elems.Style(elems.Text(baseline.GetSource("grids/grid.css"))))
+	}
+
+	if !app.attr.SkipTheme {
 		head = append(head, elems.Style(elems.Text(app.attr.Theme.CSS())))
 	}
 

@@ -1,6 +1,8 @@
 package styleguide
 
 var (
+	// MaterialPalettes provides material-design chosen color palettes
+	// converted from the material-design spec.
 	MaterialPalettes = map[string][]string{}
 )
 

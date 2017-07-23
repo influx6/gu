@@ -9,13 +9,8 @@ import (
 // the desired colors, brands and settings of your project. It exists for the sake 
 // of where you wish to create use its styles to augment your internal styles.
 var Theme = styleguide.Must(styleguide.Attr{
-	PrimaryColor: 			"#000000",
-	SecondaryColor: 		"#000000",
 	PrimaryBrandColor: 		"#000000",
 	SecondaryBrandColor: 	"#000000",
-	PrimaryWhite: 			"#ffffff",
-	FailureColor: 			"#000000",
-	SuccessColor: 			"#000000",
 })
 
 // Components defines a global registry for components.

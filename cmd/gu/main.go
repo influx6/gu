@@ -36,7 +36,7 @@ var (
 
 	gupath = "github.com/gu-io/gu"
 
-	usage = `Provides a CLi tool which allows deployment and generation of project files for use in development.`
+	usage = `CLI to generate go code for the use in development with Gu.`
 )
 
 func main() {
@@ -557,8 +557,8 @@ func initCommands() {
 
 	commands = append(commands, &cli.Command{
 		Name:        "templates",
-		Usage:       "gu templates --dirName layouts templates",
-		Description: "Generates a package which builds all internal [.html|.xhtml|.xml|.gml|.ghtml|.tml] files into a go file",
+		Usage:       "gu templates --dir=layouts --name=mytemplates",
+		Description: "Generates a package to builds internal files [.html|.xhtml|.xml|.gml|.ghtml|.tml] as a go file",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "name",

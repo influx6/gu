@@ -12,6 +12,3 @@ var Theme = styleguide.Must(styleguide.Attr{
 	PrimaryBrandColor: 		"#000000",
 	SecondaryBrandColor: 	"#000000",
 })
-
-// Components defines a global registry for components.
-var Components = gu.NewComponentRegistry()

@@ -189,6 +189,8 @@ type StyleGuide struct {
 	SmallHeaderScale []float64
 	BigHeaderScale   []float64
 	inited           bool
+	executed         *css.Rule
+	executedString   string
 }
 
 // Must returns the giving style or panics if it fails.
@@ -268,6 +270,20 @@ func (style *StyleGuide) Init() error {
 	}
 
 	style.inited = true
+
+	tml, err := template.New("styleguide").Funcs(helpers).Parse(styleTemplate)
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	if terr := tml.Execute(&buf, style); terr != nil {
+		return terr
+	}
+
+	style.executedString = buf.String()
+	style.executed = css.Plain(style.executedString, nil)
+
 	return err
 }
 
@@ -277,25 +293,15 @@ func (style *StyleGuide) Ready() bool {
 	return style.inited
 }
 
+// CSS returns a css style content for usage with a css stylesheet.
+func (style *StyleGuide) CSS() string {
+	return style.executedString
+}
+
 // Stylesheet returns a css.Rule object which contains the styleguide style
 // rules.
 func (style *StyleGuide) Stylesheet() *css.Rule {
-	return css.New(style.CSS(), nil)
-}
-
-// CSS returns a css style content for usage with a css stylesheet.
-func (style *StyleGuide) CSS() string {
-	tml, err := template.New("styleguide").Funcs(helpers).Parse(styleTemplate)
-	if err != nil {
-		return err.Error()
-	}
-
-	var buf bytes.Buffer
-	if terr := tml.Execute(&buf, style); terr != nil {
-		return terr.Error()
-	}
-
-	return buf.String()
+	return style.executed
 }
 
 //================================================================================================

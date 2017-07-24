@@ -82,6 +82,15 @@ var (
 				return 0
 			}
 		},
+		"multiplyf": func(a, b float64) float64 {
+			return a * b
+		},
+		"subtractf": func(a, b float64) float64 {
+			return a - b
+		},
+		"dividef": func(a, b float64) float64 {
+			return a / b
+		},
 		"multiply": func(a, b int) int {
 			return a * b
 		},

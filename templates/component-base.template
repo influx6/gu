@@ -7,11 +7,6 @@ import (
 	"github.com/gu-io/gu/trees/property"
 )
 
-var _ = Components.Register("{{Name_Lower}}", func(attr map[string]string, template string) gu.Renderable {
-	return New{{Name}}()
-}, false)
-
-
 // {{Name}} defines a component which implements the gu.Renderable interface.
 type {{Name}} struct{
 	gu.Reactive

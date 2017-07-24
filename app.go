@@ -50,6 +50,8 @@ type NApp struct {
 	globalResources []Resource
 	tree            *trees.Markup
 	router          *router.Router
+	resourceHeader  []*trees.Markup
+	resourceBody    []*trees.Markup
 	local           []shell.AppManifest
 	notifications   *notifications.AppNotification
 }
@@ -313,6 +315,10 @@ func (app *NApp) PushViews(event router.PushEvent) []*NView {
 // Resources return the giving resource headers which relate with the
 // view.
 func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
+	if app.resourceHeader != nil && app.resourceBody != nil {
+		return app.resourceHeader, app.resourceBody
+	}
+
 	var head, body []*trees.Markup
 
 	head = append(head, elems.Title(elems.Text(app.attr.Title)))
@@ -381,6 +387,9 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 			body = append(body, markup)
 		}
 	}
+
+	app.resourceBody = body
+	app.resourceHeader = head
 
 	return head, body
 }
@@ -485,6 +494,8 @@ type NView struct {
 	local         []shell.AppManifest
 
 	localResources []Resource
+	resourceHeader []*trees.Markup
+	resourceBody   []*trees.Markup
 
 	beginComponents []*Component
 	anyComponents   []*Component
@@ -589,6 +600,10 @@ func (v *NView) propagateRoute(pe router.PushEvent) {
 // Resources return the giving resource headers which relate with the
 // view.
 func (v *NView) Resources() ([]*trees.Markup, []*trees.Markup) {
+	if v.resourceHeader != nil && v.resourceBody != nil {
+		return v.resourceHeader, v.resourceBody
+	}
+
 	var head, body []*trees.Markup
 
 	for _, def := range v.localResources {
@@ -635,6 +650,9 @@ func (v *NView) Resources() ([]*trees.Markup, []*trees.Markup) {
 			body = append(body, markup)
 		}
 	}
+
+	v.resourceBody = body
+	v.resourceHeader = head
 
 	return head, body
 }

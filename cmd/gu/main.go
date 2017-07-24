@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -11,8 +10,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gu-io/gu/shell"
-	"github.com/gu-io/gu/shell/parse"
 	cli "gopkg.in/urfave/cli.v2"
 )
 
@@ -760,45 +757,6 @@ func initCommands() {
 
 			fmt.Printf("- Adding project file: %q\n", "components/components.go")
 
-			manifestDirPath := filepath.Join(appDir, "manifests")
-			if err = os.MkdirAll(manifestDirPath, 0777); err != nil {
-				return err
-			}
-
-			fmt.Printf("- Adding project directory: %q\n", filepath.Base(manifestDirPath))
-
-			manifestGendata, err := ioutil.ReadFile(filepath.Join(gup, "templates/manifest-generate.template"))
-			if err != nil {
-				return err
-			}
-
-			manifestSource, err := ioutil.ReadFile(filepath.Join(gup, "templates/manifests.template"))
-			if err != nil {
-				return err
-			}
-
-			manifestSource = []byte(fmt.Sprintf("%q", manifestSource))
-			manifestGendata = bytes.Replace(manifestGendata, sourcebytes, manifestSource, 1)
-
-			if err := writeFile(filepath.Join(manifestDirPath, "generate.go"), manifestGendata); err != nil {
-				return err
-			}
-
-			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(manifestDirPath), "generate.go"))
-
-			plainPKGData, err := ioutil.ReadFile(filepath.Join(gup, "templates/plain_generated_pkg.template"))
-			if err != nil {
-				return err
-			}
-
-			plainPKGData = bytes.Replace(plainPKGData, pkgNamebytes, []byte(filepath.Base(manifestDirPath)), -1)
-
-			if err := writeFile(filepath.Join(manifestDirPath, "manifests.go"), plainPKGData); err != nil {
-				return err
-			}
-
-			fmt.Printf("- Adding project file: %q\n", filepath.Join(filepath.Base(manifestDirPath), "manifests.go"))
-
 			// Generate files for the project.
 			switch driver {
 			case "package", "nomain", "empty", "plain":
@@ -861,70 +819,6 @@ func initCommands() {
 				}
 
 				fmt.Printf("- Adding project file: %q\n", "index.html")
-
-			case "osx":
-				// read the full qt template and write into the file.
-				// data, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_osx.template"))
-				// if err != nil {
-				// 	return err
-				// }
-
-				// data = bytes.Replace(data, namebytes, []byte(packageName), -1)
-				// data = bytes.Replace(data, pkgbytes, []byte(appPackagePath), -1)
-
-				// if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
-				// 	return err
-				// }
-
-				// fmt.Printf("- Adding project file: %q\n", "app.go")
-
-			case "win", "edge":
-				// read the full qt template and write into the file.
-				// data, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_win.template"))
-				// if err != nil {
-				// 	return err
-				// }
-
-				// data = bytes.Replace(data, namebytes, []byte(packageName), -1)
-				// data = bytes.Replace(data, pkgbytes, []byte(appPackagePath), -1)
-
-				// if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
-				// 	return err
-				// }
-
-				// fmt.Printf("- Adding project file: %q\n", "app.go")
-
-			case "linux", "gtk":
-				// read the full qt template and write into the file.
-				// data, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_gtk.template"))
-				// if err != nil {
-				// 	return err
-				// }
-
-				// data = bytes.Replace(data, namebytes, []byte(packageName), -1)
-				// data = bytes.Replace(data, pkgbytes, []byte(appPackagePath), -1)
-
-				// if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
-				// 	return err
-				// }
-
-				// fmt.Printf("- Adding project file: %q\n", "app.go")
-
-			case "qt":
-				// read the full qt template and write into the file.
-				// data, err := ioutil.ReadFile(filepath.Join(gup, "templates/app_qt.template"))
-				// if err != nil {
-				// 	return err
-				// }
-
-				// data = bytes.Replace(data, namebytes, []byte(packageName), -1)
-				// data = bytes.Replace(data, pkgbytes, []byte(appPackagePath), -1)
-
-				// if err := writeFile(filepath.Join(indir, packageName, "app.go"), data); err != nil {
-				// 	return err
-				// }
-
-				// fmt.Printf("- Adding project file: %q\n", "app.go")
 			}
 
 			// Change to new app directory.
@@ -936,91 +830,6 @@ func initCommands() {
 		},
 	})
 
-	commands = append(commands, &cli.Command{
-		Name:        "manifests",
-		Usage:       "gu manifests",
-		Description: "Generate a manifest.json file that contains all resources from meta-comments within the package to be embedded",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "input-dir",
-				Aliases: []string{"indir"},
-				Usage:   "in-dir=path-to-dir-to-scan",
-			},
-			&cli.StringFlag{
-				Name:    "output-dir",
-				Aliases: []string{"outdir"},
-				Usage:   "out-dir=path-to-store-manifest-file",
-			},
-		},
-		Action: func(ctx *cli.Context) error {
-			cdir, err := os.Getwd()
-			if err != nil {
-				return err
-			}
-
-			indir := ctx.String("input-dir")
-			outdir := ctx.String("output-dir")
-
-			if indir != "" {
-				if strings.HasPrefix(indir, ".") || !strings.HasPrefix(indir, "/") {
-					indir = filepath.Join(cdir, indir)
-				}
-			} else {
-				indir = cdir
-			}
-
-			if outdir != "" {
-				if strings.HasPrefix(outdir, ".") || !strings.HasPrefix(outdir, "/") {
-					outdir = filepath.Join(cdir, outdir)
-				}
-			} else {
-				outdir = cdir
-			}
-
-			res, err := parse.ShellResources(indir)
-			if err != nil {
-				return err
-			}
-
-			var manifests []*shell.AppManifest
-
-			for _, rs := range res {
-				manifest, merr := rs.GenManifests()
-				if merr != nil {
-					return merr
-				}
-
-				manifests = append(manifests, manifest)
-			}
-
-			manifestJSON, err := json.MarshalIndent(manifests, "", "\t")
-			if err != nil {
-				return err
-			}
-
-			if bytes.Equal(manifestJSON, []byte("null")) {
-				manifestJSON = []byte("{}")
-			}
-
-			manifestFile, err := os.Create(filepath.Join(outdir, "manifest.json"))
-			if err != nil {
-				return err
-			}
-
-			defer manifestFile.Close()
-
-			total, err := manifestFile.Write(manifestJSON)
-			if err != nil {
-				return err
-			}
-
-			if total != len(manifestJSON) {
-				return errors.New("Data written is incomplete")
-			}
-
-			return nil
-		},
-	})
 }
 
 // FindLowerByStat searches the path line down until it's roots to find the directory with the giving

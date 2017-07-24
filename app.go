@@ -6,16 +6,14 @@ import (
 	"strings"
 
 	"github.com/gu-io/gu/drivers/core"
-	"github.com/gu-io/gu/hooks"
 	"github.com/gu-io/gu/notifications"
 	"github.com/gu-io/gu/router"
-	"github.com/gu-io/gu/shell"
 	"github.com/gu-io/gu/trees"
 	"github.com/gu-io/gu/trees/elems"
 	"github.com/gu-io/gu/trees/property"
 	"github.com/gu-io/gu/trees/themes/baseline"
 	"github.com/gu-io/gu/trees/themes/styleguide"
-	"github.com/influx6/faux/reflection"
+	"github.com/gu-io/relicqs/shell"
 )
 
 // Resource defines any set of rendering links, scripts, styles needed by a view.
@@ -41,19 +39,17 @@ type AppAttr struct {
 // NApp defines a struct which encapsulates all the core view management functions
 // for views.
 type NApp struct {
-	active          bool
-	uuid            string
-	attr            AppAttr
-	location        Location
-	views           []*NView
-	activeViews     []*NView
-	globalResources []Resource
-	tree            *trees.Markup
-	router          *router.Router
-	resourceHeader  []*trees.Markup
-	resourceBody    []*trees.Markup
-	local           []shell.AppManifest
-	notifications   *notifications.AppNotification
+	active         bool
+	uuid           string
+	attr           AppAttr
+	location       Location
+	views          []*NView
+	activeViews    []*NView
+	resourceHeader []*trees.Markup
+	resourceBody   []*trees.Markup
+	tree           *trees.Markup
+	router         *router.Router
+	notifications  *notifications.AppNotification
 }
 
 // App creates a new app structure to rendering gu components.
@@ -72,28 +68,6 @@ func App(attr AppAttr) *NApp {
 
 	// Add local notification channel for this giving app.
 	app.notifications = notifications.New(app.uuid)
-
-	// Sort Manifests file accordingly.
-	if attr.Manifests != nil {
-
-		for _, mani := range attr.Manifests {
-			for _, attr := range mani.Manifests {
-				if attr.IsGlobal {
-					hooks.RegisterManifest(attr)
-				}
-			}
-
-			if mani.GlobalScope {
-				app.globalResources = append(app.globalResources, Resource{
-					Manifest: mani,
-				})
-
-				continue
-			}
-
-			app.local = append(app.local, mani)
-		}
-	}
 
 	return &app
 }
@@ -209,15 +183,6 @@ func (app *NApp) RenderJSON(es interface{}) AppJSON {
 		case AfterBodyTarget:
 			afterBody = append(afterBody, view.RenderJSON())
 		}
-
-		viewHead, viewBody := view.Resources()
-		for _, item := range viewHead {
-			tjson.HeadResources = append(tjson.HeadResources, item.TreeJSON())
-		}
-
-		for _, item := range viewBody {
-			tjson.BodyResources = append(tjson.BodyResources, item.TreeJSON())
-		}
 	}
 
 	tjson.Body = append(tjson.Body, afterBody...)
@@ -264,14 +229,6 @@ func (app *NApp) Render(es interface{}) *trees.Markup {
 		case AfterBodyTarget:
 			view.Render().Apply(last)
 		}
-
-		viewHead, viewBody := view.Resources()
-
-		// Add the headers into the header so they load accordingly.
-		head.AddChild(viewHead...)
-
-		// Append the resources into the body has we need them last.
-		toBody = append(toBody, viewBody...)
 	}
 
 	script := trees.NewMarkup("script", false)
@@ -342,54 +299,8 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 		head = append(head, elems.Style(elems.Text(app.attr.Theme.CSS())))
 	}
 
-	for _, def := range app.globalResources {
-		if def.body != nil || def.head != nil {
-			head = append(head, def.head...)
-			body = append(body, def.body...)
-			continue
-		}
-
-		if def.Manifest.Manifests == nil {
-			continue
-		}
-
-		for _, manifest := range def.Manifest.Manifests {
-			if !manifest.Init {
-				continue
-			}
-
-			hook, err := hooks.Get(manifest.HookName)
-			if err != nil {
-				fmt.Printf("Hook[%q] does not exists: Resource[%q] unable to install\n", manifest.HookName, manifest.Name)
-				continue
-			}
-
-			markup, toHead, err := hook.Fetch(app.router, manifest)
-			if err != nil {
-				fmt.Printf("Hook[%q] failed to retrieve Resource {Name: %q, Path: %q}\n", manifest.HookName, manifest.Name, manifest.Path)
-				continue
-			}
-
-			trees.NewAttr("gu-resource", "true").Apply(markup)
-			trees.NewAttr("gu-resource-view", app.uuid).Apply(markup)
-			trees.NewAttr("gu-resource-from", manifest.Path).Apply(markup)
-			trees.NewAttr("gu-resource-name", manifest.Name).Apply(markup)
-			trees.NewAttr("gu-resource-id", manifest.ID).Apply(markup)
-			trees.NewAttr("gu-resource-app-id", app.uuid).Apply(markup)
-
-			if toHead {
-				def.head = append(def.head, markup)
-				head = append(head, markup)
-				continue
-			}
-
-			def.body = append(def.body, markup)
-			body = append(body, markup)
-		}
-	}
-
-	app.resourceBody = body
 	app.resourceHeader = head
+	app.resourceBody = body
 
 	return head, body
 }
@@ -443,7 +354,6 @@ func (app *NApp) View(attr ViewAttr) *NView {
 	// vw.location = app.location
 	vw.notifications = app.notifications
 	vw.Reactive = NewReactive()
-	vw.local = app.local
 
 	vw.router = router.New(attr.Route)
 
@@ -491,11 +401,6 @@ type NView struct {
 	notifications *notifications.AppNotification
 
 	renderingData []RenderableData
-	local         []shell.AppManifest
-
-	localResources []Resource
-	resourceHeader []*trees.Markup
-	resourceBody   []*trees.Markup
 
 	beginComponents []*Component
 	anyComponents   []*Component
@@ -595,66 +500,6 @@ func (v *NView) Attr() ViewAttr {
 // propagateRoute supplies the needed route into the provided
 func (v *NView) propagateRoute(pe router.PushEvent) {
 	v.router.Resolve(pe)
-}
-
-// Resources return the giving resource headers which relate with the
-// view.
-func (v *NView) Resources() ([]*trees.Markup, []*trees.Markup) {
-	if v.resourceHeader != nil && v.resourceBody != nil {
-		return v.resourceHeader, v.resourceBody
-	}
-
-	var head, body []*trees.Markup
-
-	for _, def := range v.localResources {
-		if def.body != nil || def.head != nil {
-			head = append(head, def.head...)
-			body = append(body, def.body...)
-			continue
-		}
-
-		if def.Manifest.Manifests == nil {
-			continue
-		}
-
-		for _, manifest := range def.Manifest.Manifests {
-			if !manifest.Init {
-				continue
-			}
-
-			hook, err := hooks.Get(manifest.HookName)
-			if err != nil {
-				fmt.Printf("Hook[%q] does not exists: Resource[%q] unable to install\n", manifest.HookName, manifest.Name)
-				continue
-			}
-
-			markup, toHead, err := hook.Fetch(v.root.router, manifest)
-			if err != nil {
-				fmt.Printf("Hook[%q] failed to retrieve Resource {Name: %q, Path: %q}\n", manifest.HookName, manifest.Name, manifest.Path)
-				continue
-			}
-
-			trees.NewAttr("gu-resource", "true").Apply(markup)
-			trees.NewAttr("gu-resource-view", v.uuid).Apply(markup)
-			trees.NewAttr("gu-resource-from", manifest.Path).Apply(markup)
-			trees.NewAttr("gu-resource-name", manifest.Name).Apply(markup)
-			trees.NewAttr("gu-resource-id", manifest.ID).Apply(markup)
-
-			if toHead {
-				def.head = append(def.head, markup)
-				head = append(head, markup)
-				continue
-			}
-
-			def.body = append(def.body, markup)
-			body = append(body, markup)
-		}
-	}
-
-	v.resourceBody = body
-	v.resourceHeader = head
-
-	return head, body
 }
 
 // Unmounted publishes changes notifications that the component is unmounted.
@@ -796,25 +641,11 @@ func (v *NView) Component(attr ComponentAttr) {
 				service.RegisterServices(appServices)
 			}
 
-			if renderField, _, err := reflection.StructAndEmbeddedTypeNames(mo); err == nil {
-				v.renderingData = append(v.renderingData, RenderableData{
-					Name: renderField.TypeName,
-					Pkg:  renderField.Pkg,
-				})
-			}
-
 			c.Rendering = mo
 			break
 
 		case func(Services) Renderable:
 			rc := mo(appServices)
-
-			if renderField, _, err := reflection.StructAndEmbeddedTypeNames(rc); err == nil {
-				v.renderingData = append(v.renderingData, RenderableData{
-					Name: renderField.TypeName,
-					Pkg:  renderField.Pkg,
-				})
-			}
 
 			c.Rendering = rc
 			break
@@ -824,13 +655,6 @@ func (v *NView) Component(attr ComponentAttr) {
 
 			if service, ok := rc.(RegisterServices); ok {
 				service.RegisterServices(appServices)
-			}
-
-			if renderField, _, err := reflection.StructAndEmbeddedTypeNames(rc); err == nil {
-				v.renderingData = append(v.renderingData, RenderableData{
-					Name: renderField.TypeName,
-					Pkg:  renderField.Pkg,
-				})
 			}
 
 			c.Rendering = rc
@@ -876,23 +700,6 @@ func (v *NView) Component(attr ComponentAttr) {
 
 	// Register the component router into the views router.
 	v.router.Register(c.Router)
-
-	// Collect necessary app manifest that connect with rendering.
-	{
-		for _, relation := range v.renderingData {
-			if app, err := shell.FindByRelation(v.local, relation.Name); err == nil {
-				if v.hasRelation(app.Name) {
-					continue
-				}
-
-				v.localResources = append(v.localResources, Resource{
-					Manifest: app,
-				})
-
-				initRelation(v, app, v.local)
-			}
-		}
-	}
 
 	// Send call for view update.
 	// v.driver.Update(v.root, v)
@@ -981,17 +788,6 @@ func (v *NView) hasRenderable(name string) bool {
 	return false
 }
 
-// hasRelation returns true/false if a giving manifests name exists.
-func (v *NView) hasRelation(name string) bool {
-	for _, rd := range v.localResources {
-		if rd.Manifest.Name == name {
-			return true
-		}
-	}
-
-	return false
-}
-
 //==============================================================================
 
 // StaticView defines a MarkupRenderer implementing structure which returns its Content has
@@ -1040,33 +836,3 @@ func (s *StaticView) RenderHTML() template.HTML {
 }
 
 //==============================================================================
-
-// initRelation walks down the provided app relation adding the giving AppManifest
-// which connect with this if not already in the list.
-func initRelation(views *NView, app shell.AppManifest, relations []shell.AppManifest) {
-	for _, relation := range app.Relation.Composites {
-		if related, err := shell.FindByRelation(relations, relation); err == nil {
-			if !views.hasRelation(related.Name) {
-
-				views.localResources = append(views.localResources, Resource{
-					Manifest: related,
-				})
-
-				initRelation(views, related, relations)
-			}
-		}
-	}
-
-	for _, field := range app.Relation.FieldTypes {
-		if related, err := shell.FindByRelation(relations, field); err == nil {
-			if !views.hasRelation(related.Name) {
-
-				views.localResources = append(views.localResources, Resource{
-					Manifest: related,
-				})
-
-				initRelation(views, related, relations)
-			}
-		}
-	}
-}

@@ -2,7 +2,6 @@
 
 //go:generate go generate ./assets/...
 //go:generate go generate ./components/...
-//go:generate go generate ./manifests/...
 //go:generate go get github.com/gopherjs/gopherjs
 //go generate go install {{GOPATH}}/github.com/gopherjs/gopherjs/...
 //go:generate gopherjs build -o assets/{{Name}}.js
@@ -16,7 +15,6 @@ import (
 	"github.com/gu-io/gu/router"
 	"github.com/gu-io/gu/router/cache"
 	"github.com/gu-io/gopherjs"
-	"{{PKG}}/manifests"
 	"{{PKG}}/components"
 )
 
@@ -51,7 +49,6 @@ func main() {
 	app := gu.App(gu.AppAttr{
 		Name:              "{{Name}}",
 		Title:             "{{Name}} App",
-		Manifests:         manifests.Manifests,
 		Router: 		   router,
 		Theme:			   components.Theme,
 	})

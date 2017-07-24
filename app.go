@@ -13,15 +13,7 @@ import (
 	"github.com/gu-io/gu/trees/property"
 	"github.com/gu-io/gu/trees/themes/baseline"
 	"github.com/gu-io/gu/trees/themes/styleguide"
-	"github.com/gu-io/relicqs/shell"
 )
-
-// Resource defines any set of rendering links, scripts, styles needed by a view.
-type Resource struct {
-	Manifest shell.AppManifest
-	body     []*trees.Markup
-	head     []*trees.Markup
-}
 
 // AppAttr defines a struct for
 type AppAttr struct {
@@ -32,7 +24,6 @@ type AppAttr struct {
 	Name             string
 	Title            string
 	Router           *router.Router
-	Manifests        []shell.AppManifest
 	Theme            styleguide.StyleGuide
 }
 

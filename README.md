@@ -118,7 +118,8 @@ Advantages
 Examples
 --------
 
-The github repo [Examples](https://github.com/gu-io/components), provides examples demonstrating the usage of the Gu library in building applications.
+The github repo [Components](https://github.com/gu-io/components) contains gu style components that
+showcases how to build components with gu. 
 
 Concepts
 --------

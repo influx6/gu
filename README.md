@@ -16,7 +16,7 @@ go get -u github.com/gu-io/gu/...
 Example
 -------
 
-![Greeter Example](./media/greeter.jpg)
+![Greeter Example](./media/greeter.png)
 ![Components Example](./media/components.jpg)
 
 
@@ -119,7 +119,7 @@ Examples
 --------
 
 The github repo [Components](https://github.com/gu-io/components) contains gu style components that
-showcases how to build components with gu. 
+showcases how to build components with gu.
 
 Concepts
 --------

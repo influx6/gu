@@ -17,7 +17,7 @@ Example
 -------
 
 ![Greeter Example](./media/greeter.png)
-![Components Example](./media/components.jpg)
+![Components Example](./media/components.jpeg)
 
 
 CLI

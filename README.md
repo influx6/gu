@@ -16,9 +16,9 @@ go get -u github.com/gu-io/gu/...
 Example
 -------
 
-![GopherJS Example](./media/greeter.png)
+![Greeter Example](./media/greeter.jpg)
+![Components Example](./media/components.jpg)
 
-The example above can be found in the [Example Repo](https://github.com/gu-io/examples/tree/master/greeter).
 
 CLI
 ---
@@ -118,7 +118,7 @@ Advantages
 Examples
 --------
 
-The github repo [Examples](https://github.com/gu-io/examples), provides examples demonstrating the usage of the Gu library in building applications.
+The github repo [Examples](https://github.com/gu-io/components), provides examples demonstrating the usage of the Gu library in building applications.
 
 Concepts
 --------
@@ -136,8 +136,6 @@ Gu is fundamentally a library built to provide rendering capabilities with simpl
 -	[Drivers](./docs/concepts/drivers.md)
 
 -	[App, Views, Component](./docs/concepts/app.md)
-
--	[Embeddable Resources](./docs/concepts/embedded-resources.md)
 
 -	[Style Guides](./docs/concepts/theme.md)
 

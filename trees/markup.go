@@ -29,14 +29,12 @@ type Markup struct {
 	idSelector    string
 	textContentFn func(*Markup) string
 
-	events         []Event
-	children       []*Markup
-	styles         []Property
-	attrs          []Property
-	morphers       []Morpher
-	finalizers     []FinalizeHandle
-	onceFinalizers []FinalizeHandle
-	parent         *Markup
+	events   []Event
+	children []*Markup
+	styles   []Property
+	attrs    []Property
+	morphers []Morpher
+	parent   *Markup
 }
 
 // NewText returns a new Text instance element
@@ -136,8 +134,6 @@ func (e *Markup) Empty() {
 	e.events = nil
 	e.styles = nil
 	e.morphers = nil
-	e.finalizers = nil
-	e.onceFinalizers = nil
 }
 
 // MarkupJSON defines a struct which contains the giving events and

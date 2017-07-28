@@ -31,9 +31,7 @@ type Event struct {
 	StopImmediatePropagation bool
 	Tree                     *Markup
 	Handle                   mque.End
-	// eventSelector            string
-	// peventSelector           string
-	secTarget string
+	secTarget                string
 }
 
 // NewEvent returns a event object that allows registering events to eventlisteners.
@@ -136,8 +134,6 @@ func (e *Event) Apply(ex *Markup) {
 	}
 
 	e.Tree = ex
-	// e.eventSelector = ex.IDSelector(false)
-	// e.peventSelector = ex.IDSelector(true)
 
 	ex.AddEvent(*e)
 }

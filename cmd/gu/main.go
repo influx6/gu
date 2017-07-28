@@ -10,6 +10,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/gu-io/gu/generators"
+	"github.com/influx6/faux/metrics"
+	"github.com/influx6/faux/metrics/sentries/stdout"
+	"github.com/influx6/moz/annotations"
+	"github.com/influx6/moz/ast"
 	cli "gopkg.in/urfave/cli.v2"
 )
 
@@ -17,6 +22,7 @@ var (
 	version     = "0.0.1"
 	defaultName = "manifests"
 	commands    = []*cli.Command{}
+	events      = metrics.New(stdout.Stdout{})
 
 	namebytes         = []byte("{{Name}}")
 	pkgbytes          = []byte("{{PKG}}")
@@ -824,6 +830,54 @@ func initCommands() {
 			// Change to new app directory.
 			if err := os.Chdir(filepath.Join(indir, packageName)); err != nil {
 				return nil
+			}
+
+			return nil
+		},
+	})
+
+	commands = append(commands, &cli.Command{
+		Name:        "generate",
+		Usage:       "gu generate",
+		Description: "Generate will call needed code generators to create project assets and files as declared by the project and it's sources",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "dir",
+				Aliases: []string{"dir"},
+				Usage:   "dir=./my-gu-project",
+			},
+		},
+		Action: func(ctx *cli.Context) error {
+			args := ctx.Args()
+			if args.Len() == 0 {
+				return nil
+			}
+
+			indir := ctx.String("dir")
+
+			if indir == "" {
+				cdir, err := os.Getwd()
+				if err != nil {
+					return err
+				}
+
+				indir = cdir
+			}
+
+			register := ast.NewAnnotationRegistry()
+
+			generators.RegisterGenerators(register)
+
+			// Register @assets annotation for our registery as well.
+			register.Register("assets", annotations.AssetsAnnotationGenerator)
+
+			pkgs, err := ast.ParseAnnotations(events, indir)
+			if err != nil {
+				return err
+			}
+
+			if err := ast.Parse(events, register, pkgs...); err != nil {
+				return err
 			}
 
 			return nil

@@ -11,17 +11,12 @@ type AppEvent struct {
 
 // AppNotification defines a structure which provides a local notification
 // framework for the pubsub.
-func AppNotification(uid string) {
-	// var app AppNotification
-	// app.uid = uid
+func AppNotification(uid string) *AppEventNotification {
+	app := NewAppEventNotificationWith(func(ev AppEvent) bool {
+		return ev.UUID == uid
+	})
 
-	// Subscribe(func(event AppEvent) {
-	// 	if event.UUID != app.uid {
-	// 		return
-	// 	}
+	Subscribe(app)
 
-	// 	app.Dispatch(event.Event)
-	// })
-
-	// return &app
+	return app
 }

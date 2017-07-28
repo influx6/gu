@@ -18,7 +18,7 @@ type CSSItems struct {
 }
 
 // Generate returns a new CSSItems if it exists for the provided address.
-func (c *CSSItems) Generate() []map[string]interface{} {
+func (c CSSItems) Generate() []map[string]interface{} {
 	var sets []map[string]interface{}
 
 	for _, style := range c.Styles {
@@ -91,7 +91,7 @@ type CSSItem struct {
 }
 
 // ParseDir returns a new instance of all CSS files located within the provided directory.
-func ParseDir(dir string) (*CSSItems, error) {
+func ParseDir(dir string) (CSSItems, error) {
 	var items CSSItems
 	items.Styles = make([]CSSItem, 0)
 	items.Dirs = make(map[string][]int)
@@ -105,7 +105,7 @@ func ParseDir(dir string) (*CSSItems, error) {
 
 		return nil
 	}); cerr != nil {
-		return nil, cerr
+		return CSSItems{}, cerr
 	}
 
 	// Run through all dirs and find related subdirectories.
@@ -123,7 +123,7 @@ func ParseDir(dir string) (*CSSItems, error) {
 		items.Dirs[key] = subs
 	}
 
-	return &items, nil
+	return items, nil
 }
 
 var allowedExtensions = []string{".xss", ".cssx", ".mss", ".css", ".gcss"}

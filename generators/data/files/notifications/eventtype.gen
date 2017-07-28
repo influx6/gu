@@ -1,17 +1,64 @@
-package {{.Package.Name}}
-
-// {{.Struct.Object.Name}}Subscriber defines a interface that which is used to subscribe specifically for 
+// {{.Struct.Object.Name}}Subscriber defines a interface that which is used to subscribe specifically for
 // events  {{.Struct.Object.Name}} type.
 type {{.Struct.Object.Name}}Subscriber interface{
     Receive({{.Struct.Object.Name}})
 }
 
-// {{.Struct.Object.Name}}Notification defines a structure type which must be used to 
+//=========================================================================================================
+
+// {{.Struct.Object.Name}}Handler defines a structure type which implements the
+// {{.Struct.Object.Name}}Subscriber interface and the EventDistributor interface.
+type {{.Struct.Object.Name}}Handler struct{
+    handle func({{.Struct.Object.Name}})
+}
+
+// New{{.Struct.Object.Name}}Handler returns a new instance of a {{.Struct.Object.Name}}Handler.
+func New{{.Struct.Object.Name}}Handler(fn func({{.Struct.Object.Name}})) *{{.Struct.Object.Name}}Handler {
+    return &{{.Struct.Object.Name}}Handler{
+        handle: fn,
+    }
+}
+
+// Receive takes the giving value and execute it against the underline handler.
+func (sn *{{.Struct.Object.Name}}Handler) Receive(elem {{.Struct.Object.Name}}){
+    sn.handle(elem)
+}
+
+// Handle takes the giving value and asserts the expected value to match the
+// {{.Struct.Object.Name}} type then passes it to the Receive method.
+func (sn *{{.Struct.Object.Name}}Handler) Handle(receive interface{}){
+    if elem, ok := receive.({{.Struct.Object.Name}}); ok {
+        sn.Receive(elem)
+    }
+}
+
+//=========================================================================================================
+
+// {{.Struct.Object.Name}}Notification defines a structure type which must be used to
 // receive {{.Struct.Object.Name}} type has a event.
 type {{.Struct.Object.Name}}Notification struct{
     sml sync.Mutex
     subs []{{.Struct.Object.Name}}Subscriber
-    register map[{{.Struct.Object.Name}}Subscriber]
+    validation func({{.Struct.Object.Name}}) bool
+    register map[{{.Struct.Object.Name}}Subscriber]int
+}
+
+// New{{.Struct.Object.Name}}NotificationWith returns a new instance of {{.Struct.Object.Name}}Notification.
+func New{{.Struct.Object.Name}}NotificationWith(validation func({{.Struct.Object.Name}}) bool) *{{.Struct.Object.Name}}Notification{
+    var elem {{.Struct.Object.Name}}Notification
+
+    elem.validation = validation
+    elem.register = make(map[{{.Struct.Object.Name}}Subscriber]int, 0)
+
+    return &elem
+}
+
+// New{{.Struct.Object.Name}}Notification returns a new instance of New{{.Struct.Object.Name}}Notification.
+func New{{.Struct.Object.Name}}Notification() *{{.Struct.Object.Name}}Notification{
+    var elem {{.Struct.Object.Name}}Notification
+    elem.register = make(map[{{.Struct.Object.Name}}Subscriber]int, 0)
+
+    return &elem
 }
 
 // UnNotify removes the given subscriber from the notification's list if found from future events.
@@ -26,7 +73,7 @@ func (sn *{{.Struct.Object.Name}}Notification) UnNotify(sub {{.Struct.Object.Nam
     })
 }
 
-// Notify adds the given subscriber into the notification list and will await an update of 
+// Notify adds the given subscriber into the notification list and will await an update of
 // a new event of the given {{.Struct.Object.Name}} type.
 func (sn *{{.Struct.Object.Name}}Notification) Notify(sub {{.Struct.Object.Name}}Subscriber){
     sn.do(func(){
@@ -35,21 +82,33 @@ func (sn *{{.Struct.Object.Name}}Notification) Notify(sub {{.Struct.Object.Name}
     })
 }
 
-// Handle takes the giving value and asserts the expected value to be of 
+// Handle takes the giving value and asserts the expected value to be of
 // the type and pass on to it's underline subscribers else ignoring the event.
 func (sn *{{.Struct.Object.Name}}Notification) Handle(elem interface{}){
-    sn.do(func(){
-        for _, sub := range sn.subs {
-            sn(elem)
+    if elemEvent, ok := elem.({{.Struct.Object.Name}}); ok {
+        if sn.validation != nil && sn.validation(elemEvent)  {
+            sn.do(func(){
+                for _, sub := range sn.subs {
+                    sub.Receive(elemEvent)
+                }
+            })
+
+            return
         }
-    })
+
+        sn.do(func(){
+            for _, sub := range sn.subs {
+                sub.Receive(elemEvent)
+            }
+        })
+    }
 }
 
-// do performs action with the mutex locked and unlocked appropriately, ensuring safe 
+// do performs action with the mutex locked and unlocked appropriately, ensuring safe
 // concurrent access.
-func (sn *{{.Struct.Name}}Notification) do(fn func()){
+func (sn *{{.Struct.Object.Name}}Notification) do(fn func()){
     if fn == nil {
-        return nil
+        return
     }
 
     sn.sml.Lock()

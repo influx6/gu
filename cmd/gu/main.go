@@ -842,18 +842,13 @@ func initCommands() {
 		Description: "Generate will call needed code generators to create project assets and files as declared by the project and it's sources",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "dir",
+				Name:    "inputdir",
 				Aliases: []string{"dir"},
 				Usage:   "dir=./my-gu-project",
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			args := ctx.Args()
-			if args.Len() == 0 {
-				return nil
-			}
-
-			indir := ctx.String("dir")
+			indir := ctx.String("inputdir")
 
 			if indir == "" {
 				cdir, err := os.Getwd()
@@ -873,10 +868,12 @@ func initCommands() {
 
 			pkgs, err := ast.ParseAnnotations(events, indir)
 			if err != nil {
+				events.Emit(stdout.Error(err).With("dir", indir).With("message", "Failed to parse package annotations"))
 				return err
 			}
 
 			if err := ast.Parse(events, register, pkgs...); err != nil {
+				events.Emit(stdout.Error(err).With("dir", indir).With("message", "Failed to parse package annotations"))
 				return err
 			}
 

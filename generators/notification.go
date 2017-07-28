@@ -2,15 +2,20 @@ package generators
 
 import (
 	"fmt"
+	"strings"
 	"text/template"
 
+	"github.com/influx6/faux/fmtwriter"
+
+	"github.com/gu-io/gu/generators/data"
 	"github.com/influx6/moz/ast"
 	"github.com/influx6/moz/gen"
-	"github.com/influx6/moz/gen/templates"
 )
 
 // NotificationTypeGenerator which defines a  function for generating a type for receiving a giving
 //	struct type has a notification type which can then be wired as a notification.EventDistributor.
+//
+//	Annotation: @notification:event
 //
 //	Usage:
 //	We want users to be able to define a type within their source code where they can use an annotation to mark such
@@ -25,18 +30,15 @@ import (
 //
 //
 func NotificationTypeGenerator(an ast.AnnotationDeclaration, str ast.StructDeclaration, pkg ast.PackageDeclaration) ([]gen.WriteDirective, error) {
-	eventFileName := fmt.Sprintf("%s_event.go", str.Object.Name)
+	eventFileName := fmt.Sprintf("%s_event.go", strings.ToLower(str.Object.Name.Name))
 
 	typeGen := gen.Block(
-		gen.Commentary(
-			gen.Text(""),
-		),
 		gen.Package(
 			gen.Name(pkg.Package),
 			gen.Imports(),
 			gen.Block(
 				gen.SourceTextWith(
-					string(templates.Must("notifications/eventtype.gen")),
+					string(data.Must("notifications/eventtype.gen")),
 					template.FuncMap{},
 					struct {
 						Struct  ast.StructDeclaration
@@ -53,9 +55,9 @@ func NotificationTypeGenerator(an ast.AnnotationDeclaration, str ast.StructDecla
 	return []gen.WriteDirective{
 		{
 			Dir:          "./",
-			DontOverride: true,
-			Writer:       typeGen,
+			DontOverride: false,
 			FileName:     eventFileName,
+			Writer:       fmtwriter.New(typeGen, true, true),
 		},
 	}, nil
 }

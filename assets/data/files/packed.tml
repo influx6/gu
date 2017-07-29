@@ -1,0 +1,207 @@
+type fileData struct{
+  path string
+  root string
+  data []byte
+}
+
+var (
+  assets = map[string][]string{
+    {{ range $ext, $directives := .Directives }}
+      {{ quote $ext}}: []string{  // all {{ $ext }} assets.
+        {{ range $directives }}
+          {{quote .OriginPath}},
+        {{ end }}
+      },
+    {{ end }}
+  },
+
+  assetFiles = map[string]fileData{
+    {{ range $ext, $directives := .Directives }}
+      {{ range $directives }}
+        { // all {{ $ext }} assets.
+          data: "{{ .Read }}",
+          path: {{ .OriginPath }},
+          root: {{ .OriginAbsRoot }},
+        },
+      {{ end }}
+    {{ end}}
+  }
+)
+
+//==============================================================================
+
+// FilesFor returns all files that use the provided extension, returning a
+// empty/nil slice if none is found.
+func FilesFor(ext string) []string {
+  return assets[ext]
+}
+
+// MustFindFile calls FindFile to retrieve file reader with path else panics.
+func MustFindFile(path string, doGzip bool) io.Reader {
+  reader, err := FindFile(path, doGzip)
+  if err != nil {
+    panic(err)
+  }
+
+  return reader
+}
+
+// FindFile returns a io.Reader by seeking the giving file path if it exists.
+func FindFile(path string, doGzip bool) (io.Reader, error){
+  item, ok := assetFiles[path]
+  if !ok {
+    return nil, fmt.Errorf("File %q not found in file system", path)
+  }
+
+  if !doGzip {
+    return bytes.NewReader(item.data), nil
+  }
+
+  return gzip.NewReader(bytes.NewReader(item.data)), nil
+}
+
+// MustReadFile calls ReadFile to retrieve file content with path else panics.
+func MustReadFile(path string, doGzip bool) []byte {
+  body, err := ReadFile(path, doGzip)
+  if err != nil {
+    panic(err)
+  }
+
+  return body
+}
+
+// ReadFile attempts to return the underline data associated with the given path
+// if it exists else returns an error.
+func ReadFile(path string, doGzip bool) ([]byte, error){
+  reader, err := FindFile(path, doGzip)
+  if err != nil {
+    return nil, err
+  }
+
+  var bu bytes.Buffer
+
+  if _, err := io.Copy(&bu, reader); err != nil && err != io.EOF{
+    return nil, err
+  }
+
+  return bu.Bytes(), nil
+}
+
+//==============================================================================
+
+// FileSystem defines a struct to implement http.FileSystem for serving request
+// for registered files in assetsFiles.
+type FileSystem struct{
+  Decompress bool
+}
+
+// Open checks for the giving filepath returning a structure that implements the
+// http.File else an error.
+func (f FileSystem) Open(path string) (http.File, error){
+  item, ok := assetFiles[path]
+  if !ok {
+    return nil, fmt.Errorf("File %q not found in file system", path)
+  }
+
+  var zipper *gzip.Reader
+
+  reader := bytes.NewReader(item.data)
+
+  if f.Decompress {
+    zipper = gzip.NewReader(reader)
+  }
+
+  return &dodFile{
+		Reader: reader,
+    gzipper: zipper,
+		Info: &dodInfo{
+			FileName: item.path,
+			FileSize: int64(len(item.data)),
+		},
+  }, nil
+}
+
+//==============================================================================
+
+// dodFile defines a standin structure for a giving http.File object.
+type dodFile struct {
+	Info   os.FileInfo
+	Dirs   []os.FileInfo
+	Reader *bytes.Reader
+  gzipper *gzip.Reader
+}
+
+// Read reads data into the byte slice.
+func (d *dodFile) Read(b []byte) (int, error) {
+	return d.gzipper.Read(b)
+}
+
+// Seek implements the io.Seeker interface.
+func (d *dodFile) Seek(offset int64, whence int) (int64, error) {
+	return d.Reader.Seek(offset, whence)
+}
+
+// Close returns nil always.
+func (d *dodFile) Close() error {
+  if d.gzipper != nil {
+  	return d.gzipper.Close()
+  }
+
+  return nil
+}
+
+// Stat returns the FileInfo associated wih the dodfile.
+func (d dodFile) Stat() (os.FileInfo, error) {
+	return d.Info, nil
+}
+
+// Readdir returns the Dirs field as the list of directories.
+func (d dodFile) Readdir(dm int) ([]os.FileInfo, error) {
+	return d.Dirs, nil
+}
+
+// dodInfo implements the FileInfo for usage as a os.FileInfo.
+type dodInfo struct {
+	FileName string
+	FileSize int64
+}
+
+// Sys returns always nil.
+func (m dodInfo) Sys() interface{} {
+	return nil
+}
+
+// Mode returns the current time.
+func (m dodInfo) Mode() os.FileMode {
+	return 0777
+}
+
+// ModTime returns the current time.
+func (m dodInfo) ModTime() time.Time {
+	return time.Now()
+}
+
+// Size returns the size associated for the structure.
+func (m dodInfo) Size() int64 {
+	return m.FileSize
+}
+
+// IsDir returns always false.
+func (m dodInfo) IsDir() bool {
+	return false
+}
+
+// IsRegular reports whether m describes a regular file.
+func (m dodInfo) IsRegular() bool {
+	return true
+}
+
+// Perm returns the Unix permission bits in m.
+func (m dodInfo) Perm() os.FileMode {
+	return 0700
+}
+
+// Name returns the name associated for the dodInfo
+func (m dodInfo) Name() string {
+	return m.FileName
+}

@@ -1,0 +1,21 @@
+// Package {{PKGNAME}} is an auto-generated package which exposes the Gu.NApp which
+// can be created to use the constructed views if any. Edit as you see fit.
+
+//go:generate go generate ./assets/...
+//go:generate go generate ./components/...
+
+package {{PKGNAME}}
+
+import (
+    "net/http"
+	"github.com/gu-io/gu"
+	"github.com/gu-io/gu/router"
+	"github.com/gu-io/gu/router/cache"
+	"github.com/gu-io/gu/router/cache/memorycache"
+)
+
+// Contains package level instances.
+var (
+  AppRouter  = router.New(nil, memorycache.New())
+  App = gu.App(AppRouter)
+)

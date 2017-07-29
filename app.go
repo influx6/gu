@@ -10,29 +10,14 @@ import (
 	"github.com/gu-io/gu/router"
 	"github.com/gu-io/gu/trees"
 	"github.com/gu-io/gu/trees/elems"
-	"github.com/gu-io/gu/trees/property"
-	"github.com/gu-io/gu/trees/themes/baseline"
-	"github.com/gu-io/gu/trees/themes/styleguide"
 )
-
-// AppAttr defines a struct for
-type AppAttr struct {
-	SkipNormalizeCSS bool
-	SkipGridCSS      bool
-	SkipTheme        bool
-	SkipFonts        bool
-	Name             string
-	Title            string
-	Router           *router.Router
-	Theme            styleguide.StyleGuide
-}
 
 // NApp defines a struct which encapsulates all the core view management functions
 // for views.
 type NApp struct {
 	active         bool
+	title          string
 	uuid           string
-	attr           AppAttr
 	location       Location
 	views          []*NView
 	activeViews    []*NView
@@ -40,25 +25,14 @@ type NApp struct {
 	resourceBody   []*trees.Markup
 	tree           *trees.Markup
 	router         *router.Router
-	notifications  *notifications.AppNotification
 }
 
 // App creates a new app structure to rendering gu components.
-func App(attr AppAttr) *NApp {
+func App(title string, router *router.Router) *NApp {
 	var app NApp
-	app.attr = attr
+	app.title = title
 	app.uuid = NewKey()
-	app.router = attr.Router
-
-	// If theme is not ready, initialize and panic on error.
-	if !attr.Theme.Ready() {
-		if err := attr.Theme.Init(); err != nil {
-			panic(err)
-		}
-	}
-
-	// Add local notification channel for this giving app.
-	app.notifications = notifications.New(app.uuid)
+	app.router = router
 
 	return &app
 }
@@ -91,11 +65,6 @@ func (app *NApp) initSanitCheck() {
 
 	// Use the NoopLocation since we have not being set.
 	app.location = NewNoopLocation(app)
-}
-
-// Notifications returns the underlying AppNotification pipeline for access.
-func (app *NApp) Notifications() *notifications.AppNotification {
-	return app.notifications
 }
 
 // Active returns true/false if the giving app is active and has already
@@ -150,8 +119,7 @@ func (app *NApp) RenderJSON(es interface{}) AppJSON {
 	}
 
 	var tjson AppJSON
-	tjson.Name = app.attr.Name
-	tjson.Title = app.attr.Title
+	tjson.Name = app.title
 
 	toHead, toBody := app.Resources()
 
@@ -269,26 +237,12 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 
 	var head, body []*trees.Markup
 
-	head = append(head, elems.Title(elems.Text(app.attr.Title)))
+	head = append(head, elems.Title(elems.Text(app.title)))
 	head = append(head, elems.Meta(trees.NewAttr("gu-app-id", app.uuid)))
-	head = append(head, elems.Meta(trees.NewAttr("gu-app-name", app.attr.Name)))
-	head = append(head, elems.Meta(trees.NewAttr("gu-app-title", app.attr.Title)))
 
-	if !app.attr.SkipNormalizeCSS {
-		head = append(head, elems.Style(elems.Text(baseline.GetSource("normalize/normalize.css"))))
-	}
-
-	if !app.attr.SkipFonts {
-		head = append(head, elems.Link(property.HrefAttr("https://fonts.googleapis.com/css?family=Monoton|Noto+Sans|Noto+Serif|Roboto|Roboto+Condensed|Roboto+Mono")))
-	}
-
-	if !app.attr.SkipGridCSS {
-		head = append(head, elems.Style(elems.Text(baseline.GetSource("grids/grid.css"))))
-	}
-
-	if !app.attr.SkipTheme {
-		head = append(head, elems.Style(elems.Text(app.attr.Theme.CSS())))
-	}
+	// if !app.attr.SkipFonts {
+	// 	head = append(head, elems.Link(property.HrefAttr("https://fonts.googleapis.com/css?family=Monoton|Noto+Sans|Noto+Serif|Roboto|Roboto+Condensed|Roboto+Mono")))
+	// }
 
 	app.resourceHeader = head
 	app.resourceBody = body
@@ -342,8 +296,7 @@ func (app *NApp) View(attr ViewAttr) *NView {
 	vw.root = app
 	vw.uuid = NewKey()
 	vw.appUUID = app.uuid
-	// vw.location = app.location
-	vw.notifications = app.notifications
+
 	vw.Reactive = NewReactive()
 
 	vw.router = router.New(attr.Route)
@@ -351,7 +304,7 @@ func (app *NApp) View(attr ViewAttr) *NView {
 	vw.React(func() {
 
 		// app.driver.Update(app, &vw)
-		app.notifications.Dispatch(ViewUpdate{
+		notifications.Dispatch(ViewUpdate{
 			App:  app,
 			View: &vw,
 		})
@@ -389,7 +342,7 @@ type NView struct {
 	attr    ViewAttr
 	// location      Location
 	router        router.Resolver
-	notifications *notifications.AppNotification
+	notifications *notifications.Notifications
 
 	renderingData []RenderableData
 
@@ -577,16 +530,14 @@ func (v *NView) Component(attr ComponentAttr) {
 	}
 
 	appServices := Services{
-		AppUUID:       v.appUUID,
-		Location:      v.root,
-		Mounted:       c.Mounted,
-		Updated:       c.Updated,
-		Rendered:      c.Rendered,
-		Unmounted:     c.Unmounted,
-		ViewRouter:    c.Router,
-		Router:        v.root.router,
-		Theme:         v.root.attr.Theme,
-		Notifications: v.notifications,
+		AppUUID:    v.appUUID,
+		Location:   v.root,
+		Mounted:    c.Mounted,
+		Updated:    c.Updated,
+		Rendered:   c.Rendered,
+		Unmounted:  c.Unmounted,
+		ViewRouter: c.Router,
+		Router:     v.root.router,
 	}
 
 	// Transform the base argument into the acceptable
@@ -725,8 +676,8 @@ func (c *Component) Render() *trees.Markup {
 	if c.live != nil {
 		live := c.live
 		live.EachEvent(func(e *trees.Event, _ *trees.Markup) {
-			if e.Handle != nil {
-				e.Handle.End()
+			if e.Remove != nil {
+				e.Remove.Remove()
 			}
 		})
 

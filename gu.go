@@ -7,10 +7,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/gu-io/gu/notifications"
 	"github.com/gu-io/gu/router"
 	"github.com/gu-io/gu/trees"
-	"github.com/gu-io/gu/trees/themes/styleguide"
 )
 
 // countKeeper handles management of the keys being generating. Guards the incrementation
@@ -105,16 +103,14 @@ type ViewUpdate struct {
 // Services defines a struct which exposes certain fields to be accessible to
 // others.
 type Services struct {
-	AppUUID       string
-	Location      Location
-	Mounted       Subscriptions
-	Rendered      Subscriptions
-	Updated       Subscriptions
-	Unmounted     Subscriptions
-	Router        *router.Router
-	ViewRouter    router.Resolver
-	Theme         styleguide.StyleGuide
-	Notifications *notifications.AppNotification
+	AppUUID    string
+	Location   Location
+	Mounted    Subscriptions
+	Rendered   Subscriptions
+	Updated    Subscriptions
+	Unmounted  Subscriptions
+	Router     *router.Router
+	ViewRouter router.Resolver
 }
 
 // RegisterServices provides an interface which registers the provided fetcher,

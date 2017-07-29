@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 //===============================================================================
@@ -32,6 +33,10 @@ func GetDirStatement(dir string, doGo bool) (DirStatement, error) {
 
 	return statement, WalkDir(dir, func(relPath string, absolutePath string, info os.FileInfo) bool {
 		if info.IsDir() {
+			return true
+		}
+
+		if strings.Contains(absolutePath, ".git") {
 			return true
 		}
 

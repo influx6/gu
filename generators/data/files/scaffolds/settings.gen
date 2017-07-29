@@ -1,0 +1,53 @@
+//+build ignore
+
+package main
+
+import (
+  "github.com/gu-io/gu/common"
+  "github.com/gu-io/gu/common/themes/styleguide"
+)
+
+func main(){
+  settings, err := getSettings()
+  if err != nil {
+    panic(err)
+  }
+
+  var theme bytes.Buffer
+
+  if err := styleguide.Render(&theme, settings.Theme); err != nil {
+    panic(err)
+  }
+
+  cssPublic := filepath.Join(settings.Public.Path, "css/theme.css")
+
+  themeFile, err := os.Create(cssPublic)
+  if err != nil {
+    panic(err)
+  }
+
+  defer themeFile.Close()
+
+  if _, err := theme.WriteTo(themeFile); err != nil {
+    panic(err)
+  }
+}
+
+func getSettings() (common.Settings, error) {
+  var config common.Settings
+
+  settings, err := os.Open({{.SettingFile}})
+  if err != nil {
+    return config, err
+  }
+
+  defer settings.Close()
+
+  // Load settings into configuration.
+  meta, err := toml.DecodeFile(settings, &config)
+  if err != nil {
+    return config, err
+  }
+
+  return config, nil
+}

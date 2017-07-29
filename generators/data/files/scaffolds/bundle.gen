@@ -1,32 +1,14 @@
+
+var (
+  assets = map[string][]string{}
+  assetFiles = map[string]fileData{}
+)
+
 type fileData struct{
   path string
   root string
   data []byte
 }
-
-var (
-  assets = map[string][]string{
-    {{ range $ext, $directives := .Directives }}
-      {{ quote $ext}}: []string{  // all {{ $ext }} assets.
-        {{ range $directives }}
-          {{quote .OriginPath}},
-        {{ end }}
-      },
-    {{ end }}
-  },
-
-  assetFiles = map[string]fileData{
-    {{ range $ext, $directives := .Directives }}
-      {{ range $directives }}
-        { // all {{ $ext }} assets.
-          data: "{{ .Read }}",
-          path: {{ .OriginPath }},
-          root: {{ .OriginAbsRoot }},
-        },
-      {{ end }}
-    {{ end}}
-  }
-)
 
 //==============================================================================
 

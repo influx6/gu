@@ -9,23 +9,31 @@ var dispatch = New()
 
 // Unsubscribe adds a new listener to the dispatcher.
 func Unsubscribe(dist EventDistributor) {
-	dispatch.Unlisten(dist)
+	dispatch.UnNotify(dist)
 }
 
 // Subscribe adds a new listener to the dispatcher.
 func Subscribe(dist EventDistributor) {
-	dispatch.Listen(dist)
+	dispatch.Notify(dist)
 }
 
 // Dispatch emits a event into the dispatch callback listeners.
 func Dispatch(q interface{}) {
-	dispatch.Deliver(q)
+	dispatch.Handle(q)
 }
 
 // EventDistributor defines a interface that exposes a single method which
 // will process a provided event received.
 type EventDistributor interface {
 	Handle(interface{})
+}
+
+// MessageNotifications defines a interface which exposes means to subscribe/unsubscribe
+// from event notifications delivered through the implementing object.
+type MessageNotifications interface {
+	EventDistributor
+	Notify(EventDistributor)
+	UnNotify(EventDistributor)
 }
 
 // Notifications defines a central delivery pipe where all types of event notifications
@@ -43,8 +51,8 @@ func New() *Notifications {
 	return &nl
 }
 
-// Unlisten removes the giving distributor from the notification system.
-func (n *Notifications) Unlisten(source EventDistributor) {
+// UnNotify removes the giving distributor from the notification system.
+func (n *Notifications) UnNotify(source EventDistributor) {
 	n.do(func() {
 		index, ok := n.register[source]
 		if !ok {
@@ -56,18 +64,18 @@ func (n *Notifications) Unlisten(source EventDistributor) {
 	})
 }
 
-// Listen adds a giving EventDistributor into the notifications list.
-func (n *Notifications) Listen(source EventDistributor) {
+// Notify adds a giving EventDistributor into the notifications list.
+func (n *Notifications) Notify(source EventDistributor) {
 	n.do(func() {
 		n.register[source] = len(n.sources)
 		n.sources = append(n.sources, source)
 	})
 }
 
-// Deliver will publish giving type to all internal EventDistributor who are
+// Handle will publish giving type to all internal EventDistributor who are
 // expected to convert the needed interface{} into expected type for consumption
 // for their internal state or operations.
-func (n *Notifications) Deliver(item interface{}) {
+func (n *Notifications) Handle(item interface{}) {
 	n.do(func() {
 		for _, source := range n.sources {
 			if source != nil {

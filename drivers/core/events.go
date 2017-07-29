@@ -3,12 +3,12 @@ package core
 import (
 	"encoding/json"
 
+	"github.com/gu-io/gu/common"
 	events "github.com/gu-io/gu/eventx"
-	"github.com/gu-io/gu/notifications/mque"
 )
 
 // GetEvent returns the giving event structure suited to the provided type.
-func GetEvent(eventName string, eventJSON []byte, handle mque.End) (*events.BaseEvent, error) {
+func GetEvent(eventName string, eventJSON []byte, handle common.Remover) (*events.BaseEvent, error) {
 	switch eventName {
 	case "AnimationEvent":
 		var eventObject events.AnimationEvent

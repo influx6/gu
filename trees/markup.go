@@ -9,9 +9,6 @@ import (
 	"github.com/russross/blackfriday"
 )
 
-// FinalizeHandle defines a function type which has the root and item concerned.
-type FinalizeHandle func(root, item *Markup)
-
 // Markup represent a concrete implementation of a element node.
 type Markup struct {
 	ID              string

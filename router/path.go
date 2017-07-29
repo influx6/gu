@@ -26,6 +26,8 @@ type PushDirectiveEvent struct {
 }
 
 // PushEvent represent the current path and hash values.
+//
+//@notification:event
 type PushEvent struct {
 	Host   string
 	Hash   string
@@ -101,7 +103,7 @@ func ListenAndResolve(pattern string, fx func(PushEvent), fail func(PushEvent)) 
 	resolver.Done(fx)
 	resolver.Failed(fail)
 
-	notifications.Subscribe(resolver.Resolve)
+	notifications.Subscribe(NewPushEventHandler(resolver.Resolve))
 
 	return resolver
 }
@@ -112,7 +114,7 @@ func ListenAndResolve(pattern string, fx func(PushEvent), fail func(PushEvent)) 
 func ListenFor(hash bool, pattern string, fx func(PushEvent), fail func(PushEvent)) {
 	matcher := URIMatcher(pattern)
 
-	notifications.Subscribe(func(p PushEvent) {
+	notifications.Subscribe(NewPushEventHandler(func(p PushEvent) {
 		var target string
 
 		if hash {
@@ -143,5 +145,5 @@ func ListenFor(hash bool, pattern string, fx func(PushEvent), fail func(PushEven
 		if fail != nil {
 			fail(p)
 		}
-	})
+	}))
 }

@@ -3,8 +3,9 @@ package assets
 import (
 	"bytes"
 	"compress/gzip"
-	"fmt"
+	"errors"
 	"io"
+	"path/filepath"
 	"sync"
 	"text/template"
 
@@ -31,7 +32,10 @@ type WriteDirective struct {
 // Read will copy directives writer into a content buffer and returns the giving string
 // representation of that data, content will be gzipped.
 func (directive WriteDirective) Read() (string, error) {
-	buffer := bufferPool.Get().(*bytes.Buffer)
+	buffer, ok := bufferPool.Get().(*bytes.Buffer)
+	if !ok {
+		return "", errors.New("BufferPool behaving incorrectly")
+	}
 
 	defer buffer.Reset()
 	defer bufferPool.Put(buffer)
@@ -84,7 +88,7 @@ func (w *Webpack) Build(dir string, doGoSources bool) (map[string][]WriteDirecti
 	for ext, fileStatement := range statement.FilesByExt {
 		packer, ok := w.packers[ext]
 		if !ok && w.defaultPacker == nil {
-			return wd, fmt.Errorf("No Packer provided to handle files with %q extension", ext)
+			continue
 		}
 
 		var derr error
@@ -100,7 +104,15 @@ func (w *Webpack) Build(dir string, doGoSources bool) (map[string][]WriteDirecti
 			return wd, err
 		}
 
-		wd[ext] = directives
+		for _, directive := range directives {
+			fileExt := filepath.Ext(directive.OriginPath)
+			if ext == fileExt {
+				wd[ext] = append(wd[ext], directive)
+				continue
+			}
+
+			wd[fileExt] = append(wd[ext], directive)
+		}
 	}
 
 	return wd, nil

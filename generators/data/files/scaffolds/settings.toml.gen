@@ -1,0 +1,11 @@
+# .settings contains all settings related to the project and it's building of
+# assets, themes and files.
+
+# public contains settings related to the directory used for public assets which
+# will be built and servable using the generated package.
+[public]
+path = "./public"
+
+[theme]
+PrimaryBrandColor = "#222222"
+SecondaryBrandColor = "#444444"

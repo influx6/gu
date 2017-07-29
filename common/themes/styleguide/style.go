@@ -1,14 +1,14 @@
 package styleguide
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"text/template"
 
-	"github.com/gu-io/gu/trees/css"
+	"github.com/gu-io/gu/common"
 	"github.com/influx6/faux/colors"
 	colorful "github.com/lucasb-eyer/go-colorful"
 )
@@ -129,39 +129,9 @@ var (
 	}
 )
 
-// Attr defines different color and size of strings to define a specific brand.
-type Attr struct {
-	PrimaryWhite                  string
-	SuccessColor                  string
-	FailureColor                  string
-	PrimaryColor                  string
-	SecondaryColor                string
-	PrimaryBrandColor             string
-	SecondaryBrandColor           string
-	AnimationCurveDefault         string
-	AnimationCurveFastOutLinearIn string
-	AnimationCurveFastOutSlowIn   string
-	AnimationCurveLinearOutSlowIn string
-	BaseScale                     float64             // BaseScale to use for generating expansion/detraction scale for font sizes.
-	HeaderBaseScale               float64             // BaseScale to use for generating expansion/detraction scale for header h1-h6 tags.
-	MinimumScaleCount             int                 // Total scale to generate small font sizes.
-	MaximumScaleCount             int                 // Total scale to generate large font sizes
-	MinimumHeadScaleCount         int                 // Total scale to generate small font sizes.
-	MaximumHeadScaleCount         int                 // Total scale to generate large font sizes
-	BaseFontSize                  int                 // BaseFontSize for typeface using the provide BaseScale.
-	SmallBorderRadius             int                 // SmallBorderRadius for tiny components eg checkbox, radio buttons.
-	MediumBorderRadius            int                 // MediaBorderRadius for buttons, inputs, etc
-	LargeBorderRadius             int                 // LargeBorderRadius for components like cards, modals, etc.
-	FloatingShadow                string              // shadow for floating icons, elements.
-	HoverShadow                   string              // shadow for over dialog etc
-	DropShadow                    string              // Useful for popovers/dropovers
-	BaseShadow                    string              // Normal shadow of elemnts
-	MaterialPalettes              map[string][]string `json:"palettes"`
-}
-
 // StyleColors defines a struct which holds all possible giving brand colors utilized
 // for the project.
-type StyleColors struct {
+type styleColors struct {
 	Primary        Tones `json:"primary"`
 	Secondary      Tones `json:"secondary"`
 	Success        Tones `json:"success"`
@@ -171,137 +141,78 @@ type StyleColors struct {
 	SecondaryBrand Tones `json:"secondary_support"`
 }
 
-// TypeSize defines a type for a float64 with a special
-// string method to return it in 3 decimal places.
-type TypeSize float64
-
-// String returns the version of the giving TypeSize;
-func (t TypeSize) String() string {
-	return fmt.Sprintf("%.3f", t)
-}
-
-// StyleGuide represent the fullset of brand style properties for the project.
-type StyleGuide struct {
-	Attr
-	Brand            StyleColors `json:"brand"`
-	SmallFontScale   []float64
-	BigFontScale     []float64
-	SmallHeaderScale []float64
-	BigHeaderScale   []float64
-	inited           bool
-	executed         *css.Rule
-	executedString   string
-}
-
-// Must returns the giving style or panics if it fails.
-func Must(attr Attr) StyleGuide {
-	style, err := New(attr)
-	if err != nil {
-		panic(err)
-	}
-
-	return style
-}
-
-// New returns a new StyleGuide object which generates the necessary css
-// styles to utilize the defined style within any project.
-func New(attr Attr) (StyleGuide, error) {
-	var style StyleGuide
-
-	if err := style.Init(); err != nil {
-		return style, err
-	}
-
-	return style, nil
-}
-
-// Init initializes the style guide and all internal properties into
-// appropriate defaults and states.
-func (style *StyleGuide) Init() error {
+// Render initializes the style guide and all internal properties into
+// appropriate defaults and states and generates a css style written into
+// the provided writer
+func Render(w io.Writer, attr common.Theme) error {
 	var err error
 
-	style.Attr = initAttr(style.Attr)
+	var brand styleColors
 
-	shm, bhm := GenerateValueScale(1, style.Attr.HeaderBaseScale, style.Attr.MinimumHeadScaleCount, style.Attr.MaximumHeadScaleCount)
-	style.BigHeaderScale = bhm
-	style.SmallHeaderScale = shm
+	attr = initAttr(attr)
 
-	sm, bg := GenerateValueScale(1, style.Attr.BaseScale, style.Attr.MinimumScaleCount, style.Attr.MaximumScaleCount)
-	style.BigFontScale = bg
-	style.SmallFontScale = sm
-
-	if style.Attr.PrimaryBrandColor != "" {
-		style.Brand.PrimaryBrand, err = NewTones(style.Attr.PrimaryBrandColor)
+	if attr.PrimaryBrandColor != "" {
+		brand.PrimaryBrand, err = NewTones(attr.PrimaryBrandColor)
 		if err != nil {
 			return errors.New("Invalid primary brand color: " + err.Error())
 		}
 	}
 
-	if style.Attr.SecondaryBrandColor != "" {
-		style.Brand.SecondaryBrand, err = NewTones(style.Attr.SecondaryBrandColor)
+	if attr.SecondaryBrandColor != "" {
+		brand.SecondaryBrand, err = NewTones(attr.SecondaryBrandColor)
 		if err != nil {
 			return errors.New("Invalid secondary brand color: " + err.Error())
 		}
 	}
 
-	style.Brand.Primary, err = NewTones(style.Attr.PrimaryColor)
+	brand.Primary, err = NewTones(attr.PrimaryColor)
 	if err != nil {
 		return errors.New("Invalid primary color: " + err.Error())
 	}
 
-	style.Brand.Secondary, err = NewTones(style.Attr.SecondaryColor)
+	brand.Secondary, err = NewTones(attr.SecondaryColor)
 	if err != nil {
 		return errors.New("Invalid secondary color: " + err.Error())
 	}
 
-	style.Brand.White, err = NewTones(style.Attr.PrimaryWhite)
+	brand.White, err = NewTones(attr.PrimaryWhite)
 	if err != nil {
 		return errors.New("Invalid white color: " + err.Error())
 	}
 
-	style.Brand.Success, err = NewTones(style.Attr.SuccessColor)
+	brand.Success, err = NewTones(attr.SuccessColor)
 	if err != nil {
 		return errors.New("Invalid success color: " + err.Error())
 	}
 
-	style.Brand.Failure, err = NewTones(style.Attr.FailureColor)
+	brand.Failure, err = NewTones(attr.FailureColor)
 	if err != nil {
 		return errors.New("Invalid failure color: " + err.Error())
 	}
-
-	style.inited = true
 
 	tml, err := template.New("styleguide").Funcs(helpers).Parse(styleTemplate)
 	if err != nil {
 		return err
 	}
 
-	var buf bytes.Buffer
-	if terr := tml.Execute(&buf, style); terr != nil {
-		return terr
-	}
+	shm, bhm := GenerateValueScale(1, attr.HeaderBaseScale, attr.MinimumHeadScaleCount, attr.MaximumHeadScaleCount)
+	sm, bg := GenerateValueScale(1, attr.BaseScale, attr.MinimumScaleCount, attr.MaximumScaleCount)
 
-	style.executedString = buf.String()
-	style.executed = css.Plain(style.executedString, nil)
-
-	return err
-}
-
-// Ready returns true/false whether the giving style guide has being
-// initialized.
-func (style *StyleGuide) Ready() bool {
-	return style.inited
-}
-
-// CSS returns a css style content for usage with a css stylesheet.
-func (style *StyleGuide) CSS() string {
-	return style.executedString
-}
-
-// Stylesheet returns a css.Rule object which contains the styleguide style
-// rules.
-func (style *StyleGuide) Stylesheet() *css.Rule {
-	return style.executed
+	return tml.Execute(w, struct {
+		common.Theme
+		Brand            styleColors
+		SmallFontScale   []float64
+		BigFontScale     []float64
+		SmallHeaderScale []float64
+		BigHeaderScale   []float64
+	}{
+		SmallFontScale:   sm,
+		BigFontScale:     bg,
+		SmallHeaderScale: shm,
+		BigHeaderScale:   bhm,
+		Brand:            brand,
+		Theme:            attr,
+	})
 }
 
 //================================================================================================
@@ -324,20 +235,12 @@ func NewTones(base string) (Tones, error) {
 	return HamonicsFrom(c), nil
 }
 
-// JSON returns the string representation of the provided tone.
-func (t Tones) JSON() string {
-	return fmt.Sprintf(`{
-	"base": %q,
-	"grades": %+q
-  }`, t.Base, t.Grades)
-}
-
 // String returns the string representation of the provided tone.
 func (t Tones) String() string {
 	return fmt.Sprintf(`%q %q`, t.Base, t.Grades)
 }
 
-func initAttr(attr Attr) Attr {
+func initAttr(attr common.Theme) common.Theme {
 	if attr.MaterialPalettes == nil || len(attr.MaterialPalettes) == 0 {
 		attr.MaterialPalettes = MaterialPalettes
 	}

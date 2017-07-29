@@ -174,16 +174,16 @@ func SpaceCharacter(count int) *trees.Markup {
 	return trees.NewText(strings.Join(spaces, ""))
 }
 
-// Markdown takes the giving string which contains markdown written contents 
+// Markdown takes the giving string which contains markdown written contents
 // and parses to html, which then is used to generate a new markup.
 func Markdown(md string) *trees.Markup {
 	hml := blackfriday.MarkdownCommon([]byte(md))
 	return Parse(string(hml))
 }
 
-// MarkdownWithTemplate takes the giving template string which contains markdown  
-// go template format strings. These will be parsed with text/template and using 
-// blackfriday to parse the final output to html, which then is used to 
+// MarkdownWithTemplate takes the giving template string which contains markdown
+// go template format strings. These will be parsed with text/template and using
+// blackfriday to parse the final output to html, which then is used to
 // generate a new markup. Any error is returned as a <error> tag markup.
 func MarkdownWithTemplate(md string, bind interface{}) *trees.Markup {
 	return trees.MarkdownTemplate(md, bind)

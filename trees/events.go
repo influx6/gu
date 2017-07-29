@@ -3,8 +3,6 @@ package trees
 import (
 	"fmt"
 	"strings"
-
-	"github.com/gu-io/gu/notifications/mque"
 )
 
 // EventBroadcast defines a struct which gets published for the events.
@@ -21,6 +19,11 @@ type EventObject interface {
 	Underlying() interface{}
 }
 
+// Remover defines an interface that exposes a method to remove a giving event.
+type Remover interface {
+	Remove()
+}
+
 // Event provide a meta registry for helps in registering events for dom markups
 // which is translated to the nodes themselves
 type Event struct {
@@ -30,7 +33,7 @@ type Event struct {
 	UseCapture               bool
 	StopImmediatePropagation bool
 	Tree                     *Markup
-	Handle                   mque.End
+	Remove                   Remover
 	secTarget                string
 }
 

@@ -1,0 +1,40 @@
+//go:generate go run generate.go
+
+// {{ capitalize .Name}} defines a component which implements the gu.Renderable interface.
+type {{ capitalize .Name}} struct{
+	gu.Reactive
+	Services gu.Services
+}
+
+// New{{ capitalize .Name}} returns a new instance of {{capitalize .Name}} component.
+func New{{capitalize .Name}}() *{{capitalize .Name}} {
+  return &{{capitalize .Name}}{
+  	Reactive: gu.NewReactive(),
+  }
+}
+
+// New{{ capitalize .Name}}WithService returns a new instance of {{capitalize .Name}} component provided the given Services object.
+func New{{ capitalize .Name}}WithService(services gu.Services) *{{capitalize .Name}} {
+	{{subs .Name 2}} := New{{capitalize .Name}}()
+	{{subs .Name 2}}.RegisterServices(services)
+
+	return {{subs .Name 2}}
+}
+
+// RegisterServices is created so that the Services struct which contains
+// objects that provide different functionality to the component can be
+// recieved and accessed by the component.
+func ({{subs .Name 2}} *{{capitalize .Name}}) RegisterServices(services gu.Services)  {
+	{{subs .Name 2}}.Services = services
+}
+
+// Render returns the markup for this {{capitalize .Name}} component.
+func ({{subs .Name 2}} {{capitalize .Name}}) Render() *trees.Markup {
+	return elems.Div(property.ClassAttr("component","{{lower .Name }}"))
+}
+
+// Apply adds the giving components Render() result to the
+// provided root.
+func ({{subs .Name 2}} {{capitalize .Name}}) Apply(root *trees.Markup)  {
+	root.AddChild({{subs .Name 2}}.Render())
+}

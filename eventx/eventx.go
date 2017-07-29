@@ -7,7 +7,7 @@ package eventx
 import (
 	"time"
 
-	"github.com/gu-io/gu/notifications/mque"
+	"github.com/gu-io/gu/common"
 	"github.com/gu-io/gu/router/cache"
 )
 
@@ -805,11 +805,11 @@ type BasicEventMap map[string]string
 type BaseEvent struct {
 	Core   interface{} `json:"-"`
 	event  interface{}
-	handle mque.End
+	handle common.Remover
 }
 
 // NewBaseEvent returns a new instance of the base evet.
-func NewBaseEvent(event interface{}, handle mque.End) *BaseEvent {
+func NewBaseEvent(event interface{}, handle common.Remover) *BaseEvent {
 	return &BaseEvent{
 		event:  event,
 		handle: handle,
@@ -819,7 +819,7 @@ func NewBaseEvent(event interface{}, handle mque.End) *BaseEvent {
 // RemoveEvent calls the finalizer of the giving event.
 func (b *BaseEvent) RemoveEvent() {
 	if b.handle != nil {
-		b.handle.End()
+		b.handle.Remove()
 	}
 }
 

@@ -27,7 +27,7 @@ func main(){
   cssPublicDir := filepath.Join(settings.Public.Path, "css")
   cssPublic := filepath.Join(settings.Public.Path, "css/theme.css")
 
-	if err := os.MkdirAll(cssPublicDir); err != nil && err != os.ErrExist {
+	if err := os.MkdirAll(cssPublicDir, 0777); err != nil && err != os.ErrExist {
 		panic(err)
 	}
 

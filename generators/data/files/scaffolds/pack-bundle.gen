@@ -16,7 +16,10 @@ func main(){
 
   aspacker.Register(".js", packers.JSPacker{})
   aspacker.Register(".css", packers.CSSPacker{})
-  aspacker.Register(".static.html", packers.StaticMarkupPacker{})
+  aspacker.Register(".static.html", packers.StaticMarkupPacker{
+		PackageName: {{quote .TargetPackage}},
+		DestinationFile: "{{.TargetDir}}/{{lower .TargetPackage}}_static_bundle.go",
+	})
 
 	{{ if notequal .LessFile "" }}
   aspacker.Register(".less", packers.LessPacker{MainFile: {{quote .LessFile}} })
@@ -29,7 +32,7 @@ func main(){
 
 	pipeGen := gen.Block(
 		gen.Package(
-			gen.Name("{{.Package}}"),
+			gen.Name("{{.TargetPackage}}"),
       writer,
     ),
   )

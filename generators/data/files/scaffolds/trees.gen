@@ -1,0 +1,55 @@
+package {{lower .Package}}
+
+import (
+	"github.com/gu-io/gu"
+	"github.com/gu-io/gu/trees"
+)
+
+var (
+  markupFiles = map[string]func() *trees.Markup {
+    {{ range $name, $content := .Trees }}
+      {{quote $name}}: func() *trees.Markup { {{$content}} },
+    {{ end}}
+  }
+)
+
+// Files returns the giving path of all generated files.
+func Files() []string{
+  return []string{
+    {{ range $name, $_ := .Trees }}
+      {{quote $name}},
+    {{ end}}
+  }
+}
+
+// Must returns the tree.Makrup associated with the given filename.
+func Must(name string) *trees.Markup {
+  markup, err := Get(name)
+  if err != nil {
+    panic(err)
+  }
+
+  return markup
+}
+
+// Get returns the associated tree.Markup generated from the corresponding
+// asset.
+func Get(name string) (*trees.Markup, error) {
+  fn, err := GetFunction(name)
+  if err != nil {
+    return nil, err
+  }
+
+  return fn(),nil
+}
+
+// GetFunction returns the associated func() tree.Markup generated from the corresponding
+// asset.
+func GetFunction(name string) (func() *trees.Markup, error) {
+  markup, ok := markupFiles[name]
+  if !ok{
+    return nil, fmt.Errorf("Markup for giving file %q not found", name)
+  }
+
+  return markup, nil
+}

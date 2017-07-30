@@ -1,6 +1,7 @@
 package trees_test
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 
@@ -48,6 +49,24 @@ func TestViewMarkup(t *testing.T) {
 	}
 
 	t.Logf("\t%s\t Parser should have produced markup for html: %q", success, strings.Join(html, ""))
+}
+
+func TestParserToText(t *testing.T) {
+	input := `
+		<header class="grid32 device">
+			<div class="grid--block one-whole intro"></div>
+		</header>
+	`
+
+	expected := "elemRoot := trees.NewMarkup(\"div\", false)\nelem1 := trees.NewMarkup(\"header\", false)\nelem1.Apply(elemRoot)\ntrees.NewAttr(\"class\", \"grid32 device\").Apply(elem1)\nelem2 := trees.NewMarkup(\"div\", false)\nelem2.Apply(elem1)\ntrees.NewAttr(\"class\", \"grid--block one-whole intro\").Apply(elem2)\n"
+
+	var content bytes.Buffer
+	trees.ParseTreeToText(input, false).WriteTo(&content)
+
+	if content.String() != expected {
+		t.Fatal("Parser should have successfully created markup in trees object format")
+	}
+	t.Log("Parser should have successfully created markup in trees object format")
 }
 
 func TestParser(t *testing.T) {

@@ -14,7 +14,6 @@ import (
 type FileStatement struct {
 	Path    string `json:"path"`
 	AbsPath string `json:"abspath"`
-	Content string `json:"content"`
 }
 
 // DirStatement defines a structure for all files retrieved from the giving directory.
@@ -43,7 +42,7 @@ func GetDirStatement(dir string, doGo bool) (DirStatement, error) {
 
 		ext := getExtension(relPath)
 
-		if !doGo && ext == "go" {
+		if !doGo && ext == ".go" {
 			return true
 		}
 
@@ -131,12 +130,12 @@ func ParseDirWithExt(dir string, allowedExtensions []string) (map[string]string,
 // care of files with multiple extension periods, like static.html, .tml.html, as
 // well as single extensions suffix like .html, .eml.
 func getExtension(name string) string {
-	exts := strings.SplitAfter(name, ".")
+	exts := strings.SplitN(name, ".", 2)
 	if len(exts) < 2 {
 		return ""
 	}
 
-	return exts[1]
+	return "." + exts[1]
 }
 
 // validExension returns true/false if the extension provide is a valid acceptable one

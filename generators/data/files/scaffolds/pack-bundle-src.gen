@@ -25,12 +25,12 @@ var (
         {{ end }}
       },
     {{ end }}
-  },
+  }
 
   assetFiles = map[string]fileData{
     {{ range $ext, $directives := .Directives }}
       {{ range $directives }}
-        { // all {{ $ext }} assets.
+        {{quote .OriginPath}}: { // all {{ $ext }} assets.
           data: []byte({{ .Read }}),
           path: {{quote .OriginPath }},
           root: {{quote .OriginAbsPath }},

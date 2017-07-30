@@ -49,8 +49,11 @@ func (less LessPacker) Pack(statements []assets.FileStatement, dir assets.DirSta
 
 func processStatement(statement assets.FileStatement, less LessPacker, directives *[]assets.WriteDirective) error {
 	fileExt := filepath.Ext(statement.Path)
-	cssFileName := filepath.Join(filepath.Dir(statement.Path), strings.Replace(filepath.Base(statement.Path), fileExt, "css", 1))
-	cssAbsFileName := filepath.Join(filepath.Dir(statement.AbsPath), strings.Replace(filepath.Base(statement.Path), fileExt, "css", 1))
+	cssFileName := filepath.Join(filepath.Dir(statement.Path), strings.Replace(filepath.Base(statement.Path), fileExt, ".css", 1))
+	cssAbsFileName := filepath.Join(filepath.Dir(statement.AbsPath), strings.Replace(filepath.Base(statement.Path), fileExt, ".css", 1))
+
+	cssFileName = strings.Replace(cssFileName, "less/", "css/", 1)
+	cssAbsFileName = strings.Replace(cssAbsFileName, "less/", "css/", 1)
 
 	var args []string
 

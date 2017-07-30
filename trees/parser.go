@@ -1,6 +1,8 @@
 package trees
 
 import (
+	"fmt"
+	"io"
 	"strings"
 
 	"bytes"
@@ -168,4 +170,92 @@ func pullNode(tokens *html.Tokenizer, root *Markup) {
 			pullNode(tokens, node)
 		}
 	}
+}
+
+// ParseTreeToText takes a string markup and returns a *Markup which
+// contains the full structure transpiled
+// into the gutrees markup block structure.
+func ParseTreeToText(markup string, withReturns bool) io.WriterTo {
+	tokens := html.NewTokenizer(strings.NewReader(markup))
+
+	var nameCounter int
+	var buffer bytes.Buffer
+
+	writeText(&buffer, "elemRoot := trees.NewMarkup(%q, %t)", "div", false)
+
+	nameCounter++
+	pullNodeToText(tokens, &buffer, "elemRoot", nameCounter, "div")
+
+	if withReturns {
+		writeText(&buffer, `
+			if len(elemRoot.Children()) == 1 {
+				return elemRoot.Children()[0]
+			}
+
+			return elemRoot
+		`)
+	}
+
+	return &buffer
+}
+
+func pullNodeToText(tokens *html.Tokenizer, root io.Writer, rootVar string, nameCounter int, rootTagName string) {
+	for {
+		token := tokens.Next()
+
+		switch token {
+		case html.ErrorToken:
+			return
+
+		case html.TextToken, html.CommentToken, html.DoctypeToken:
+			text := strings.TrimSpace(string(tokens.Text()))
+
+			if text == "" {
+				continue
+			}
+
+			if token == html.CommentToken {
+				text = "<!--" + text + "-->"
+			}
+
+			writeText(root, "trees.NewText(%+q).Apply(%s)", text, rootVar)
+			continue
+
+		case html.StartTagToken, html.EndTagToken, html.SelfClosingTagToken:
+			tagName, hasAttr := tokens.TagName()
+
+			if token == html.EndTagToken && string(tagName) == rootTagName {
+				return
+			}
+
+			elemName := fmt.Sprintf("elem%d", nameCounter)
+			writeText(root, "%s := trees.NewMarkup(%+q, %t)\n%s.Apply(%s)", elemName, tagName, token == html.SelfClosingTagToken, elemName, rootVar)
+
+			if hasAttr {
+			attrLoop:
+				for {
+					key, val, more := tokens.TagAttr()
+
+					if string(key) != "" {
+						writeText(root, "trees.NewAttr(%+q, %+q).Apply(%s)", key, val, elemName)
+					}
+
+					if !more {
+						break attrLoop
+					}
+				}
+			}
+
+			if token == html.SelfClosingTagToken {
+				continue
+			}
+
+			nameCounter++
+			pullNodeToText(tokens, root, elemName, nameCounter, string(tagName))
+		}
+	}
+}
+
+func writeText(w io.Writer, text string, vals ...interface{}) {
+	fmt.Fprintf(w, text+"\n", vals...)
 }

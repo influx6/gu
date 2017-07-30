@@ -52,14 +52,16 @@ func ComponentPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDecl
 		gen.SourceText(
 			string(data.Must("scaffolds/pack-bundle.gen")),
 			struct {
-				Name      string
-				LessFile  string
-				Package   string
-				TargetDir string
+				Name          string
+				LessFile      string
+				Package       string
+				TargetDir     string
+				TargetPackage string
 			}{
-				TargetDir: "./",
-				Name:      componentName,
-				Package:   componentNameLower,
+				TargetDir:     "./",
+				Name:          componentName,
+				Package:       componentNameLower,
+				TargetPackage: componentNameLower,
 			},
 		),
 	)

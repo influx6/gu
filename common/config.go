@@ -1,5 +1,7 @@
 package common
 
+import "errors"
+
 // Remover defines an interface which exposes a remove method.
 type Remover interface {
 	Remove()
@@ -12,11 +14,33 @@ type Settings struct {
 	Theme  Theme  `toml:"theme"`
 }
 
+// Validate will validate the state of the giving fields.
+func (s Settings) Validate() error {
+	if err := s.Public.Validate(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Public defines giving settings for the public assets folder which will be build
 // to generate a embeddeable and servable assets package.
 type Public struct {
 	Path    string `toml:"path"`
 	Package string `toml:"package"`
+}
+
+// Validate will validate the state of the giving fields.
+func (p Public) Validate() error {
+	if p.Path == "" {
+		return errors.New("Public.Path must be set")
+	}
+
+	if p.Package == "" {
+		return errors.New("Public.Package must be set")
+	}
+
+	return nil
 }
 
 // Theme defines a struct whhich contains settings for generating a stylesheet of

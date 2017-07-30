@@ -55,13 +55,15 @@ func GuPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration
 		gen.SourceText(
 			string(data.Must("scaffolds/pack-bundle.gen")),
 			struct {
-				Name     string
-				LessFile string
-				Package  string
+				Name      string
+				LessFile  string
+				Package   string
+				TargetDir string
 			}{
-				Name:     componentName,
-				Package:  componentNameLower,
-				LessFile: fmt.Sprintf("less/%s.less", componentNameLower),
+				TargetDir: "public",
+				Name:      componentName,
+				Package:   componentNameLower,
+				LessFile:  fmt.Sprintf("less/%s.less", componentNameLower),
 			},
 		),
 	)

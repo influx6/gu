@@ -22,7 +22,7 @@ func main(){
   aspacker.Register(".less", packers.LessPacker{MainFile: {{quote .LessFile}} })
 	{{ end}}
 
-  writer, statics, err := aspacker.Compile("./public", false)
+  writer, statics, err := aspacker.Compile({{quote .TargetDir}}, false)
   if err != nil {
     panic(err)
   }
@@ -39,7 +39,7 @@ func main(){
     panic(err)
 	}
 
-	if err := writeToFile(pipeGen,fmt.Sprintf("%s_bundle.go", {{quote .Package}}),"./", currentDir); err != nil {
+	if err := writeToFile(pipeGen,fmt.Sprintf("%s_bundle.go", {{quote .Package}}),{{ quote .TargetDir}}, currentDir); err != nil {
     panic(err)
 	}
 

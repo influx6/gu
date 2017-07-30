@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"errors"
+	"fmt"
 	"io"
 	"sync"
 	"text/template"
@@ -53,10 +54,10 @@ func (directive WriteDirective) Read() (string, error) {
 	hxs := hexwriter.New(gzip.NewWriter(buffer))
 
 	if _, err := directive.Writer.WriteTo(hxs); err != nil && err != io.EOF {
-		return buffer.String(), err
+		return fmt.Sprintf("%q", buffer.Bytes()), err
 	}
 
-	return buffer.String(), nil
+	return fmt.Sprintf("%q", buffer.Bytes()), nil
 }
 
 // Packer exposes a interface which exposes methods for validating the type of files

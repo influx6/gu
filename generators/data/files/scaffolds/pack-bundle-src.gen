@@ -31,7 +31,7 @@ var (
     {{ range $ext, $directives := .Directives }}
       {{ range $directives }}
         { // all {{ $ext }} assets.
-          data: []byte("{{ .Read }}"),
+          data: []byte({{ .Read }}),
           path: {{ .OriginPath }},
           root: {{ .OriginAbsPath }},
         },

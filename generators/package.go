@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/influx6/faux/fmtwriter"
 
@@ -26,36 +25,74 @@ func GuPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration
 	componentNameLower := strings.ToLower(componentName)
 
 	typeGen := gen.Block(
+		gen.SourceText(
+			string(data.Must("scaffolds/base.gen")),
+			struct {
+				Name string
+			}{
+				Name: componentName,
+			},
+		),
+	)
+
+	publicStandInGen := gen.Block(
 		gen.Package(
-			gen.Name(componentName),
-			gen.Imports(
-				gen.Import("github.com/gu-io/gu", ""),
-				gen.Import("github.com/gu-io/gu/trees", ""),
-				gen.Import("github.com/gu-io/gu/trees/elems", ""),
-				gen.Import("github.com/gu-io/gu/trees/property", ""),
+			gen.Name(componentNameLower),
+			gen.SourceText(
+				string(data.Must("scaffolds/bundle.gen")),
+				struct {
+					Name    string
+					Package string
+				}{
+					Name:    componentName,
+					Package: componentNameLower,
+				},
 			),
-			gen.Block(
-				gen.SourceTextWith(
-					string(data.Must("scaffolds/base.gen")),
-					template.FuncMap{},
-					struct {
-						Name string
-					}{
-						Name: componentName,
-					},
-				),
-			),
+		),
+	)
+
+	publicGen := gen.Block(
+		gen.SourceText(
+			string(data.Must("scaffolds/pack-bundle.gen")),
+			struct {
+				Name     string
+				LessFile string
+				Package  string
+			}{
+				Name:     componentName,
+				Package:  componentNameLower,
+				LessFile: fmt.Sprintf("less/%s.less", componentNameLower),
+			},
 		),
 	)
 
 	settingsGen := gen.Block(
 		gen.SourceText(
 			string(data.Must("scaffolds/settings.gen")),
-			nil,
+			struct {
+				Name    string
+				Package string
+			}{
+				Name:    componentName,
+				Package: componentNameLower,
+			},
 		),
 	)
 
-	pipeGen := gen.Block(
+	lessGen := gen.Block(
+		gen.SourceText(
+			string(data.Must("scaffolds/main.less.gen")),
+			struct {
+				Name    string
+				Package string
+			}{
+				Name:    componentName,
+				Package: componentNameLower,
+			},
+		),
+	)
+
+	tomlGen := gen.Block(
 		gen.SourceText(
 			string(data.Must("scaffolds/settings.toml.gen")),
 			nil,
@@ -73,18 +110,41 @@ func GuPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration
 		},
 		{
 			DontOverride: false,
-			Dir:          filepath.Join(componentNameLower, "settings.toml"),
-			Writer:       pipeGen,
+			Dir:          filepath.Join(componentNameLower, "public/less"),
+		},
+		{
+			DontOverride: false,
+			Writer:       lessGen,
+			Dir:          filepath.Join(componentNameLower, "public/less"),
+			FileName:     fmt.Sprintf("%s.less", componentNameLower),
+		},
+		{
+			DontOverride: true,
+			Writer:       tomlGen,
+			Dir:          componentNameLower,
+			FileName:     "settings.toml",
 		},
 		{
 			DontOverride: false,
 			Dir:          componentNameLower,
-			FileName:     "generator.go",
+			FileName:     "settings_bundle.go",
 			Writer:       fmtwriter.New(settingsGen, true, true),
 		},
 		{
-			DontOverride: false,
-			Dir:          filepath.Join(componentNameLower, "app"),
+			DontOverride: true,
+			Dir:          componentNameLower,
+			FileName:     "public_bundle.go",
+			Writer:       fmtwriter.New(publicGen, true, true),
+		},
+		{
+			DontOverride: true,
+			Dir:          filepath.Join(componentNameLower, "public"),
+			FileName:     fmt.Sprintf("%s_bundle.go", componentNameLower),
+			Writer:       fmtwriter.New(publicStandInGen, true, true),
+		},
+		{
+			DontOverride: true,
+			Dir:          componentNameLower,
 			FileName:     fmt.Sprintf("%s.go", componentNameLower),
 			Writer:       fmtwriter.New(typeGen, true, true),
 		},

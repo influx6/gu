@@ -299,7 +299,7 @@ func (app *NApp) View(attr ViewAttr) *NView {
 
 	vw.Reactive = NewReactive()
 
-	vw.router = router.New(attr.Route)
+	vw.router = router.NewResolver(attr.Route)
 
 	vw.React(func() {
 
@@ -523,7 +523,7 @@ func (v *NView) Component(attr ComponentAttr) {
 	c.Unmounted = NewSubscriptions()
 	c.Rendered = NewSubscriptions()
 	c.Updated = NewSubscriptions()
-	c.Router = router.New(attr.Route)
+	c.Router = router.NewResolver(attr.Route)
 
 	if attr.Tag == "" {
 		attr.Tag = "component-element"

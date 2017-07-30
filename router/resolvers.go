@@ -34,9 +34,9 @@ type ResolveMorpher interface {
 	trees.Morpher
 }
 
-// New returns a new instance of a structure that matches
+// NewResolver returns a new instance of a structure that matches
 // the Resolver interface.
-func New(path string) Resolver {
+func NewResolver(path string) Resolver {
 	var br basicResolver
 	if path != "" {
 		br.matcher = URIMatcher(path)

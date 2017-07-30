@@ -50,10 +50,13 @@ func ComponentPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDecl
 
 	generatorGen := gen.Block(
 		gen.SourceText(
-			string(data.Must("scaffolds/component-generate.gen")),
+			string(data.Must("scaffolds/pack-bundle.gen")),
 			struct {
-				Package string
+				Name     string
+				LessFile string
+				Package  string
 			}{
+				Name:    componentName,
 				Package: componentNameLower,
 			},
 		),
@@ -76,20 +79,22 @@ func ComponentPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDecl
 
 	return []gen.WriteDirective{
 		{
-			DontOverride: false,
+			DontOverride: true,
 			Dir:          componentNameLower,
 			FileName:     fmt.Sprintf("%s.go", componentNameLower),
 			Writer:       fmtwriter.New(typeGen, true, true),
 		},
 		{
-			FileName: fmt.Sprintf("%s_bundle.go", componentNameLower),
-			Dir:      componentNameLower,
-			Writer:   fmtwriter.New(pipeGen, true, true),
+			DontOverride: true,
+			FileName:     fmt.Sprintf("%s_bundle.go", componentNameLower),
+			Dir:          componentNameLower,
+			Writer:       fmtwriter.New(pipeGen, true, true),
 		},
 		{
-			FileName: "generator.go",
-			Dir:      componentNameLower,
-			Writer:   fmtwriter.New(generatorGen, true, true),
+			DontOverride: true,
+			FileName:     "generator.go",
+			Dir:          componentNameLower,
+			Writer:       fmtwriter.New(generatorGen, true, true),
 		},
 	}, nil
 }

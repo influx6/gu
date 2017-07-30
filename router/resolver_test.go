@@ -8,7 +8,7 @@ import (
 )
 
 func TestResolver(t *testing.T) {
-	rx := router.New("/:id")
+	rx := router.NewResolver("/:id")
 	params, _, state := rx.Test("12")
 
 	if !state {
@@ -34,7 +34,7 @@ func TestResolver(t *testing.T) {
 }
 
 func TestRootRoute(t *testing.T) {
-	home := router.New("/*")
+	home := router.NewResolver("/*")
 
 	home.Done(func(px router.PushEvent) {
 		tests.Passed("Should have notified with PushEvent %#v", px)
@@ -49,8 +49,8 @@ func TestRootRoute(t *testing.T) {
 }
 
 func TestResolverLevels(t *testing.T) {
-	home := router.New("/home/*")
-	rx := router.New("/:id")
+	home := router.NewResolver("/home/*")
+	rx := router.NewResolver("/:id")
 
 	home.Register(rx)
 
@@ -66,7 +66,7 @@ func TestResolverLevels(t *testing.T) {
 }
 
 func TestResolverFailed(t *testing.T) {
-	rx := router.New("/:id")
+	rx := router.NewResolver("/:id")
 	rx.Done(func(px router.PushEvent) {
 		tests.Failed("Should have notified with failed PushEvent %#v", px)
 	})

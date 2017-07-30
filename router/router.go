@@ -38,6 +38,14 @@ type HTTPCacheHandler interface {
 
 //================================================================================
 
+// NilServer defines a empty struct implementing the http.Handler interface.
+type NilServer struct{}
+
+// ServeHTTP implements the http.Handler inface ServeHTTP method.
+func (NilServer) ServeHTTP(_ http.ResponseWriter, _ *http.Request) {}
+
+//================================================================================
+
 // server defines an interface used to provide a concrete method
 // which returns a new path and request handler for that path.
 type server interface {
@@ -53,6 +61,10 @@ type Router struct {
 
 // NewRouter returns a new instance of a Router.
 func NewRouter(handler interface{}, cache cache.Cache) *Router {
+	if handler == nil {
+		handler = NilServer{}
+	}
+
 	var router Router
 	router.cache = cache
 

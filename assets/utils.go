@@ -30,6 +30,7 @@ type DirStatement struct {
 // retrieved through running the directory.
 func GetDirStatement(dir string, doGo bool) (DirStatement, error) {
 	var statement DirStatement
+	statement.FilesByExt = make(map[string][]FileStatement, 0)
 
 	return statement, WalkDir(dir, func(relPath string, absolutePath string, info os.FileInfo) bool {
 		if info.IsDir() {
@@ -40,7 +41,7 @@ func GetDirStatement(dir string, doGo bool) (DirStatement, error) {
 			return true
 		}
 
-		ext := filepath.Ext(relPath)
+		ext := getExtension(relPath)
 
 		if !doGo && ext == ".go" {
 			return true
@@ -125,6 +126,18 @@ func ParseDirWithExt(dir string, allowedExtensions []string) (map[string]string,
 }
 
 //===============================================================================
+
+// getExtension will return extension associated with a file and ensures to take
+// care of files with multiple extension periods, like static.html, .tml.html, as
+// well as single extensions suffix like .html, .eml.
+func getExtension(name string) string {
+	exts := strings.SplitAfter(name, ".")
+	if len(exts) < 2 {
+		return ""
+	}
+
+	return exts[1]
+}
 
 // validExension returns true/false if the extension provide is a valid acceptable one
 // based on the allowedExtensions string slice.

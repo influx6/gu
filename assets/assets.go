@@ -5,11 +5,10 @@ import (
 	"compress/gzip"
 	"errors"
 	"io"
-	"path/filepath"
 	"sync"
 	"text/template"
 
-	"github.com/gu-io/gu/assets/data"
+	"github.com/gu-io/gu/generators/data"
 	"github.com/influx6/moz/gen"
 )
 
@@ -21,12 +20,22 @@ var (
 	}
 )
 
+// StaticDirective defines a specific directive option which requires the content of
+// the file be written into it's own single file as dictated by the DirName and FileName
+// provided.
+type StaticDirective struct {
+	WriteInFile bool
+	FileName    string
+	DirName     string
+}
+
 // WriteDirective defines a type which defines a directive with details of the
 // content to be written to and the original path and abspath of it's origin.
 type WriteDirective struct {
-	Writer        io.WriterTo
 	OriginPath    string
 	OriginAbsPath string
+	Writer        io.WriterTo
+	Static        *StaticDirective
 }
 
 // Read will copy directives writer into a content buffer and returns the giving string
@@ -77,13 +86,14 @@ func (w *Webpack) Register(ext string, packer Packer) {
 // Build runs through the directory pull all files and runs them through the
 // packers to service each files by extension and returns a slice of all
 // WriteDirective for final processing.
-func (w *Webpack) Build(dir string, doGoSources bool) (map[string][]WriteDirective, error) {
+func (w *Webpack) Build(dir string, doGoSources bool) (map[string][]WriteDirective, map[string][]WriteDirective, error) {
 	statement, err := GetDirStatement(dir, doGoSources)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	var wd map[string][]WriteDirective
+	wd := make(map[string][]WriteDirective, 0)
+	staticWd := make(map[string][]WriteDirective, 0)
 
 	for ext, fileStatement := range statement.FilesByExt {
 		packer, ok := w.packers[ext]
@@ -101,11 +111,22 @@ func (w *Webpack) Build(dir string, doGoSources bool) (map[string][]WriteDirecti
 		}
 
 		if derr != nil {
-			return wd, err
+			return wd, staticWd, err
 		}
 
 		for _, directive := range directives {
-			fileExt := filepath.Ext(directive.OriginPath)
+			fileExt := getExtension(directive.OriginPath)
+
+			if directive.Static != nil {
+				if ext == fileExt {
+					staticWd[ext] = append(staticWd[ext], directive)
+					continue
+				}
+
+				staticWd[fileExt] = append(staticWd[ext], directive)
+				continue
+			}
+
 			if ext == fileExt {
 				wd[ext] = append(wd[ext], directive)
 				continue
@@ -115,22 +136,22 @@ func (w *Webpack) Build(dir string, doGoSources bool) (map[string][]WriteDirecti
 		}
 	}
 
-	return wd, nil
+	return wd, staticWd, nil
 }
 
 // Compile returns a io.WriterTo which contains a complete source of all assets
 // generated and stored inside a io.WriteTo which will contain the go source excluding
 // the package declaration so has to allow you write the contents into the package
 // you wish.
-func (w *Webpack) Compile(dir string, doGoSources bool) (io.WriterTo, error) {
-	directives, err := w.Build(dir, doGoSources)
+func (w *Webpack) Compile(dir string, doGoSources bool) (io.WriterTo, map[string][]WriteDirective, error) {
+	directives, statics, err := w.Build(dir, doGoSources)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	content := gen.Block(
 		gen.SourceTextWith(
-			string(data.Must("packed.tml")),
+			string(data.Must("scaffolds/pack-bundle-src.gen")),
 			template.FuncMap{},
 			struct {
 				Dir        string
@@ -142,5 +163,5 @@ func (w *Webpack) Compile(dir string, doGoSources bool) (io.WriterTo, error) {
 		),
 	)
 
-	return content, nil
+	return content, statics, nil
 }

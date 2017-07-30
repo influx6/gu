@@ -49,6 +49,7 @@ func validateName(val string) bool {
 }
 
 func initCommands() {
+
 	commands = append(commands, &cli.Command{
 		Name:        "component",
 		Usage:       "gu component <component-name>",
@@ -91,7 +92,7 @@ func initCommands() {
 
 				coFile := filepath.Join(currentDir, directive.Dir, directive.FileName)
 
-				if _, err := os.Stat(coFile); err != nil {
+				if _, err := os.Stat(coFile); err == nil {
 					if directive.DontOverride {
 						continue
 					}
@@ -125,7 +126,7 @@ func initCommands() {
 			args := ctx.Args()
 
 			if args.Len() == 0 {
-				return errors.New("Please provide the name for your app")
+				return errors.New("Please provide the name for your package")
 			}
 
 			component := args.First()
@@ -134,28 +135,36 @@ func initCommands() {
 				return err
 			}
 
-			directives, err := generators.ComponentPackageGenerator(ast.AnnotationDeclaration{Arguments: []string{component}}, ast.PackageDeclaration{FilePath: currentDir})
+			directives, err := generators.GuPackageGenerator(ast.AnnotationDeclaration{Arguments: []string{component}}, ast.PackageDeclaration{FilePath: currentDir})
 			if err != nil {
 				return err
 			}
 
+			// appDir := filepath.Join(currentDir, component)
+
 			for _, directive := range directives {
 				if directive.Dir != "" {
 					coDir := filepath.Join(currentDir, directive.Dir)
-					if err := os.MkdirAll(coDir, 0700); err != nil && err != os.ErrExist {
-						return err
+
+					if _, err := os.Stat(coDir); err != nil {
+						drel, _ := filepath.Rel(currentDir, coDir)
+						fmt.Printf("- Creating package directory: %q\n", drel)
+
+						if err := os.MkdirAll(coDir, 0700); err != nil && err != os.ErrExist {
+							return err
+						}
 					}
 
-					fmt.Printf("- Creating app directory: %q\n", coDir)
 				}
 
 				if directive.Writer == nil {
+					// fmt.Printf("-- [NoWriter]Skipping operation in package directory: %q\n", directive.Dir)
 					continue
 				}
 
 				coFile := filepath.Join(currentDir, directive.Dir, directive.FileName)
 
-				if _, err := os.Stat(coFile); err != nil {
+				if _, err := os.Stat(coFile); err == nil {
 					if directive.DontOverride {
 						continue
 					}
@@ -169,6 +178,9 @@ func initCommands() {
 				if _, err := directive.Writer.WriteTo(dFile); err != nil {
 					return err
 				}
+
+				rel, _ := filepath.Rel(currentDir, coFile)
+				fmt.Printf("- Add file to package directory: %q\n", rel)
 
 				dFile.Close()
 			}

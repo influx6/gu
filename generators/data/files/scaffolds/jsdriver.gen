@@ -11,9 +11,9 @@ import (
 	"github.com/gu-io/gu/router"
 	"github.com/gu-io/gu/router/cache"
 	"github.com/gu-io/gopherjs"
-	"{{PKG}}/app"
 )
 
 func main() {
-	gopherjs.NewJSDriver(app.App)
+	// Replace _ with the app to be loaded.
+	gopherjs.NewJSDriver(_)
 }

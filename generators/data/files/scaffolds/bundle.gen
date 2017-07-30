@@ -1,4 +1,15 @@
 
+import (
+	"bytes"
+	"compress/gzip"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"time"
+)
+
 var (
   assets = map[string][]string{}
   assetFiles = map[string]fileData{}
@@ -75,17 +86,26 @@ func ReadFile(path string, doGzip bool) ([]byte, error){
 // for registered files in assetsFiles.
 type FileSystem struct{
   Decompress bool
+  StripPath string
 }
 
 // Open checks for the giving filepath returning a structure that implements the
 // http.File else an error.
 func (f FileSystem) Open(path string) (http.File, error){
+  var err error
+
+  if f.StripPath != "" {
+    path, err = filepath.Rel(f.StripPath, path)
+    if err != nil {
+      return nil, err
+    }
+  }
+
   item, ok := assetFiles[path]
   if !ok {
     return nil, fmt.Errorf("File %q not found in file system", path)
   }
 
-	var err error
 	var zipper *gzip.Reader
 
 	reader := bytes.NewReader(item.data)

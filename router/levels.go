@@ -104,7 +104,7 @@ type Routing struct {
 func NewRouting(path string, morpher trees.SwitchMorpher) *Routing {
 	var rs Routing
 	rs.m = morpher
-	rs.Resolver = New(path)
+	rs.Resolver = NewResolver(path)
 
 	rs.Resolver.Done(func(p PushEvent) {
 		morpher.Off(p)

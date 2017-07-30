@@ -99,7 +99,7 @@ func UseLocationHash(path string) PushEvent {
 // the current PathObserver, if the full URL(i.e Path+Hash) matches then fires
 // the provided function.
 func ListenAndResolve(pattern string, fx func(PushEvent), fail func(PushEvent)) Resolver {
-	resolver := New(pattern)
+	resolver := NewResolver(pattern)
 	resolver.Done(fx)
 	resolver.Failed(fail)
 

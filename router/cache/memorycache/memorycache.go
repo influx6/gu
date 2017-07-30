@@ -42,7 +42,7 @@ func (a *API) All() ([]cache.WebPair, error) {
 	return a.pairs[0:], nil
 }
 
-// DeleteRequest calls the underline cache.Cache.Delete.
+// DeleteRequest removes the underline request from the cache.
 func (a *API) DeleteRequest(w cache.Request) error {
 	for index, pair := range a.pairs {
 		if pair.Request.URL == w.URL {

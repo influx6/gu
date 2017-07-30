@@ -43,7 +43,7 @@ func GetDirStatement(dir string, doGo bool) (DirStatement, error) {
 
 		ext := getExtension(relPath)
 
-		if !doGo && ext == ".go" {
+		if !doGo && ext == "go" {
 			return true
 		}
 

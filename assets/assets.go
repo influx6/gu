@@ -10,7 +10,6 @@ import (
 	"text/template"
 
 	"github.com/gu-io/gu/generators/data"
-	"github.com/influx6/faux/hexwriter"
 	"github.com/influx6/moz/gen"
 )
 
@@ -51,7 +50,8 @@ func (directive WriteDirective) Read() (string, error) {
 	defer buffer.Reset()
 	defer bufferPool.Put(buffer)
 
-	hxs := hexwriter.New(gzip.NewWriter(buffer))
+	// hxs := hexwriter.New(gzip.NewWriter(buffer))
+	hxs := gzip.NewWriter(buffer)
 
 	if _, err := directive.Writer.WriteTo(hxs); err != nil && err != io.EOF {
 		return fmt.Sprintf("%q", buffer.Bytes()), err

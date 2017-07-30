@@ -8,25 +8,27 @@
 package events
 
 import (
-	"github.com/gu-io/gu/notifications"
 	"github.com/gu-io/gu/trees"
+	"github.com/gu-io/gu/common"
+	"github.com/gu-io/gu/notifications"
 )
 
+
 // EventHandler defines a function type for event callbacks.
-type EventHandler func(trees.EventObject, *trees.Markup)
+type EventHandler func(common.EventObject, *trees.Markup)
 
 // WrapHandler wraps the function returning a EventHandler to call the provided
 // function to be called when the event occurs without need for the arguments.
 func WrapHandler(callback func()) EventHandler {
-	return func(ev trees.EventObject, root *trees.Markup) {
+	return func(ev common.EventObject, root *trees.Markup){
 		callback()
 	}
 }
 
 // WrapEventOnlyHandler wraps the function returning a EventHandler to call the provided
 // function to be called when the event occurs without need for the arguments.
-func WrapEventOnlyHandler(callback func(trees.EventObject)) EventHandler {
-	return func(ev trees.EventObject, root *trees.Markup) {
+func WrapEventOnlyHandler(callback func(common.EventObject)) EventHandler {
+	return func(ev common.EventObject, root *trees.Markup) {
 		callback(ev)
 	}
 }
@@ -37,55 +39,33 @@ func WrapEventOnlyHandler(callback func(trees.EventObject)) EventHandler {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AbortEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AbortEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("abort", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("abort")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -96,55 +76,33 @@ func AbortEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AfterPrintEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AfterPrintEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("AfterPrint", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("AfterPrint")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -155,55 +113,33 @@ func AfterPrintEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AfterScriptExecuteEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AfterScriptExecuteEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("AfterScriptExecute", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("AfterScriptExecute")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -214,55 +150,33 @@ func AfterScriptExecuteEvent(callback interface{}, sel string, states ...bool) *
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AlertActiveEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AlertActiveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("AlertActive", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("AlertActive")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -273,55 +187,33 @@ func AlertActiveEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AlertCloseEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AlertCloseEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("AlertClose", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("AlertClose")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -332,55 +224,33 @@ func AlertCloseEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AlertingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AlertingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("alerting", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("alerting")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -391,55 +261,33 @@ func AlertingEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AnimationEndEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AnimationEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("AnimationEnd", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("AnimationEnd")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -450,55 +298,33 @@ func AnimationEndEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AnimationIterationEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AnimationIterationEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("AnimationIteration", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("AnimationIteration")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -509,55 +335,33 @@ func AnimationIterationEvent(callback interface{}, sel string, states ...bool) *
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AnimationStartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AnimationStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("AnimationStart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("AnimationStart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -568,55 +372,33 @@ func AnimationStartEvent(callback interface{}, sel string, states ...bool) *tree
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AppinstalledEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AppinstalledEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("appinstalled", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("appinstalled")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -627,55 +409,33 @@ func AppinstalledEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AudioProcessEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AudioProcessEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("AudioProcess", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("AudioProcess")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -686,55 +446,33 @@ func AudioProcessEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AudioendEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AudioendEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("audioend", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("audioend")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -745,55 +483,70 @@ func AudioendEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func AudiostartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func AudiostartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("audiostart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("audiostart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
+
+	return ev
+}
+
+// AuxclickEvent Documentation is as below: "(no documentation)"
+// https://developer.mozilla.org/docs/Web/Events/auxclick
+// This event provides options() to be called when the events is triggered and an optional selector which will override the internal selector
+// mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
+// appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
+// the selector value is not empty then that becomes the default selector used match the event with.
+func AuxclickEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
+	var handler EventHandler
+
+	switch cb := callback.(type){
+	case func():
+		handler = WrapHandler(cb)
+	case func(common.EventObject):
+		handler = WrapEventOnlyHandler(cb)
+	case func(common.EventObject, *trees.Markup):
+		handler = cb
+	default:
+		panic("Unacceptable type for event callback")
+	}
+
+	ops := append([]trees.EventOptions{trees.EventType("auxclick")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
+			return
+		}
+
+		handler(evm.Event, ev.Tree)
+	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -804,55 +557,33 @@ func AudiostartEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func BeforeInstallPromptEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func BeforeInstallPromptEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("BeforeInstallPrompt", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("BeforeInstallPrompt")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -863,55 +594,33 @@ func BeforeInstallPromptEvent(callback interface{}, sel string, states ...bool) 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func BeforePrintEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func BeforePrintEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("BeforePrint", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("BeforePrint")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -922,55 +631,33 @@ func BeforePrintEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func BeforeScriptExecuteEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func BeforeScriptExecuteEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("BeforeScriptExecute", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("BeforeScriptExecute")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -981,55 +668,33 @@ func BeforeScriptExecuteEvent(callback interface{}, sel string, states ...bool) 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func BeforeUnloadEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func BeforeUnloadEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("BeforeUnload", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("BeforeUnload")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1040,55 +705,33 @@ func BeforeUnloadEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func BeginEventEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func BeginEventEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("beginEvent", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("beginEvent")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1099,55 +742,33 @@ func BeginEventEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func BlockedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func BlockedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("blocked", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("blocked")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1158,55 +779,33 @@ func BlockedEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func BlurEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func BlurEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("blur", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("blur")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1217,55 +816,33 @@ func BlurEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func BoundaryEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func BoundaryEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("boundary", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("boundary")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1276,55 +853,33 @@ func BoundaryEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func BroadcastEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func BroadcastEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("broadcast", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("broadcast")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1335,55 +890,33 @@ func BroadcastEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func BusyEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func BusyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("busy", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("busy")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1394,55 +927,33 @@ func BusyEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CSSRuleViewCSSLinkClickedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CSSRuleViewCSSLinkClickedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("CSSRuleViewCSSLinkClicked", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("CSSRuleViewCSSLinkClicked")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1453,55 +964,33 @@ func CSSRuleViewCSSLinkClickedEvent(callback interface{}, sel string, states ...
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CSSRuleViewChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CSSRuleViewChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("CSSRuleViewChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("CSSRuleViewChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1512,55 +1001,33 @@ func CSSRuleViewChangeEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CSSRuleViewRefreshedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CSSRuleViewRefreshedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("CSSRuleViewRefreshed", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("CSSRuleViewRefreshed")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1571,55 +1038,33 @@ func CSSRuleViewRefreshedEvent(callback interface{}, sel string, states ...bool)
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CachedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CachedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("cached", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("cached")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1630,55 +1075,33 @@ func CachedEvent(callback interface{}, sel string, states ...bool) *trees.Event 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CallschangedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CallschangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("callschanged", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("callschanged")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1689,55 +1112,33 @@ func CallschangedEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CanPlayEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CanPlayEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("CanPlay", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("CanPlay")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1748,55 +1149,33 @@ func CanPlayEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CanPlayThroughEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CanPlayThroughEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("CanPlayThrough", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("CanPlayThrough")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1807,55 +1186,33 @@ func CanPlayThroughEvent(callback interface{}, sel string, states ...bool) *tree
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CardstatechangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CardstatechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("cardstatechange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("cardstatechange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1866,55 +1223,33 @@ func CardstatechangeEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CfstatechangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CfstatechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("cfstatechange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("cfstatechange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1925,55 +1260,33 @@ func CfstatechangeEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("change", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("change")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -1984,55 +1297,33 @@ func ChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ChargingChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ChargingChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("ChargingChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("ChargingChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2043,55 +1334,33 @@ func ChargingChangeEvent(callback interface{}, sel string, states ...bool) *tree
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ChargingTimeChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ChargingTimeChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("ChargingTimeChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("ChargingTimeChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2102,55 +1371,33 @@ func ChargingTimeChangeEvent(callback interface{}, sel string, states ...bool) *
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CheckboxStateChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CheckboxStateChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("CheckboxStateChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("CheckboxStateChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2161,55 +1408,33 @@ func CheckboxStateChangeEvent(callback interface{}, sel string, states ...bool) 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CheckingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CheckingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("checking", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("checking")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2220,55 +1445,33 @@ func CheckingEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ClickEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ClickEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("click", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("click")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2279,55 +1482,33 @@ func ClickEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CloseEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CloseEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("close", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("close")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2338,55 +1519,33 @@ func CloseEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CommandEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CommandEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("command", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("command")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2397,55 +1556,33 @@ func CommandEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CommandupdateEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CommandupdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("commandupdate", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("commandupdate")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2456,55 +1593,33 @@ func CommandupdateEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CompleteEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CompleteEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("complete", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("complete")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2515,55 +1630,33 @@ func CompleteEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CompositionEndEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CompositionEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("CompositionEnd", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("CompositionEnd")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2574,55 +1667,33 @@ func CompositionEndEvent(callback interface{}, sel string, states ...bool) *tree
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CompositionStartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CompositionStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("CompositionStart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("CompositionStart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2633,55 +1704,33 @@ func CompositionStartEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CompositionUpdateEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CompositionUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("CompositionUpdate", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("CompositionUpdate")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2692,55 +1741,33 @@ func CompositionUpdateEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ConnectingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ConnectingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("connecting", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("connecting")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2751,55 +1778,33 @@ func ConnectingEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ConnectionInfoUpdateEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ConnectionInfoUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("connectionInfoUpdate", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("connectionInfoUpdate")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2810,55 +1815,33 @@ func ConnectionInfoUpdateEvent(callback interface{}, sel string, states ...bool)
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ContextMenuEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ContextMenuEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("ContextMenu", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("ContextMenu")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2869,55 +1852,33 @@ func ContextMenuEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CopyEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CopyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("copy", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("copy")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2928,55 +1889,33 @@ func CopyEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func CutEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func CutEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("cut", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("cut")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -2987,55 +1926,33 @@ func CutEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMAutoCompleteEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMAutoCompleteEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMAutoComplete", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMAutoComplete")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3046,55 +1963,33 @@ func DOMAutoCompleteEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMContentLoadedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMContentLoadedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMContentLoaded", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMContentLoaded")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3105,55 +2000,33 @@ func DOMContentLoadedEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMFrameContentLoadedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMFrameContentLoadedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMFrameContentLoaded", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMFrameContentLoaded")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3164,55 +2037,33 @@ func DOMFrameContentLoadedEvent(callback interface{}, sel string, states ...bool
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMLinkAddedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMLinkAddedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMLinkAdded", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMLinkAdded")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3223,55 +2074,33 @@ func DOMLinkAddedEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMLinkRemovedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMLinkRemovedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMLinkRemoved", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMLinkRemoved")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3282,55 +2111,33 @@ func DOMLinkRemovedEvent(callback interface{}, sel string, states ...bool) *tree
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMMenuItemActiveEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMMenuItemActiveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMMenuItemActive", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMMenuItemActive")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3341,55 +2148,33 @@ func DOMMenuItemActiveEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMMenuItemInactiveEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMMenuItemInactiveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMMenuItemInactive", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMMenuItemInactive")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3400,55 +2185,33 @@ func DOMMenuItemInactiveEvent(callback interface{}, sel string, states ...bool) 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMMetaAddedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMMetaAddedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMMetaAdded", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMMetaAdded")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3459,55 +2222,33 @@ func DOMMetaAddedEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMMetaRemovedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMMetaRemovedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMMetaRemoved", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMMetaRemoved")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3518,55 +2259,33 @@ func DOMMetaRemovedEvent(callback interface{}, sel string, states ...bool) *tree
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMModalDialogClosedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMModalDialogClosedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMModalDialogClosed", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMModalDialogClosed")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3577,55 +2296,33 @@ func DOMModalDialogClosedEvent(callback interface{}, sel string, states ...bool)
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMPopupBlockedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMPopupBlockedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMPopupBlocked", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMPopupBlocked")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3636,55 +2333,33 @@ func DOMPopupBlockedEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMTitleChangedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMTitleChangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMTitleChanged", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMTitleChanged")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3695,55 +2370,33 @@ func DOMTitleChangedEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMWillOpenModalDialogEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMWillOpenModalDialogEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMWillOpenModalDialog", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMWillOpenModalDialog")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3754,55 +2407,33 @@ func DOMWillOpenModalDialogEvent(callback interface{}, sel string, states ...boo
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMWindowCloseEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMWindowCloseEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMWindowClose", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMWindowClose")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3813,55 +2444,33 @@ func DOMWindowCloseEvent(callback interface{}, sel string, states ...bool) *tree
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DOMWindowCreatedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DOMWindowCreatedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DOMWindowCreated", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DOMWindowCreated")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3872,55 +2481,33 @@ func DOMWindowCreatedEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DatachangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DatachangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("datachange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("datachange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3931,55 +2518,33 @@ func DatachangeEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DataerrorEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DataerrorEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("dataerror", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("dataerror")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -3990,55 +2555,33 @@ func DataerrorEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DblClickEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DblClickEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DblClick", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DblClick")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4049,55 +2592,33 @@ func DblClickEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DeliveredEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DeliveredEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("delivered", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("delivered")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4108,55 +2629,33 @@ func DeliveredEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DeviceLightEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DeviceLightEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DeviceLight", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DeviceLight")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4167,55 +2666,33 @@ func DeviceLightEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DeviceMotionEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DeviceMotionEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DeviceMotion", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DeviceMotion")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4226,55 +2703,33 @@ func DeviceMotionEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DeviceOrientationEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DeviceOrientationEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DeviceOrientation", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DeviceOrientation")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4285,55 +2740,33 @@ func DeviceOrientationEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DeviceProximityEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DeviceProximityEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DeviceProximity", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DeviceProximity")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4344,55 +2777,33 @@ func DeviceProximityEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DevicechangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DevicechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("devicechange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("devicechange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4403,55 +2814,33 @@ func DevicechangeEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DialingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DialingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("dialing", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("dialing")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4462,55 +2851,33 @@ func DialingEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DisabledEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DisabledEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("disabled", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("disabled")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4521,55 +2888,33 @@ func DisabledEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DischargingTimeChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DischargingTimeChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DischargingTimeChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DischargingTimeChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4580,55 +2925,33 @@ func DischargingTimeChangeEvent(callback interface{}, sel string, states ...bool
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DisconnectedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DisconnectedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("disconnected", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("disconnected")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4639,55 +2962,33 @@ func DisconnectedEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DisconnectingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DisconnectingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("disconnecting", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("disconnecting")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4698,55 +2999,33 @@ func DisconnectingEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DownloadingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DownloadingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("downloading", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("downloading")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4757,55 +3036,33 @@ func DownloadingEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DragEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DragEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("drag", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("drag")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4816,55 +3073,33 @@ func DragEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DragEndEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DragEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DragEnd", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DragEnd")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4875,55 +3110,33 @@ func DragEndEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DragEnterEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DragEnterEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DragEnter", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DragEnter")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4934,55 +3147,33 @@ func DragEnterEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DragLeaveEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DragLeaveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DragLeave", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DragLeave")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -4993,55 +3184,33 @@ func DragLeaveEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DragOverEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DragOverEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DragOver", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DragOver")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5052,55 +3221,33 @@ func DragOverEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DragStartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DragStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DragStart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DragStart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5111,55 +3258,33 @@ func DragStartEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DropEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DropEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("drop", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("drop")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5170,55 +3295,33 @@ func DropEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func DurationChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func DurationChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("DurationChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("DurationChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5229,55 +3332,33 @@ func DurationChangeEvent(callback interface{}, sel string, states ...bool) *tree
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func EmptiedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func EmptiedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("emptied", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("emptied")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5288,55 +3369,33 @@ func EmptiedEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func EnabledEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func EnabledEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("enabled", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("enabled")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5347,55 +3406,33 @@ func EnabledEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func EndEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func EndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("end", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("end")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5406,55 +3443,33 @@ func EndEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func EndEventEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func EndEventEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("endEvent", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("endEvent")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5465,55 +3480,33 @@ func EndEventEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func EndedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func EndedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("ended", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("ended")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5524,55 +3517,33 @@ func EndedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func FocusEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func FocusEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("focus", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("focus")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5583,55 +3554,33 @@ func FocusEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func FocusInEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func FocusInEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("FocusIn", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("FocusIn")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5642,55 +3591,33 @@ func FocusInEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func FocusOutEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func FocusOutEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("FocusOut", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("FocusOut")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5701,55 +3628,33 @@ func FocusOutEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func FullScreenChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func FullScreenChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("FullScreenChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("FullScreenChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5760,55 +3665,33 @@ func FullScreenChangeEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func FullScreenErrorEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func FullScreenErrorEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("FullScreenError", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("FullScreenError")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5819,55 +3702,33 @@ func FullScreenErrorEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func FullscreenEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func FullscreenEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("fullscreen", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("fullscreen")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5878,55 +3739,33 @@ func FullscreenEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func GamepadConnectedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func GamepadConnectedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("GamepadConnected", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("GamepadConnected")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5937,55 +3776,33 @@ func GamepadConnectedEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func GamepadDisconnectedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func GamepadDisconnectedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("GamepadDisconnected", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("GamepadDisconnected")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -5996,55 +3813,33 @@ func GamepadDisconnectedEvent(callback interface{}, sel string, states ...bool) 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func GotpointercaptureEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func GotpointercaptureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("gotpointercapture", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("gotpointercapture")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6055,55 +3850,33 @@ func GotpointercaptureEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func HashChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func HashChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("HashChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("HashChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6114,55 +3887,33 @@ func HashChangeEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func HeldEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func HeldEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("held", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("held")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6173,55 +3924,33 @@ func HeldEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func HoldingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func HoldingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("holding", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("holding")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6232,55 +3961,33 @@ func HoldingEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func IcccardlockerrorEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func IcccardlockerrorEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("icccardlockerror", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("icccardlockerror")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6291,55 +3998,33 @@ func IcccardlockerrorEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func IccinfochangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func IccinfochangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("iccinfochange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("iccinfochange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6350,55 +4035,33 @@ func IccinfochangeEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func IncomingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func IncomingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("incoming", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("incoming")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6409,55 +4072,33 @@ func IncomingEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func InputEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func InputEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("input", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("input")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6468,55 +4109,33 @@ func InputEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func InvalidEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func InvalidEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("invalid", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("invalid")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6527,55 +4146,33 @@ func InvalidEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func KeyDownEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func KeyDownEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("KeyDown", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("KeyDown")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6586,55 +4183,33 @@ func KeyDownEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func KeyPressEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func KeyPressEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("KeyPress", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("KeyPress")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6645,55 +4220,33 @@ func KeyPressEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func KeyUpEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func KeyUpEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("KeyUp", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("KeyUp")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6704,55 +4257,33 @@ func KeyUpEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func LanguageChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func LanguageChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("LanguageChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("LanguageChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6763,55 +4294,33 @@ func LanguageChangeEvent(callback interface{}, sel string, states ...bool) *tree
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func LevelChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func LevelChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("LevelChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("LevelChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6822,55 +4331,33 @@ func LevelChangeEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func LoadEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func LoadEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("load", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("load")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6881,55 +4368,33 @@ func LoadEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func LoadEndEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func LoadEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("LoadEnd", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("LoadEnd")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6940,55 +4405,33 @@ func LoadEndEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func LoadStartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func LoadStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("LoadStart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("LoadStart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -6999,55 +4442,33 @@ func LoadStartEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func LoadedDataEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func LoadedDataEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("LoadedData", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("LoadedData")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7058,55 +4479,33 @@ func LoadedDataEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func LoadedMetadataEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func LoadedMetadataEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("LoadedMetadata", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("LoadedMetadata")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7117,55 +4516,33 @@ func LoadedMetadataEvent(callback interface{}, sel string, states ...bool) *tree
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func LocalizedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func LocalizedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("localized", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("localized")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7176,55 +4553,33 @@ func LocalizedEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func LostpointercaptureEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func LostpointercaptureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("lostpointercapture", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("lostpointercapture")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7235,55 +4590,33 @@ func LostpointercaptureEvent(callback interface{}, sel string, states ...bool) *
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MarkEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MarkEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mark", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mark")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7294,55 +4627,33 @@ func MarkEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MessageEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MessageEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("message", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("message")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7353,55 +4664,33 @@ func MessageEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MouseDownEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MouseDownEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MouseDown", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MouseDown")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7412,55 +4701,33 @@ func MouseDownEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MouseEnterEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MouseEnterEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MouseEnter", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MouseEnter")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7471,55 +4738,33 @@ func MouseEnterEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MouseLeaveEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MouseLeaveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MouseLeave", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MouseLeave")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7530,55 +4775,33 @@ func MouseLeaveEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MouseMoveEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MouseMoveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MouseMove", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MouseMove")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7589,55 +4812,33 @@ func MouseMoveEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MouseOutEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MouseOutEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MouseOut", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MouseOut")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7648,55 +4849,33 @@ func MouseOutEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MouseOverEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MouseOverEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MouseOver", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MouseOver")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7707,55 +4886,33 @@ func MouseOverEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MouseUpEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MouseUpEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MouseUp", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MouseUp")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7766,55 +4923,33 @@ func MouseUpEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozAfterPaintEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozAfterPaintEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozAfterPaint", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozAfterPaint")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7825,55 +4960,33 @@ func MozAfterPaintEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozAudioAvailableEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozAudioAvailableEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozAudioAvailable", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozAudioAvailable")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7884,55 +4997,33 @@ func MozAudioAvailableEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozBeforeResizeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozBeforeResizeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozBeforeResize", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozBeforeResize")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -7943,55 +5034,33 @@ func MozBeforeResizeEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozEdgeUIGestureEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozEdgeUIGestureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozEdgeUIGesture", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozEdgeUIGesture")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8002,55 +5071,33 @@ func MozEdgeUIGestureEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozEnteredDomFullscreenEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozEnteredDomFullscreenEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozEnteredDomFullscreen", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozEnteredDomFullscreen")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8061,55 +5108,33 @@ func MozEnteredDomFullscreenEvent(callback interface{}, sel string, states ...bo
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozGamepadButtonDownEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozGamepadButtonDownEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozGamepadButtonDown", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozGamepadButtonDown")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8120,55 +5145,33 @@ func MozGamepadButtonDownEvent(callback interface{}, sel string, states ...bool)
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozGamepadButtonUpEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozGamepadButtonUpEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozGamepadButtonUp", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozGamepadButtonUp")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8179,55 +5182,33 @@ func MozGamepadButtonUpEvent(callback interface{}, sel string, states ...bool) *
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozMagnifyGestureEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozMagnifyGestureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozMagnifyGesture", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozMagnifyGesture")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8238,55 +5219,33 @@ func MozMagnifyGestureEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozMagnifyGestureStartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozMagnifyGestureStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozMagnifyGestureStart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozMagnifyGestureStart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8297,55 +5256,33 @@ func MozMagnifyGestureStartEvent(callback interface{}, sel string, states ...boo
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozMagnifyGestureUpdateEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozMagnifyGestureUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozMagnifyGestureUpdate", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozMagnifyGestureUpdate")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8356,55 +5293,33 @@ func MozMagnifyGestureUpdateEvent(callback interface{}, sel string, states ...bo
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozPressTapGestureEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozPressTapGestureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozPressTapGesture", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozPressTapGesture")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8415,55 +5330,33 @@ func MozPressTapGestureEvent(callback interface{}, sel string, states ...bool) *
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozRotateGestureEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozRotateGestureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozRotateGesture", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozRotateGesture")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8474,55 +5367,33 @@ func MozRotateGestureEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozRotateGestureStartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozRotateGestureStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozRotateGestureStart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozRotateGestureStart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8533,55 +5404,33 @@ func MozRotateGestureStartEvent(callback interface{}, sel string, states ...bool
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozRotateGestureUpdateEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozRotateGestureUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozRotateGestureUpdate", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozRotateGestureUpdate")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8592,55 +5441,33 @@ func MozRotateGestureUpdateEvent(callback interface{}, sel string, states ...boo
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozScrolledAreaChangedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozScrolledAreaChangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozScrolledAreaChanged", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozScrolledAreaChanged")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8651,55 +5478,33 @@ func MozScrolledAreaChangedEvent(callback interface{}, sel string, states ...boo
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozSwipeGestureEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozSwipeGestureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozSwipeGesture", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozSwipeGesture")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8710,55 +5515,33 @@ func MozSwipeGestureEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozTapGestureEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozTapGestureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("MozTapGesture", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("MozTapGesture")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8769,55 +5552,33 @@ func MozTapGestureEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowseractivitydoneEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowseractivitydoneEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowseractivitydone", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowseractivitydone")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8828,55 +5589,33 @@ func MozbrowseractivitydoneEvent(callback interface{}, sel string, states ...boo
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserasyncscrollEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserasyncscrollEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserasyncscroll", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserasyncscroll")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8887,55 +5626,33 @@ func MozbrowserasyncscrollEvent(callback interface{}, sel string, states ...bool
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowseraudioplaybackchangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowseraudioplaybackchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowseraudioplaybackchange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowseraudioplaybackchange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -8946,55 +5663,33 @@ func MozbrowseraudioplaybackchangeEvent(callback interface{}, sel string, states
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowsercaretstatechangedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowsercaretstatechangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowsercaretstatechanged", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowsercaretstatechanged")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9005,55 +5700,33 @@ func MozbrowsercaretstatechangedEvent(callback interface{}, sel string, states .
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowsercloseEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowsercloseEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserclose", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserclose")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9064,55 +5737,33 @@ func MozbrowsercloseEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowsercontextmenuEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowsercontextmenuEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowsercontextmenu", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowsercontextmenu")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9123,55 +5774,33 @@ func MozbrowsercontextmenuEvent(callback interface{}, sel string, states ...bool
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserdocumentfirstpaintEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserdocumentfirstpaintEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserdocumentfirstpaint", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserdocumentfirstpaint")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9182,55 +5811,33 @@ func MozbrowserdocumentfirstpaintEvent(callback interface{}, sel string, states 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowsererrorEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowsererrorEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowsererror", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowsererror")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9241,55 +5848,33 @@ func MozbrowsererrorEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserfindchangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserfindchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserfindchange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserfindchange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9300,55 +5885,33 @@ func MozbrowserfindchangeEvent(callback interface{}, sel string, states ...bool)
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserfirstpaintEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserfirstpaintEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserfirstpaint", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserfirstpaint")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9359,55 +5922,33 @@ func MozbrowserfirstpaintEvent(callback interface{}, sel string, states ...bool)
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowsericonchangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowsericonchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowsericonchange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowsericonchange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9418,55 +5959,33 @@ func MozbrowsericonchangeEvent(callback interface{}, sel string, states ...bool)
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserloadendEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserloadendEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserloadend", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserloadend")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9477,55 +5996,33 @@ func MozbrowserloadendEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserloadstartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserloadstartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserloadstart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserloadstart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9536,55 +6033,33 @@ func MozbrowserloadstartEvent(callback interface{}, sel string, states ...bool) 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserlocationchangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserlocationchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserlocationchange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserlocationchange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9595,55 +6070,33 @@ func MozbrowserlocationchangeEvent(callback interface{}, sel string, states ...b
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowsermanifestchangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowsermanifestchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowsermanifestchange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowsermanifestchange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9654,55 +6107,33 @@ func MozbrowsermanifestchangeEvent(callback interface{}, sel string, states ...b
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowsermetachangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowsermetachangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowsermetachange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowsermetachange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9713,55 +6144,33 @@ func MozbrowsermetachangeEvent(callback interface{}, sel string, states ...bool)
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowseropensearchEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowseropensearchEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowseropensearch", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowseropensearch")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9772,55 +6181,33 @@ func MozbrowseropensearchEvent(callback interface{}, sel string, states ...bool)
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowseropentabEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowseropentabEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowseropentab", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowseropentab")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9831,55 +6218,33 @@ func MozbrowseropentabEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowseropenwindowEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowseropenwindowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowseropenwindow", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowseropenwindow")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9890,55 +6255,33 @@ func MozbrowseropenwindowEvent(callback interface{}, sel string, states ...bool)
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserresizeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserresizeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserresize", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserresize")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -9949,55 +6292,33 @@ func MozbrowserresizeEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserscrollEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserscrollEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserscroll", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserscroll")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10008,55 +6329,33 @@ func MozbrowserscrollEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserscrollareachangedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserscrollareachangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserscrollareachanged", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserscrollareachanged")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10067,55 +6366,33 @@ func MozbrowserscrollareachangedEvent(callback interface{}, sel string, states .
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserscrollviewchangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserscrollviewchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserscrollviewchange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserscrollviewchange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10126,55 +6403,33 @@ func MozbrowserscrollviewchangeEvent(callback interface{}, sel string, states ..
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowsersecuritychangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowsersecuritychangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowsersecuritychange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowsersecuritychange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10185,55 +6440,33 @@ func MozbrowsersecuritychangeEvent(callback interface{}, sel string, states ...b
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserselectionstatechangedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserselectionstatechangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserselectionstatechanged", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserselectionstatechanged")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10244,55 +6477,33 @@ func MozbrowserselectionstatechangedEvent(callback interface{}, sel string, stat
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowsershowmodalpromptEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowsershowmodalpromptEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowsershowmodalprompt", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowsershowmodalprompt")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10303,55 +6514,33 @@ func MozbrowsershowmodalpromptEvent(callback interface{}, sel string, states ...
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowsertitlechangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowsertitlechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowsertitlechange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowsertitlechange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10362,55 +6551,33 @@ func MozbrowsertitlechangeEvent(callback interface{}, sel string, states ...bool
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowserusernameandpasswordrequiredEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowserusernameandpasswordrequiredEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowserusernameandpasswordrequired", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowserusernameandpasswordrequired")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10421,55 +6588,33 @@ func MozbrowserusernameandpasswordrequiredEvent(callback interface{}, sel string
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MozbrowservisibilitychangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MozbrowservisibilitychangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("mozbrowservisibilitychange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("mozbrowservisibilitychange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10480,55 +6625,33 @@ func MozbrowservisibilitychangeEvent(callback interface{}, sel string, states ..
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func MoztimechangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func MoztimechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("moztimechange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("moztimechange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10539,55 +6662,33 @@ func MoztimechangeEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func NoUpdateEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func NoUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("NoUpdate", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("NoUpdate")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10598,55 +6699,33 @@ func NoUpdateEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func NomatchEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func NomatchEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("nomatch", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("nomatch")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10657,55 +6736,33 @@ func NomatchEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func NotificationclickEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func NotificationclickEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("notificationclick", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("notificationclick")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10716,55 +6773,33 @@ func NotificationclickEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ObsoleteEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ObsoleteEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("obsolete", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("obsolete")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10775,55 +6810,33 @@ func ObsoleteEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func OfflineEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func OfflineEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("offline", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("offline")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10834,55 +6847,33 @@ func OfflineEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func OnconnectedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func OnconnectedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("onconnected", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("onconnected")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10893,55 +6884,33 @@ func OnconnectedEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func OnlineEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func OnlineEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("online", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("online")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -10952,55 +6921,33 @@ func OnlineEvent(callback interface{}, sel string, states ...bool) *trees.Event 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func OpenEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func OpenEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("open", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("open")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11011,55 +6958,33 @@ func OpenEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func OrientationChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func OrientationChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("OrientationChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("OrientationChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11070,55 +6995,33 @@ func OrientationChangeEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func OverflowEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func OverflowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("overflow", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("overflow")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11129,55 +7032,33 @@ func OverflowEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PageHideEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PageHideEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("PageHide", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("PageHide")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11188,55 +7069,33 @@ func PageHideEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PageShowEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PageShowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("PageShow", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("PageShow")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11247,55 +7106,33 @@ func PageShowEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PasteEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PasteEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("paste", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("paste")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11306,55 +7143,33 @@ func PasteEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PauseEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PauseEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("pause", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("pause")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11365,55 +7180,33 @@ func PauseEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PlayEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PlayEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("play", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("play")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11424,55 +7217,33 @@ func PlayEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PlayingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PlayingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("playing", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("playing")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11483,55 +7254,33 @@ func PlayingEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PointerLockChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PointerLockChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("PointerLockChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("PointerLockChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11542,55 +7291,33 @@ func PointerLockChangeEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PointerLockErrorEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PointerLockErrorEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("PointerLockError", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("PointerLockError")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11601,55 +7328,33 @@ func PointerLockErrorEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PointercancelEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PointercancelEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("pointercancel", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("pointercancel")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11660,55 +7365,33 @@ func PointercancelEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PointerdownEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PointerdownEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("pointerdown", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("pointerdown")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11719,55 +7402,33 @@ func PointerdownEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PointerenterEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PointerenterEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("pointerenter", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("pointerenter")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11778,55 +7439,33 @@ func PointerenterEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PointerleaveEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PointerleaveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("pointerleave", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("pointerleave")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11837,55 +7476,33 @@ func PointerleaveEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PointermoveEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PointermoveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("pointermove", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("pointermove")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11896,55 +7513,33 @@ func PointermoveEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PointeroutEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PointeroutEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("pointerout", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("pointerout")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -11955,55 +7550,33 @@ func PointeroutEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PointeroverEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PointeroverEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("pointerover", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("pointerover")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12014,55 +7587,33 @@ func PointeroverEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PointerupEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PointerupEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("pointerup", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("pointerup")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12073,55 +7624,33 @@ func PointerupEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PopStateEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PopStateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("PopState", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("PopState")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12132,55 +7661,33 @@ func PopStateEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PopuphiddenEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PopuphiddenEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("popuphidden", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("popuphidden")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12191,55 +7698,33 @@ func PopuphiddenEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PopuphidingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PopuphidingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("popuphiding", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("popuphiding")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12250,55 +7735,33 @@ func PopuphidingEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PopupshowingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PopupshowingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("popupshowing", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("popupshowing")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12309,55 +7772,33 @@ func PopupshowingEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PopupshownEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PopupshownEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("popupshown", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("popupshown")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12368,55 +7809,33 @@ func PopupshownEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ProgressEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ProgressEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("progress", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("progress")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12427,55 +7846,33 @@ func ProgressEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PushEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PushEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("push", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("push")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12486,55 +7883,33 @@ func PushEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func PushsubscriptionchangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func PushsubscriptionchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("pushsubscriptionchange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("pushsubscriptionchange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12545,55 +7920,33 @@ func PushsubscriptionchangeEvent(callback interface{}, sel string, states ...boo
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func RadioStateChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func RadioStateChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("RadioStateChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("RadioStateChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12604,55 +7957,33 @@ func RadioStateChangeEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func RateChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func RateChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("RateChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("RateChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12663,55 +7994,33 @@ func RateChangeEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ReadystateChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ReadystateChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("ReadystateChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("ReadystateChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12722,55 +8031,33 @@ func ReadystateChangeEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ReceivedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ReceivedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("received", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("received")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12781,55 +8068,70 @@ func ReceivedEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func RepeatEventEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func RepeatEventEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("repeatEvent", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("repeatEvent")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
+
+	return ev
+}
+
+// RequestprogressEvent Documentation is as below: "(no documentation)"
+// https://developer.mozilla.org/docs/Web/Events/requestprogress
+// This event provides options() to be called when the events is triggered and an optional selector which will override the internal selector
+// mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
+// appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
+// the selector value is not empty then that becomes the default selector used match the event with.
+func RequestprogressEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
+	var handler EventHandler
+
+	switch cb := callback.(type){
+	case func():
+		handler = WrapHandler(cb)
+	case func(common.EventObject):
+		handler = WrapEventOnlyHandler(cb)
+	case func(common.EventObject, *trees.Markup):
+		handler = cb
+	default:
+		panic("Unacceptable type for event callback")
+	}
+
+	ops := append([]trees.EventOptions{trees.EventType("requestprogress")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
+			return
+		}
+
+		handler(evm.Event, ev.Tree)
+	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12840,55 +8142,33 @@ func RepeatEventEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ResetEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ResetEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("reset", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("reset")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12899,55 +8179,33 @@ func ResetEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ResizeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ResizeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("resize", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("resize")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -12958,55 +8216,70 @@ func ResizeEvent(callback interface{}, sel string, states ...bool) *trees.Event 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ResourcetimingbufferfullEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ResourcetimingbufferfullEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("resourcetimingbufferfull", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("resourcetimingbufferfull")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
+
+	return ev
+}
+
+// ResponseprogressEvent Documentation is as below: "(no documentation)"
+// https://developer.mozilla.org/docs/Web/Events/responseprogress
+// This event provides options() to be called when the events is triggered and an optional selector which will override the internal selector
+// mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
+// appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
+// the selector value is not empty then that becomes the default selector used match the event with.
+func ResponseprogressEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
+	var handler EventHandler
+
+	switch cb := callback.(type){
+	case func():
+		handler = WrapHandler(cb)
+	case func(common.EventObject):
+		handler = WrapEventOnlyHandler(cb)
+	case func(common.EventObject, *trees.Markup):
+		handler = cb
+	default:
+		panic("Unacceptable type for event callback")
+	}
+
+	ops := append([]trees.EventOptions{trees.EventType("responseprogress")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
+			return
+		}
+
+		handler(evm.Event, ev.Tree)
+	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13017,55 +8290,33 @@ func ResourcetimingbufferfullEvent(callback interface{}, sel string, states ...b
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ResultEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ResultEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("result", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("result")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13076,55 +8327,33 @@ func ResultEvent(callback interface{}, sel string, states ...bool) *trees.Event 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ResumeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ResumeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("resume", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("resume")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13135,55 +8364,33 @@ func ResumeEvent(callback interface{}, sel string, states ...bool) *trees.Event 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ResumingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ResumingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("resuming", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("resuming")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13194,55 +8401,33 @@ func ResumingEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SSTabClosingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SSTabClosingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SSTabClosing", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SSTabClosing")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13253,55 +8438,33 @@ func SSTabClosingEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SSTabRestoredEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SSTabRestoredEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SSTabRestored", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SSTabRestored")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13312,55 +8475,33 @@ func SSTabRestoredEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SSTabRestoringEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SSTabRestoringEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SSTabRestoring", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SSTabRestoring")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13371,55 +8512,33 @@ func SSTabRestoringEvent(callback interface{}, sel string, states ...bool) *tree
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SSWindowClosingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SSWindowClosingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SSWindowClosing", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SSWindowClosing")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13430,55 +8549,33 @@ func SSWindowClosingEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SSWindowStateBusyEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SSWindowStateBusyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SSWindowStateBusy", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SSWindowStateBusy")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13489,55 +8586,33 @@ func SSWindowStateBusyEvent(callback interface{}, sel string, states ...bool) *t
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SSWindowStateReadyEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SSWindowStateReadyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SSWindowStateReady", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SSWindowStateReady")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13548,55 +8623,33 @@ func SSWindowStateReadyEvent(callback interface{}, sel string, states ...bool) *
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SVGAbortEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SVGAbortEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SVGAbort", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SVGAbort")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13607,55 +8660,33 @@ func SVGAbortEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SVGErrorEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SVGErrorEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SVGError", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SVGError")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13666,55 +8697,33 @@ func SVGErrorEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SVGLoadEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SVGLoadEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SVGLoad", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SVGLoad")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13725,55 +8734,33 @@ func SVGLoadEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SVGResizeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SVGResizeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SVGResize", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SVGResize")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13784,55 +8771,33 @@ func SVGResizeEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SVGScrollEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SVGScrollEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SVGScroll", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SVGScroll")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13843,55 +8808,33 @@ func SVGScrollEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SVGUnloadEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SVGUnloadEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SVGUnload", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SVGUnload")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13902,55 +8845,33 @@ func SVGUnloadEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SVGZoomEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SVGZoomEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SVGZoom", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SVGZoom")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -13961,55 +8882,33 @@ func SVGZoomEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ScrollEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ScrollEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("scroll", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("scroll")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14020,55 +8919,33 @@ func ScrollEvent(callback interface{}, sel string, states ...bool) *trees.Event 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SeekedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SeekedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("seeked", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("seeked")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14079,55 +8956,33 @@ func SeekedEvent(callback interface{}, sel string, states ...bool) *trees.Event 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SeekingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SeekingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("seeking", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("seeking")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14138,55 +8993,33 @@ func SeekingEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SelectEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SelectEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("select", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("select")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14197,55 +9030,33 @@ func SelectEvent(callback interface{}, sel string, states ...bool) *trees.Event 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SelectionchangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SelectionchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("selectionchange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("selectionchange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14256,55 +9067,33 @@ func SelectionchangeEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SelectstartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SelectstartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("selectstart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("selectstart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14315,55 +9104,33 @@ func SelectstartEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SentEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SentEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("sent", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("sent")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14374,55 +9141,33 @@ func SentEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ShowEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ShowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("show", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("show")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14433,55 +9178,33 @@ func ShowEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SizemodechangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SizemodechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("sizemodechange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("sizemodechange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14492,55 +9215,33 @@ func SizemodechangeEvent(callback interface{}, sel string, states ...bool) *tree
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SmartCardInsertEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SmartCardInsertEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SmartCardInsert", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SmartCardInsert")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14551,55 +9252,33 @@ func SmartCardInsertEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SmartCardRemoveEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SmartCardRemoveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("SmartCardRemove", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("SmartCardRemove")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14610,55 +9289,33 @@ func SmartCardRemoveEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SoundendEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SoundendEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("soundend", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("soundend")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14669,55 +9326,33 @@ func SoundendEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SoundstartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SoundstartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("soundstart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("soundstart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14728,55 +9363,33 @@ func SoundstartEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SpeechendEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SpeechendEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("speechend", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("speechend")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14787,55 +9400,33 @@ func SpeechendEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SpeechstartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SpeechstartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("speechstart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("speechstart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14846,55 +9437,33 @@ func SpeechstartEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func StalledEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func StalledEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("stalled", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("stalled")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14905,55 +9474,33 @@ func StalledEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func StartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func StartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("start", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("start")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -14964,55 +9511,33 @@ func StartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func StatechangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func StatechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("statechange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("statechange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15023,55 +9548,33 @@ func StatechangeEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func StatuschangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func StatuschangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("statuschange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("statuschange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15082,55 +9585,33 @@ func StatuschangeEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func StkcommandEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func StkcommandEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("stkcommand", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("stkcommand")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15141,55 +9622,33 @@ func StkcommandEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func StksessionendEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func StksessionendEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("stksessionend", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("stksessionend")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15200,55 +9659,33 @@ func StksessionendEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func StorageEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func StorageEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("storage", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("storage")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15259,55 +9696,33 @@ func StorageEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SubmitEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SubmitEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("submit", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("submit")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15318,55 +9733,33 @@ func SubmitEvent(callback interface{}, sel string, states ...bool) *trees.Event 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SuccessEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SuccessEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("success", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("success")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15377,55 +9770,33 @@ func SuccessEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func SuspendEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func SuspendEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("suspend", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("suspend")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15436,55 +9807,33 @@ func SuspendEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TabCloseEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TabCloseEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TabClose", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TabClose")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15495,55 +9844,33 @@ func TabCloseEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TabHideEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TabHideEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TabHide", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TabHide")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15554,55 +9881,33 @@ func TabHideEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TabOpenEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TabOpenEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TabOpen", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TabOpen")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15613,55 +9918,33 @@ func TabOpenEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TabPinnedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TabPinnedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TabPinned", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TabPinned")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15672,55 +9955,33 @@ func TabPinnedEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TabSelectEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TabSelectEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TabSelect", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TabSelect")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15731,55 +9992,33 @@ func TabSelectEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TabShowEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TabShowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TabShow", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TabShow")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15790,55 +10029,33 @@ func TabShowEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TabUnpinnedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TabUnpinnedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TabUnpinned", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TabUnpinned")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15849,55 +10066,33 @@ func TabUnpinnedEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TimeUpdateEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TimeUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TimeUpdate", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TimeUpdate")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15908,55 +10103,33 @@ func TimeUpdateEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TimeoutEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TimeoutEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("timeout", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("timeout")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -15967,55 +10140,33 @@ func TimeoutEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TouchCancelEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TouchCancelEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TouchCancel", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TouchCancel")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16026,55 +10177,33 @@ func TouchCancelEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TouchEndEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TouchEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TouchEnd", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TouchEnd")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16085,55 +10214,33 @@ func TouchEndEvent(callback interface{}, sel string, states ...bool) *trees.Even
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TouchEnterEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TouchEnterEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TouchEnter", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TouchEnter")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16144,55 +10251,33 @@ func TouchEnterEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TouchLeaveEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TouchLeaveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TouchLeave", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TouchLeave")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16203,55 +10288,33 @@ func TouchLeaveEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TouchMoveEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TouchMoveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TouchMove", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TouchMove")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16262,55 +10325,33 @@ func TouchMoveEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TouchStartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TouchStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TouchStart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TouchStart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16321,55 +10362,70 @@ func TouchStartEvent(callback interface{}, sel string, states ...bool) *trees.Ev
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TransitionEndEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TransitionEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("TransitionEnd", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("TransitionEnd")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
+
+	return ev
+}
+
+// TransitioncancelEvent Documentation is as below: "(no documentation)"
+// https://developer.mozilla.org/docs/Web/Events/transitioncancel
+// This event provides options() to be called when the events is triggered and an optional selector which will override the internal selector
+// mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
+// appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
+// the selector value is not empty then that becomes the default selector used match the event with.
+func TransitioncancelEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
+	var handler EventHandler
+
+	switch cb := callback.(type){
+	case func():
+		handler = WrapHandler(cb)
+	case func(common.EventObject):
+		handler = WrapEventOnlyHandler(cb)
+	case func(common.EventObject, *trees.Markup):
+		handler = cb
+	default:
+		panic("Unacceptable type for event callback")
+	}
+
+	ops := append([]trees.EventOptions{trees.EventType("transitioncancel")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
+			return
+		}
+
+		handler(evm.Event, ev.Tree)
+	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16380,55 +10436,33 @@ func TransitionEndEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TransitionrunEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TransitionrunEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("transitionrun", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("transitionrun")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16439,55 +10473,33 @@ func TransitionrunEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func TransitionstartEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func TransitionstartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("transitionstart", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("transitionstart")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16498,55 +10510,33 @@ func TransitionstartEvent(callback interface{}, sel string, states ...bool) *tre
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func UnderflowEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func UnderflowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("underflow", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("underflow")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16557,55 +10547,33 @@ func UnderflowEvent(callback interface{}, sel string, states ...bool) *trees.Eve
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func UnloadEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func UnloadEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("unload", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("unload")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16616,55 +10584,33 @@ func UnloadEvent(callback interface{}, sel string, states ...bool) *trees.Event 
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func UpdateReadyEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func UpdateReadyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("UpdateReady", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("UpdateReady")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16675,55 +10621,33 @@ func UpdateReadyEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func UpgradeNeededEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func UpgradeNeededEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("UpgradeNeeded", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("UpgradeNeeded")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16734,55 +10658,33 @@ func UpgradeNeededEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func UserProximityEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func UserProximityEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("UserProximity", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("UserProximity")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16793,55 +10695,33 @@ func UserProximityEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func UssdreceivedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func UssdreceivedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("ussdreceived", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("ussdreceived")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16852,55 +10732,33 @@ func UssdreceivedEvent(callback interface{}, sel string, states ...bool) *trees.
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func ValueChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func ValueChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("ValueChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("ValueChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16911,55 +10769,33 @@ func ValueChangeEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func VersionChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func VersionChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("VersionChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("VersionChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -16970,55 +10806,33 @@ func VersionChangeEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func VisibilityChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func VisibilityChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("VisibilityChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("VisibilityChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -17029,55 +10843,33 @@ func VisibilityChangeEvent(callback interface{}, sel string, states ...bool) *tr
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func VoicechangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func VoicechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("voicechange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("voicechange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -17088,55 +10880,33 @@ func VoicechangeEvent(callback interface{}, sel string, states ...bool) *trees.E
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func VoiceschangedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func VoiceschangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("voiceschanged", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("voiceschanged")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -17147,232 +10917,292 @@ func VoiceschangedEvent(callback interface{}, sel string, states ...bool) *trees
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func VolumeChangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func VolumeChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("VolumeChange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("VolumeChange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
 
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
+
 	return ev
 }
 
-// VrdisplayconnectedEvent Documentation is as below: "A compatible VR device has been connected to the computer."
-// https://developer.mozilla.org/docs/Web/Events/vrdisplayconnected
+// VrdisplayactivateEvent Documentation is as below: "(no documentation)"
+// https://developer.mozilla.org/docs/Web/Events/vrdisplayactivate
 // This event provides options() to be called when the events is triggered and an optional selector which will override the internal selector
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func VrdisplayconnectedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func VrdisplayactivateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("vrdisplayconnected", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("vrdisplayactivate")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
 
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
+
 	return ev
 }
 
-// VrdisplaydisconnectedEvent Documentation is as below: "A compatible VR device has been disconnected from the computer."
-// https://developer.mozilla.org/docs/Web/Events/vrdisplaydisconnected
+// VrdisplayblurEvent Documentation is as below: "(no documentation)"
+// https://developer.mozilla.org/docs/Web/Events/vrdisplayblur
 // This event provides options() to be called when the events is triggered and an optional selector which will override the internal selector
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func VrdisplaydisconnectedEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func VrdisplayblurEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("vrdisplaydisconnected", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("vrdisplayblur")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
 
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
+
 	return ev
 }
 
-// VrdisplaypresentchangeEvent Documentation is as below: "The presenting state of a VR device has changed — i.e. from presenting to not presenting, or vice versa."
+// VrdisplayconnectEvent Documentation is as below: "(no documentation)"
+// https://developer.mozilla.org/docs/Web/Events/vrdisplayconnect
+// This event provides options() to be called when the events is triggered and an optional selector which will override the internal selector
+// mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
+// appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
+// the selector value is not empty then that becomes the default selector used match the event with.
+func VrdisplayconnectEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
+	var handler EventHandler
+
+	switch cb := callback.(type){
+	case func():
+		handler = WrapHandler(cb)
+	case func(common.EventObject):
+		handler = WrapEventOnlyHandler(cb)
+	case func(common.EventObject, *trees.Markup):
+		handler = cb
+	default:
+		panic("Unacceptable type for event callback")
+	}
+
+	ops := append([]trees.EventOptions{trees.EventType("vrdisplayconnect")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
+			return
+		}
+
+		handler(evm.Event, ev.Tree)
+	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
+
+	return ev
+}
+
+// VrdisplaydeactivateEvent Documentation is as below: "(no documentation)"
+// https://developer.mozilla.org/docs/Web/Events/vrdisplaydeactivate
+// This event provides options() to be called when the events is triggered and an optional selector which will override the internal selector
+// mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
+// appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
+// the selector value is not empty then that becomes the default selector used match the event with.
+func VrdisplaydeactivateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
+	var handler EventHandler
+
+	switch cb := callback.(type){
+	case func():
+		handler = WrapHandler(cb)
+	case func(common.EventObject):
+		handler = WrapEventOnlyHandler(cb)
+	case func(common.EventObject, *trees.Markup):
+		handler = cb
+	default:
+		panic("Unacceptable type for event callback")
+	}
+
+	ops := append([]trees.EventOptions{trees.EventType("vrdisplaydeactivate")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
+			return
+		}
+
+		handler(evm.Event, ev.Tree)
+	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
+
+	return ev
+}
+
+// VrdisplaydisconnectEvent Documentation is as below: "(no documentation)"
+// https://developer.mozilla.org/docs/Web/Events/vrdisplaydisconnect
+// This event provides options() to be called when the events is triggered and an optional selector which will override the internal selector
+// mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
+// appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
+// the selector value is not empty then that becomes the default selector used match the event with.
+func VrdisplaydisconnectEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
+	var handler EventHandler
+
+	switch cb := callback.(type){
+	case func():
+		handler = WrapHandler(cb)
+	case func(common.EventObject):
+		handler = WrapEventOnlyHandler(cb)
+	case func(common.EventObject, *trees.Markup):
+		handler = cb
+	default:
+		panic("Unacceptable type for event callback")
+	}
+
+	ops := append([]trees.EventOptions{trees.EventType("vrdisplaydisconnect")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
+			return
+		}
+
+		handler(evm.Event, ev.Tree)
+	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
+
+	return ev
+}
+
+// VrdisplayfocusEvent Documentation is as below: "(no documentation)"
+// https://developer.mozilla.org/docs/Web/Events/vrdisplayfocus
+// This event provides options() to be called when the events is triggered and an optional selector which will override the internal selector
+// mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
+// appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
+// the selector value is not empty then that becomes the default selector used match the event with.
+func VrdisplayfocusEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
+	var handler EventHandler
+
+	switch cb := callback.(type){
+	case func():
+		handler = WrapHandler(cb)
+	case func(common.EventObject):
+		handler = WrapEventOnlyHandler(cb)
+	case func(common.EventObject, *trees.Markup):
+		handler = cb
+	default:
+		panic("Unacceptable type for event callback")
+	}
+
+	ops := append([]trees.EventOptions{trees.EventType("vrdisplayfocus")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
+			return
+		}
+
+		handler(evm.Event, ev.Tree)
+	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
+
+	return ev
+}
+
+// VrdisplaypresentchangeEvent Documentation is as below: "(no documentation)"
 // https://developer.mozilla.org/docs/Web/Events/vrdisplaypresentchange
 // This event provides options() to be called when the events is triggered and an optional selector which will override the internal selector
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func VrdisplaypresentchangeEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func VrdisplaypresentchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("vrdisplaypresentchange", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("vrdisplaypresentchange")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -17383,55 +11213,33 @@ func VrdisplaypresentchangeEvent(callback interface{}, sel string, states ...boo
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func WaitingEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func WaitingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("waiting", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("waiting")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }
@@ -17442,55 +11250,33 @@ func WaitingEvent(callback interface{}, sel string, states ...bool) *trees.Event
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func WheelEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func WheelEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type) {
+	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("wheel", sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast) {
-		if ev.ID() != evm.EventID {
+	ops := append([]trees.EventOptions{trees.EventType("wheel")}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
+		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }

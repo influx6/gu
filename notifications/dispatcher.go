@@ -2,6 +2,8 @@ package notifications
 
 import (
 	"sync"
+
+	"github.com/gu-io/gu/common"
 )
 
 // dispatch provides a default dispatcher for listening to events.
@@ -17,6 +19,27 @@ func Subscribe(dist EventDistributor) {
 	dispatch.Notify(dist)
 }
 
+// SubscribeWithRemover adds a new listener to the dispatcher and returns a common.Remover .
+func SubscribeWithRemover(dist EventDistributor) common.Remover {
+	dispatch.Notify(dist)
+
+	return listenerRemover{
+		root:    dispatch,
+		handler: dist,
+	}
+}
+
+// ListenerRemover defines a struct which implements the common.Remover interface.
+type listenerRemover struct {
+	handler EventDistributor
+	root    *Notifications
+}
+
+// Remove implements the common.Remover.
+func (l listenerRemover) Remove() {
+	l.root.UnNotify(l.handler)
+}
+
 // Dispatch emits a event into the dispatch callback listeners.
 func Dispatch(q interface{}) {
 	dispatch.Handle(q)
@@ -26,14 +49,6 @@ func Dispatch(q interface{}) {
 // will process a provided event received.
 type EventDistributor interface {
 	Handle(interface{})
-}
-
-// MessageNotifications defines a interface which exposes means to subscribe/unsubscribe
-// from event notifications delivered through the implementing object.
-type MessageNotifications interface {
-	EventDistributor
-	Notify(EventDistributor)
-	UnNotify(EventDistributor)
 }
 
 // Notifications defines a central delivery pipe where all types of event notifications

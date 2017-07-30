@@ -96,7 +96,7 @@ func ComponentPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDecl
 		},
 		{
 			DontOverride: true,
-			FileName:     "generator.go",
+			FileName:     "generate.go",
 			Dir:          componentNameLower,
 			Writer:       fmtwriter.New(generatorGen, true, true),
 		},

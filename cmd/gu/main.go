@@ -13,6 +13,7 @@ import (
 	"github.com/influx6/faux/metrics/sentries/stdout"
 	"github.com/influx6/moz/annotations"
 	"github.com/influx6/moz/ast"
+	"github.com/influx6/moz/gen"
 	cli "gopkg.in/urfave/cli.v2"
 )
 
@@ -79,6 +80,84 @@ func initCommands() {
 
 					if _, err := os.Stat(coDir); err != nil {
 						fmt.Printf("- Creating package directory: %q\n", coDir)
+						if err := os.MkdirAll(coDir, 0700); err != nil && err != os.ErrExist {
+							return err
+						}
+					}
+
+				}
+
+				if directive.Writer == nil {
+					continue
+				}
+
+				coFile := filepath.Join(currentDir, directive.Dir, directive.FileName)
+
+				if _, err := os.Stat(coFile); err == nil {
+					if directive.DontOverride {
+						continue
+					}
+				}
+
+				dFile, err := os.Create(coFile)
+				if err != nil {
+					return err
+				}
+
+				if _, err := directive.Writer.WriteTo(dFile); err != nil {
+					return err
+				}
+
+				rel, _ := filepath.Rel(currentDir, coFile)
+				fmt.Printf("- Add file to package directory: %q\n", rel)
+
+				dFile.Close()
+			}
+
+			return nil
+		},
+	})
+
+	commands = append(commands, &cli.Command{
+		Name:        "driver",
+		Usage:       "gu driver <driver-name>",
+		Description: `Generates a new boilerplate for app driver package which launches the package in the system desired. .e.g js for gopherjs`,
+		Flags:       []cli.Flag{},
+		Action: func(ctx *cli.Context) error {
+			args := ctx.Args()
+
+			if args.Len() == 0 {
+				return errors.New("Please provide the name for your package")
+			}
+
+			driver := args.First()
+			currentDir, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+
+			var directives []gen.WriteDirective
+
+			switch driver {
+			case "js":
+				directives, err = generators.JSDriverGenerator(ast.AnnotationDeclaration{}, ast.PackageDeclaration{FilePath: currentDir})
+				break
+			}
+
+			if err != nil {
+				return err
+			}
+
+			// appDir := filepath.Join(currentDir, component)
+
+			for _, directive := range directives {
+				if directive.Dir != "" {
+					coDir := filepath.Join(currentDir, directive.Dir)
+
+					if _, err := os.Stat(coDir); err != nil {
+						drel, _ := filepath.Rel(currentDir, coDir)
+						fmt.Printf("- Creating package directory: %q\n", drel)
+
 						if err := os.MkdirAll(coDir, 0700); err != nil && err != os.ErrExist {
 							return err
 						}

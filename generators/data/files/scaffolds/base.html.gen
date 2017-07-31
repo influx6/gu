@@ -2,16 +2,16 @@
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:title" content="{{Name}}">
-  <meta property="og:description" content="{{Name}} App">
+  <meta property="og:title" content="{{.Name}}">
+  <meta property="og:description" content="{{.Name}} App">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="{{Name}}">
-  <meta name="twitter:description" content="{{Name}} App with Gu">
+  <meta name="twitter:title" content="{{.Name}}">
+  <meta name="twitter:description" content="App:{{.Name}}">
   <link rel="apple-touch-icon-precomposed" href="assets/img/icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" href="assets/img/icons/favicon.png" >
   </head>
   <body>
-    <script type="text/javascript" src="{{.Script}}">
+    <script type="text/javascript" src="{{.JSFile}}">
     </script>
   </body>
 <html>

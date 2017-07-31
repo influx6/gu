@@ -2,7 +2,7 @@
 
 //go:generate go generate ./...
 //go:generate go get github.com/gopherjs/gopherjs
-//go:generate gopherjs build -o {{.Public.Path}}/js/app.bundle.js
+//go:generate gopherjs build -o {{.Path}}/js/{{.JSFile}}
 
 package main
 
@@ -11,9 +11,9 @@ import (
 	"github.com/gu-io/gu/router"
 	"github.com/gu-io/gu/router/cache"
 	"github.com/gu-io/gopherjs"
+	{{quote .Package}}
 )
 
 func main() {
-	// Replace _ with the app to be loaded.
-	gopherjs.NewJSDriver(_)
+	gopherjs.NewJSDriver({{lower .Name}}.App)
 }

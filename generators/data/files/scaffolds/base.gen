@@ -15,5 +15,5 @@ import (
 // Contains the projects *NApp instance and *Router level instances.
 var (
   AppRouter  = router.NewRouter(nil, memorycache.New({{quote .Name}}))
-  App = gu.App({{quote .Name}}, AppRouter)
+  App = gu.App({{capitalize .Name | quote}}, AppRouter)
 )

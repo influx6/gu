@@ -3,7 +3,6 @@ package gu
 import (
 	"fmt"
 	"html/template"
-	"strings"
 
 	"github.com/gu-io/gu/drivers/core"
 	"github.com/gu-io/gu/notifications"
@@ -21,10 +20,11 @@ type NApp struct {
 	location       Location
 	views          []*NView
 	activeViews    []*NView
+	tree           *trees.Markup
+	notifications  *notifications.AppEventNotification
+	router         *router.Router
 	resourceHeader []*trees.Markup
 	resourceBody   []*trees.Markup
-	tree           *trees.Markup
-	router         *router.Router
 }
 
 // App creates a new app structure to rendering gu components.
@@ -33,6 +33,7 @@ func App(title string, router *router.Router) *NApp {
 	app.title = title
 	app.uuid = NewKey()
 	app.router = router
+	app.notifications = notifications.AppNotification(app.uuid)
 
 	return &app
 }
@@ -134,7 +135,7 @@ func (app *NApp) RenderJSON(es interface{}) AppJSON {
 	var afterBody []ViewJSON
 
 	for _, view := range app.activeViews {
-		switch view.attr.Target {
+		switch view.target {
 		case HeadTarget:
 			tjson.Head = append(tjson.Head, view.RenderJSON())
 		case BodyTarget:
@@ -180,7 +181,7 @@ func (app *NApp) Render(es interface{}) *trees.Markup {
 	var last = elems.Div()
 
 	for _, view := range app.activeViews {
-		switch view.attr.Target {
+		switch view.target {
 		case HeadTarget:
 			view.Render().Apply(head)
 		case BodyTarget:
@@ -212,9 +213,6 @@ func (app *NApp) PushViews(event router.PushEvent) []*NView {
 	var active []*NView
 
 	for _, view := range app.views {
-		// _, rem, ok := view.router.Test(event.Rem)
-		// fmt.Printf("Routing View: %s : %s -> %t -> %s\n", view.Attr().Name, view.router.Pattern(), ok, rem)
-
 		if _, _, ok := view.router.Test(event.Rem); !ok {
 			// Notify view to appropriate proper action when view does not match.
 			view.router.Resolve(event)
@@ -273,37 +271,36 @@ const (
 	AfterBodyTarget
 )
 
-// ViewAttr defines a structure to define a option values for setting up the appropriate
-// settings for the view.
-type ViewAttr struct {
-	Name   string        `json:"name"`
-	Route  string        `json:"route"`
-	Target ViewTarget    `json:"target"`
-	Base   *trees.Markup `json:"base"`
-}
-
 // View returns a new instance of the view object.
-func (app *NApp) View(attr ViewAttr) *NView {
+func (app *NApp) View(renderable interface{}, route string, target ViewTarget) *NView {
 	app.initSanitCheck()
 
-	if attr.Base == nil {
-		attr.Base = trees.NewMarkup("view", false)
-		trees.NewCSSStyle("display", "block").Apply(attr.Base)
+	if route == "" {
+		route = "*"
+	}
+
+	var base Renderable
+
+	switch rnb := renderable.(type) {
+	case Renderable:
+		base = rnb
+		break
+	case *trees.Markup:
+		base = Static(rnb)
 	}
 
 	var vw NView
-	vw.attr = attr
 	vw.root = app
+	vw.target = target
+	vw.base = base
 	vw.uuid = NewKey()
 	vw.appUUID = app.uuid
-
 	vw.Reactive = NewReactive()
 
-	vw.router = router.NewResolver(attr.Route)
+	vw.router = router.NewResolver(route)
 
+	// app.driver.Update(app, &vw)
 	vw.React(func() {
-
-		// app.driver.Update(app, &vw)
 		notifications.Dispatch(ViewUpdate{
 			App:  app,
 			View: &vw,
@@ -316,8 +313,6 @@ func (app *NApp) View(attr ViewAttr) *NView {
 		vw.disableView()
 		vw.Unmounted()
 	})
-
-	vw.attr.Base.SwapUID(vw.uuid)
 
 	app.views = append(app.views, &vw)
 
@@ -339,12 +334,16 @@ type NView struct {
 	uuid    string
 	appUUID string
 	active  bool
-	attr    ViewAttr
-	// location      Location
-	router        router.Resolver
-	notifications *notifications.Notifications
+	base    Renderable
+	target  ViewTarget
 
-	renderingData []RenderableData
+	// location      Location
+	router router.Resolver
+
+	mounted   Subscriptions
+	rendered  Subscriptions
+	updated   Subscriptions
+	unmounted Subscriptions
 
 	beginComponents []*Component
 	anyComponents   []*Component
@@ -381,22 +380,22 @@ func (v *NView) RenderJSON() ViewJSON {
 
 // Render returns the markup for the giving views.
 func (v *NView) Render() *trees.Markup {
-	fmt.Printf("Rendering View: %q Total Components: %d\n", v.attr.Name, v.totalComponents())
+	base := v.base.Render()
 
-	base := v.attr.Base.Clone()
+	base.SwapUID(v.uuid)
 
 	// Update the base hash.
 	base.UpdateHash()
 
 	// Process the begin components and immediately add appropriately into base.
 	for _, component := range v.beginComponents {
-		if component.attr.Target == "" {
+		if component.Target == "" {
 			component.Render().ApplyMorphers().Apply(base)
 			continue
 		}
 
 		render := component.Render().ApplyMorphers()
-		targets := trees.Query.QueryAll(base, component.attr.Target)
+		targets := trees.Query.QueryAll(base, component.Target)
 		for _, target := range targets {
 			target.AddChild(render)
 			target.UpdateHash()
@@ -405,13 +404,13 @@ func (v *NView) Render() *trees.Markup {
 
 	// Process the middle components and immediately add appropriately into base.
 	for _, component := range v.anyComponents {
-		if component.attr.Target == "" {
+		if component.Target == "" {
 			component.Render().ApplyMorphers().Apply(base)
 			continue
 		}
 
 		render := component.Render().ApplyMorphers()
-		targets := trees.Query.QueryAll(base, component.attr.Target)
+		targets := trees.Query.QueryAll(base, component.Target)
 		for _, target := range targets {
 			target.AddChild(render)
 			target.UpdateHash()
@@ -420,13 +419,13 @@ func (v *NView) Render() *trees.Markup {
 
 	// Process the last components and immediately add appropriately into base.
 	for _, component := range v.lastComponents {
-		if component.attr.Target == "" {
+		if component.Target == "" {
 			component.Render().ApplyMorphers().Apply(base)
 			continue
 		}
 
 		render := component.Render().ApplyMorphers()
-		targets := trees.Query.QueryAll(base, component.attr.Target)
+		targets := trees.Query.QueryAll(base, component.Target)
 		for _, target := range targets {
 			target.AddChild(render)
 			target.UpdateHash()
@@ -436,53 +435,29 @@ func (v *NView) Render() *trees.Markup {
 	return base
 }
 
-// Attr returns the views ViewAttr.
-func (v *NView) Attr() ViewAttr {
-	return v.attr
-}
-
 // propagateRoute supplies the needed route into the provided
 func (v *NView) propagateRoute(pe router.PushEvent) {
 	v.router.Resolve(pe)
 }
 
-// Unmounted publishes changes notifications that the component is unmounted.
+// Unmounted publishes changes notifications that the view is unmounted.
 func (v *NView) Unmounted() {
-	for _, component := range v.beginComponents {
-		component.Unmounted.Publish()
-	}
-	for _, component := range v.anyComponents {
-		component.Unmounted.Publish()
-	}
-	for _, component := range v.lastComponents {
-		component.Unmounted.Publish()
-	}
+	v.unmounted.Publish()
 }
 
-// Updated publishes changes notifications that the component is updated.
+// Updated publishes changes notifications that the view is updated.
 func (v *NView) Updated() {
-	for _, component := range v.beginComponents {
-		component.Updated.Publish()
-	}
-	for _, component := range v.anyComponents {
-		component.Updated.Publish()
-	}
-	for _, component := range v.lastComponents {
-		component.Updated.Publish()
-	}
+	v.updated.Publish()
 }
 
-// Mounted publishes changes notifications that the component is mounted.
+// Rendered publishes changes notifications that the view is rendered.
+func (v *NView) Rendered() {
+	v.rendered.Publish()
+}
+
+// Mounted publishes changes notifications that the view is mounted.
 func (v *NView) Mounted() {
-	for _, component := range v.beginComponents {
-		component.Mounted.Publish()
-	}
-	for _, component := range v.anyComponents {
-		component.Mounted.Publish()
-	}
-	for _, component := range v.lastComponents {
-		component.Mounted.Publish()
-	}
+	v.mounted.Publish()
 }
 
 // RenderingOrder defines a type used to define the order which rendering is to be done for a resource.
@@ -499,142 +474,33 @@ const (
 	LastOrder
 )
 
-// ComponentAttr defines a structure to define a component and its appropriate settings.
-type ComponentAttr struct {
-	Order     RenderingOrder `json:"order"`
-	Tag       string         `json:"tag"`
-	Target    string         `json:"target"`
-	Route     string         `json:"route"`
-	Base      interface{}    `json:"base"`
-	Relations []string       `json:"relations"`
+// Services return s a Service instance which contains fields used by the
+// Components of a view to gain access to the specific functionality of it's app root.
+func (v *NView) Services() Services {
+	return Services{
+		AppUUID:   v.appUUID,
+		Location:  v.root,
+		ViewRoute: v.router,
+		Router:    v.root.router,
+		Mounted:   v.mounted,
+		Unmounted: v.unmounted,
+		Updated:   v.updated,
+		Rendered:  v.rendered,
+	}
 }
 
 // Component adds the provided component into the selected view.
-func (v *NView) Component(attr ComponentAttr) {
-	if strings.TrimSpace(attr.Route) == "" {
-		attr.Route = "*"
-	}
-
+func (v *NView) Component(renderable Renderable, order RenderingOrder, route string, target string) {
 	var c Component
-	c.attr = attr
 	c.uuid = NewKey()
+	c.Target = target
+	c.Rendering = renderable
 	c.Reactive = NewReactive()
-	c.Mounted = NewSubscriptions()
-	c.Unmounted = NewSubscriptions()
-	c.Rendered = NewSubscriptions()
-	c.Updated = NewSubscriptions()
-	c.Router = router.NewResolver(attr.Route)
+	c.Router = router.NewResolver(route)
 
-	if attr.Tag == "" {
-		attr.Tag = "component-element"
-	}
-
-	appServices := Services{
-		AppUUID:    v.appUUID,
-		Location:   v.root,
-		Mounted:    c.Mounted,
-		Updated:    c.Updated,
-		Rendered:   c.Rendered,
-		Unmounted:  c.Unmounted,
-		ViewRouter: c.Router,
-		Router:     v.root.router,
-	}
-
-	// Transform the base argument into the acceptable
-	// format for the object.
-	{
-		switch mo := attr.Base.(type) {
-		case func(Services) *trees.Markup:
-			static := Static(mo(appServices))
-
-			static.Morph = true
-			c.Rendering = static
-
-		case func() *trees.Markup:
-			static := Static(mo())
-			static.Morph = true
-			c.Rendering = static
-
-		case *trees.Markup:
-			static := Static(mo)
-			static.Morph = true
-			c.Rendering = static
-			break
-
-		case string:
-			parseTree := trees.ParseTree(mo)
-			if len(parseTree) != 1 {
-				section := elems.CustomElement(attr.Tag)
-				section.AddChild(parseTree...)
-
-				static := Static(section)
-				static.Morph = true
-				c.Rendering = static
-				break
-			}
-
-			static := Static(parseTree[0])
-			static.Morph = true
-			c.Rendering = static
-			break
-
-		case Renderable:
-			if service, ok := mo.(RegisterServices); ok {
-				service.RegisterServices(appServices)
-			}
-
-			c.Rendering = mo
-			break
-
-		case func(Services) Renderable:
-			rc := mo(appServices)
-
-			c.Rendering = rc
-			break
-
-		case func() Renderable:
-			rc := mo()
-
-			if service, ok := rc.(RegisterServices); ok {
-				service.RegisterServices(appServices)
-			}
-
-			c.Rendering = rc
-			break
-
-		default:
-			panic(`
-				Unknown markup or view processable type
-
-					Accepted Markup Arguments:
-						-	*trees.Markup
-						- func() *trees.Markup
-
-					Accepted View Arguments:
-						-	[]Renderable
-						-	Renderable
-						-	func() []Renderable
-						-	func() Renderable
-
-				`)
-		}
-	}
-
-	// Add the component into the right order.
-	{
-		switch attr.Order {
-		case FirstOrder:
-			v.beginComponents = append(v.beginComponents, &c)
-		case LastOrder:
-			v.lastComponents = append(v.lastComponents, &c)
-		case AnyOrder:
-			v.anyComponents = append(v.anyComponents, &c)
-		}
-	}
-
-	// Connect the component into the rendering reactor if it has one.
-	if rc, ok := c.Rendering.(Reactor); ok {
-		rc.React(c.Reactive.Publish)
+	// if the renderable can push reactions then listen.
+	if rr, ok := renderable.(Reactor); ok {
+		rr.React(c.Reactive.Publish)
 	}
 
 	// Connect the view to react to a change from the component.
@@ -643,24 +509,30 @@ func (v *NView) Component(attr ComponentAttr) {
 	// Register the component router into the views router.
 	v.router.Register(c.Router)
 
-	// Send call for view update.
-	// v.driver.Update(v.root, v)
-	v.Publish()
+	// format for the object.
+	// Add the component into the right order.
+	{
+		switch order {
+		case FirstOrder:
+			v.beginComponents = append(v.beginComponents, &c)
+		case LastOrder:
+			v.lastComponents = append(v.lastComponents, &c)
+		case AnyOrder:
+			v.anyComponents = append(v.anyComponents, &c)
+		}
+	}
 }
 
 // Component defines a struct which
 type Component struct {
 	Reactive
-	uuid      string
-	attr      ComponentAttr
+	uuid   string
+	Target string
+
 	Rendering Renderable
 	Router    router.Resolver
 
-	Mounted   Subscriptions
-	Unmounted Subscriptions
-	Rendered  Subscriptions
-	Updated   Subscriptions
-	live      *trees.Markup
+	live *trees.Markup
 }
 
 // UUID returns the identification for the giving component.
@@ -686,9 +558,6 @@ func (c *Component) Render() *trees.Markup {
 	}
 
 	c.live = newTree.ApplyMorphers()
-	// fmt.Printf("Live: %s\n", c.live.HTML())
-
-	c.Rendered.Publish()
 
 	return c.live
 }
@@ -717,17 +586,6 @@ func (v *NView) disableView() {
 	v.active = false
 	// }
 	// v.rl.Unlock()
-}
-
-// hasRenderable returns true/false if a giving dependency name exists.
-func (v *NView) hasRenderable(name string) bool {
-	for _, rd := range v.renderingData {
-		if rd.Name == name {
-			return true
-		}
-	}
-
-	return false
 }
 
 //==============================================================================

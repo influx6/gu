@@ -103,30 +103,14 @@ type ViewUpdate struct {
 // Services defines a struct which exposes certain fields to be accessible to
 // others.
 type Services struct {
-	AppUUID    string
-	Location   Location
-	Mounted    Subscriptions
-	Rendered   Subscriptions
-	Updated    Subscriptions
-	Unmounted  Subscriptions
-	Router     *router.Router
-	ViewRouter router.Resolver
-}
-
-// RegisterServices provides an interface which registers the provided fetcher,
-// caching and routing system for a component. This will be called before
-// any setup of the components structure to allow users set the system they needed
-// running.
-type RegisterServices interface {
-	RegisterServices(Services)
-}
-
-// RegisterServicable registers the giving base argument if it exposes the RegisterServices
-// interfaces and appropriates the provided services struct.
-func RegisterServicable(base interface{}, services Services) {
-	if servicableBase, ok := base.(RegisterServices); ok {
-		servicableBase.RegisterServices(services)
-	}
+	AppUUID   string
+	Location  Location
+	Mounted   Subscriptions
+	Rendered  Subscriptions
+	Updated   Subscriptions
+	Unmounted Subscriptions
+	Router    *router.Router
+	ViewRoute router.Resolver
 }
 
 //================================================================================

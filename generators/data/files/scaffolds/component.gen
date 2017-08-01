@@ -6,8 +6,8 @@ type {{ capitalize .Name}} struct{
 	services gu.Services
 }
 
-// New{{ capitalize .Name}} returns a new instance of {{capitalize .Name}} component.
-func New{{capitalize .Name}}(services gu.Services) *{{capitalize .Name}} {
+// New returns a new instance of {{capitalize .Name}} component.
+func New(services gu.Services) *{{capitalize .Name}} {
   return &{{capitalize .Name}}{
 		services: services,
   	Reactive: gu.NewReactive(),

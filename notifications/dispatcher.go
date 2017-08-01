@@ -33,11 +33,23 @@ func SubscribeWithRemover(dist EventDistributor) common.Remover {
 type listenerRemover struct {
 	handler EventDistributor
 	root    *Notifications
+	fn      []func()
+}
+
+// Adds adds a callback to be called when Remove is called.
+func (l listenerRemover) Add(fn func()) {
+	l.fn = append(l.fn, fn)
 }
 
 // Remove implements the common.Remover.
 func (l listenerRemover) Remove() {
 	l.root.UnNotify(l.handler)
+
+	for _, fx := range l.fn {
+		fx()
+	}
+
+	l.fn = nil
 }
 
 // Dispatch emits a event into the dispatch callback listeners.

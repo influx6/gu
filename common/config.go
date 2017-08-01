@@ -5,6 +5,7 @@ import "errors"
 // Remover defines an interface which exposes a remove method.
 type Remover interface {
 	Remove()
+	Add(func())
 }
 
 // Settings defines a structure which contains fields that are used to contain

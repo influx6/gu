@@ -87,12 +87,14 @@ type Identity interface {
 
 // AppUpdate defines a struct which is used to notify the need to update a
 // App.
+//@notification:event
 type AppUpdate struct {
 	App *NApp
 }
 
 // ViewUpdate defines a struct which is used to notify the need to update a
 // App and a given view.
+//@notification:event
 type ViewUpdate struct {
 	App  *NApp
 	View *NView

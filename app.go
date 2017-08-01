@@ -378,6 +378,11 @@ func (v *NView) RenderJSON() ViewJSON {
 	}
 }
 
+// Target returns the associated view target.
+func (v *NView) Target() ViewTarget {
+	return v.target
+}
+
 // Render returns the markup for the giving views.
 func (v *NView) Render() *trees.Markup {
 	base := v.base.Render()

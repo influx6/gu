@@ -23,29 +23,6 @@ Relations of Views and Components
 
 Views are the central system to manage components, their `App` has no business in the managed of a component nor it's lifecycles, it centrally only manages the views and expects each view to handle the rendering calls and requirements of the it's components. This allows us to create specific views which individually represent a given page of a larger app more effectively, has only the components for that page ever exists for that view.
 
-```go
-index := app.View(gu.ViewAttr{
-	Name:  "View.Greeter",
-	Route: "/*",
-	Base: elems.Parse(`
-		<div class="greeter-view view wrapper">
-			<h1 class="view-header">Greeter App</h1>
-
-			<div class="greeter-app" id="greeter-app-component">
-			</div>
-		</div>
-
-	`),
-}
-
-// Register a component and set its base/Rendering.
-index.Component(gu.ComponentAttr{
-	Route:  "/*",
-	Target: "#greeter-app-component",
-	Base:   components.NewGreeter(),
-})
-```
-
 Example
 -------
 
@@ -53,15 +30,10 @@ Example of a View registered to a App
 
 ```go
 
-app := gu.App(gu.AppAttr{
-	Name:  "GreeterApp",
-	Title: "GreeterApp - Demonstrate a greeting web application with Gu",
-})
+router := router.NewRouter(_, memorycache.New("greeter"))
+app := gu.App("GreeterApp", router)
 
-index := app.View(gu.ViewAttr{
-	Name:  "View.Greeter",
-	Route: "/*",
-	Base: elems.Parse(`
+index := app.View(elems.Parse(`
 		<div class="greeter-view view wrapper">
 			<h1 class="view-header">Greeter App</h1>
 
@@ -69,27 +41,6 @@ index := app.View(gu.ViewAttr{
 			</div>
 		</div>
 	`, elems.CSS(`
-			html *{
-				padding: 0;
-				margin: 0;
-				font-size:16px;
-				font-size: 100%;
-				box-sizing: border-box;
-			}
-
-			html {
-				width: 100%;
-				height: 100%;
-			}
-
-			body{
-				width: 100%;
-				height: 100%;
-				font-family: "Lato", helvetica, sans-serif;
-				background: url("assets/galaxy3.jpg") no-repeat;
-				background-size: cover;
-			}
-
 			&{
 				color: #fff;
 				width: 100%;
@@ -99,12 +50,6 @@ index := app.View(gu.ViewAttr{
 				background: rgba(0,0,0,0.4);
 			}
 
-			& h1{
-				text-align: center;
-				font-size: 2.5em;
-				margin: 40px auto;
-			}
-
 			& .greeter-app {
 				width: 90%;
 				height: auto;
@@ -112,22 +57,9 @@ index := app.View(gu.ViewAttr{
 				padding-top: 100px;
 				text-align: center;
 			}
-
-
-			& .greeter-app .receiver{
-				font-size: 1.7em;
-			}
-
-			& .greeter-app .receiver input{
-				color: #fff !important;
-			}
-	`, nil)),
+	`, nil), "/*", 0),
 })
 
-index.Component(gu.ComponentAttr{
-	Route:  "/*",
-	Target: "#greeter-app-component",
-	Base:   components.NewGreeter(),
-})
+index.Component(components.NewGreeter(), gu.AnyOrder, "/*", "#greeter-app-component")
 
 ```

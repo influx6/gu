@@ -5,7 +5,7 @@ Creating components is the core reason Gu exists as a package. It's primary aim 
 
 Gu takes a different approach to components and how they should work. Gu does not try to be a React version in Go, but instead it takes advantage of the simple concepts that makes the Go language very powerful.
 
--	Composition over Inheritance, where components compose each other to create larger components, rather than using a form of inheritance or inter-logic where components are separately rendered and communicate with each other. 
+-	Composition over Inheritance, where components compose each other to create larger components, rather than using a form of inheritance or inter-logic where components are separately rendered and communicate with each other.
 
 -	Interfaces compliance for upgrades, whereby components provide the capability to expose themselves to higher functionality or gain access to objects such has the internal caching and resource request `Fetch` objects. Additionally, this appraoch allows components to declare themselves reactive and notify themselves and their views of change to be updated by the driver.
 
@@ -175,28 +175,7 @@ func (g *Greeting) Render() *trees.Markup {
 }
 ```
 
-Upgraded Components
--------------------
-
-Since Gu heavily depends on interfaces as a means of extending functionality and also as a means of providing access to constructs which are not naturally accessible as they are encapsulated within the core Gu `Views` and `Apps` structures.
-
-Interface provide a awesome opportunity to allow components that desire access to this objects, the ability to declare methods that match specific interfaces provides them immediate access to them at initialization.
-
-Such Interfaces include:
-
--	RegisterService Interface
-
-```go
-type RegisterService interface {
-	RegisterService(gu.Services)
-}
-```
-
-This interface provides a means by which a component can get access to the Gu core app's Fetcher(A http request and response object), Cache(Internal request and response cache) and the component's view's internal Router. This will be called immediately on the initalization of the component before any render calls are made to allow the component to store this items into local variables to use in it's internal operations.
-
-This removes the need for global context and unideal approaches and also permits access to the components that actually need them.
-
 Complex Components
 ------------------
 
-More complex components can be found in the [Examples](https://github.com/gu-io/examples) directory and other packages which demonstrate different structures and design to achieve the component's functionality.
+More complex components can be found in the [Components](https://github.com/gu-io/components) directory and other packages which demonstrate different structures and design to achieve the component's functionality.

@@ -16,18 +16,48 @@ type event struct{
   EventType string
 }
 
+
 func main(){
 
-  notifications.Subscribe(func(eventName string){
-    fmt.Printf("EventName[%q] occured.\n", eventName)
-  })
-
-
-  notifications.Subscribe(func(e event){
-    fmt.Printf("EventName[%q] and EventType[%q] occured.\n", e.EventName, e.EventType)
+  notifications.Subscribe(func(eventName interface{}){
+    fmt.Printf("EventName[%+q] occured.\n", eventName)
   })
 
   notifications.Dispatch("Click") => `EventName["Click"] occured.`
-  notifications.Dispatch(event{EventName:"ScrollDown", EventType:"scroll"}) => `EventName["ScrollDown"] and EventType["scroll"] occured.`
 }
 ```
+
+## Custom Notification
+
+Include in the Gu library is a code generation system which allows you to annotate
+a given struct type to be an event, which sets of functions and structures should be
+generated for.
+
+We equally understand of the importance of lazy developers, as we are one ourselves, hence
+this provides us a quick and seamless way to plug into the central notification system, whilst
+ensuring to keep type safety by generating the needed code to convert the interface to the
+expected type, before notifying the provided function or subscribers.
+
+By annotating structures with `@notification:event` and with a call to `gu generate`,
+any structures which has such annotations will have the event handling and assertion
+strucutures generated for it.
+
+```go
+
+//@notification:event
+type EventForward struct{
+  X int
+  Angle float64
+}
+
+```
+
+See example usage in core:
+
+- AppEvent
+    Annotation: https://github.com/gu-io/gu/blob/master/notifications/notifiers.go#L6
+    Generated: https://github.com/gu-io/gu/blob/master/notifications/appevent_event.go
+
+- ViewUpdate
+    Annotation: https://github.com/gu-io/gu/blob/master/gu.go#L97
+    Generated: https://github.com/gu-io/gu/blob/master/viewupdate_event.go

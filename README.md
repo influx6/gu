@@ -27,74 +27,46 @@ Gu provides an cli tooling which is installed when `go get` is done for this pac
 
 It is provided to both improve the workflow of the user, as well as to provide quick setup of your project. Provided below are examples of workflows which are generally done when developing with Gu.
 
--	Creating a gu golang project using the [GopherJS](https://github.com/gu-io/gopherjs) driver
+-	Creating a Gu project
 
 ```bash
-> gu new --driver=js sonar
-- Creating new project: "sonar"
-- Using driver template: "js"
-- Creating project directory: "sonar"
-- Creating project directory: "sonar/components"
-- Creating project directory: "sonar/assets"
-- Adding project file: "components/components.go"
-- Adding project file: "app.go"
-```
-
--	Creating a component with it's assets for a project as a unique package.
-
-	*Continuing from the command above*
-
-```bash
-> cd sonar
-> gu components new tableui
-- Adding project package: "components/tableui"
-- Adding project directory: "components/tableui/styles"
-- Adding project directory: "components/tableui/styles/css"
-- Adding project file: "components/tableui/styles/generate.go"
-- Adding project file: "components/tableui/tableui.go"
+> ➜ gu app box
+- Creating package directory: "box"
+- Creating package directory: "box/public"
+- Creating package directory: "box/public/less"
+- Add file to package directory: "box/public/less/box.less"
+- Add file to package directory: "box/settings.toml"
+- Add file to package directory: "box/settings_bundle.go"
+- Add file to package directory: "box/public_bundle.go"
+- Add file to package directory: "box/public/box_bundle.go"
+- Add file to package directory: "box/box.go"
 
 ```
 
--	Creating a new component as part of a existing package.
+- Adding a rendering driver that uses GopherJS (https://github.com/gu-io/gopherjs)
 
-```bash
-> cd sonar
-> cd components/tableui/
-> gu components new --flat=true --base=false tables
-- Adding project file: "tableui/tables.go"
+```
+➜  gu-io cd box
+
+➜  box gu driver js
+- Creating package directory: "driver/js"
+- Add file to package directory: "driver/js/main.go"
+- Add file to package directory: "public/index.html"
+
 ```
 
--	Creating a component as a self contained package.
+- Add a component with initial boilerplate
 
-*This types of package generated won't call out to a root package to register themselves with the projects `Components` registry*
-
-```bash
->  gu components new --stand=true tooltip
-- Adding project package: "tooltip"
-- Adding project directory: "tooltip/styles"
-- Adding project directory: "tooltip/styles/css"
-- Adding project file: "tooltip/styles/generate.go"
-- Adding project file: "tooltip/styles/css.go"
-- Adding project file: "tooltip/tooltip.go"
 ```
 
--	Creating a component as part of the main components package for a project.
+➜  box gu component sugarbar
+- Creating package directory: "/home/ewe/devlabs/src/github.com/gu-io/box/sugarbar"
+- Add file to package directory: "sugarbar/sugarbar.go"
+- Add file to package directory: "sugarbar/sugarbar_bundle.go"
+- Add file to package directory: "sugarbar/generate.go"
 
-```bash
-> cd sonar
->  gu components new --flat=true menubar
-- Adding project file: "components/menubar.go"
-```
+➜  box
 
--	Add a css package which internal will generate a new go file containing all css files in it.
-
-```bash
-> cd sonar
-> cd sonar/components
->  gu components css menucss
-- Adding project directory: "menucss"
-- Adding project directory: "menucss/css"
-- Adding project file: "menucss/generate.go"
 ```
 
 Goals
@@ -128,17 +100,18 @@ Gu is fundamentally a library built to provide rendering capabilities with simpl
 
 -	[Virtual DOM](./docs/concepts/dom.md)
 
--	[Notifications](./docs/concepts/notifications.md)
+-	[App, Views, Component](./docs/concepts/app.md)
 
--	[Routing](./docs/concepts/routing.md)
+-	[Assets](./docs/concepts/assets.md)
 
 -	[Components](./docs/concepts/components.md)
 
+-	[Routing](./docs/concepts/routing.md)
+
+-	[Notifications](./docs/concepts/notifications.md)
+
 -	[Drivers](./docs/concepts/drivers.md)
 
--	[App, Views, Component](./docs/concepts/app.md)
-
--	[Style Guides](./docs/concepts/theme.md)
 
 How to Contribute
 -----------------

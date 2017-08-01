@@ -15,4 +15,4 @@ Examples of Drivers:
 Below are the list of drivers being actively developed or are already usable. We hope this list can increase the more.
 
 -	GopherJS Driver(https://github.com/gu-io/gopherjs/) (Stable)
--	QT Driver(https://github.com/gu-io/qt) (Experiemental)
+-	QT Driver(https://github.com/gu-io/qt) (Pending)

@@ -65,9 +65,9 @@ It is provided to both improve the workflow of the user, as well as to provide q
 - Add file to package directory: "sugarbar/sugarbar_bundle.go"
 - Add file to package directory: "sugarbar/generate.go"
 
-➜  box
-
 ```
+
+The generated package can be found here https://github.com/gu-io/box.
 
 Goals
 -----

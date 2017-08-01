@@ -2,7 +2,6 @@ package trees_test
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 	"testing"
 
@@ -59,7 +58,7 @@ func TestParserToText(t *testing.T) {
 		</header>
 	`
 
-	expected := "root := trees.NewMarkup(\"div\", false)\n\nelem1 := trees.NewMarkup(\"header\", false)\nelem1.Apply(root)\ntrees.NewAttr(\"class\", \"grid32 device\").Apply(elem1)\nelem3 := trees.NewMarkup(\"div\", false)\nelem3.Apply(elem1)\ntrees.NewAttr(\"class\", \"grid--block one-whole intro\").Apply(elem3)\n"
+	expected := "root := trees.NewMarkup(\"div\", false)\nelem1 := trees.NewMarkup(\"header\", false)\nelem1.Apply(root)\ntrees.NewAttr(\"class\", \"grid32 device\").Apply(elem1)\nelem2 := trees.NewMarkup(\"div\", false)\nelem2.Apply(elem1)\ntrees.NewAttr(\"class\", \"grid--block one-whole intro\").Apply(elem2)\n"
 
 	var content bytes.Buffer
 	wl, err := trees.ParseTreeToText(input, false)
@@ -70,7 +69,7 @@ func TestParserToText(t *testing.T) {
 
 	wl.WriteTo(&content)
 
-	fmt.Printf("%s\n", content.String())
+	// fmt.Printf("%q\n", content.String())
 
 	if content.String() != expected {
 		t.Fatal("Parser should have successfully created markup in trees object format")

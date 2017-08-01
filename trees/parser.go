@@ -195,74 +195,79 @@ func pullNode(tokens *html.Tokenizer, root *Markup) {
 // into the gutrees markup block structure.
 func ParseTreeToText(markup string, withReturns bool) (io.WriterTo, error) {
 	reader := strings.NewReader(markup)
-	document, err := html.Parse(reader)
-	if err != nil {
-		return nil, err
+	tokenizer := html.NewTokenizer(reader)
+
+	if c := tokenizer.Next(); c == html.ErrorToken {
+		return nil, errors.New("Error token at start of tokenizer")
 	}
+
+	nameCounter := &cn{}
+	var rootName = "root"
 
 	var buffer bytes.Buffer
 
-	nameCounter := &cn{}
+	writeText(&buffer, "%s := trees.NewMarkup(%q, %t)", rootName, "div", false)
 
-	doc := document.FirstChild
+	for c := tokenizer.Next(); c != html.ErrorToken; c = tokenizer.Next() {
+		node := tokenizer.Token()
+		traverseNode(&buffer, tokenizer, node, nameCounter, rootName)
+	}
 
-	if doc.FirstChild != nil && doc.FirstChild.FirstChild == nil {
-		body := doc.LastChild
+	if withReturns {
+		writeText(&buffer, `
+				if len(root.Children()) == 1 {
+					return root.Children()[0]
+				}
 
-		if body.FirstChild == nil {
-			return nil, errors.New("Body has no content nodes")
-		}
-
-		writeText(&buffer, "root := trees.NewMarkup(%q, %t)\n", "div", false)
-		writeNodeSet(&buffer, body, "root", nameCounter)
-
-		if withReturns {
-			writeText(&buffer, `
-			if len(root.Children()) == 1 {
-				return root.Children()[0]
-			}
-
-			return root
-		`)
-		}
-	} else {
-		writeNode(&buffer, doc, "nil", "htmlNode")
-
-		writeNodeSet(&buffer, doc, "root", nameCounter)
-
-		if withReturns {
-			writeText(&buffer, `
-			return htmlNode
-		`)
-		}
+				return root
+			`)
 	}
 
 	return &buffer, nil
 }
 
-func writeNodeSet(w io.Writer, node *html.Node, parent string, count counter) {
-	for c := node.FirstChild; c != nil; c = c.NextSibling {
-		elementName := fmt.Sprintf("elem%d", count.Next())
+func traverseNode(w io.Writer, tokens *html.Tokenizer, pnode html.Token, count counter, parent string) {
+	tagName := strings.TrimSpace(pnode.Data)
+	if tagName == "" {
+		return
+	}
 
-		writeNode(w, c, parent, elementName)
+	elementName := fmt.Sprintf("elem%d", count.Next())
+	writeNode(w, pnode, parent, elementName)
 
-		writeNodeSet(w, c, elementName, count)
+	for c := tokens.Next(); c != html.ErrorToken; c = tokens.Next() {
+		node := tokens.Token()
+		ntagName := strings.TrimSpace(node.Data)
+
+		if ntagName == "" {
+			continue
+		}
+
+		if node.Type == html.SelfClosingTagToken && tagName == ntagName {
+			return
+		}
+
+		if node.Type == html.EndTagToken && tagName == ntagName {
+			return
+		}
+
+		if node.Type == html.StartTagToken {
+			traverseNode(w, tokens, node, count, elementName)
+			continue
+		}
+
+		nelementName := fmt.Sprintf("elem%d", count.Next())
+		writeNode(w, node, elementName, nelementName)
 	}
 }
 
-func writeNode(w io.Writer, node *html.Node, parent string, elementName string) {
+func writeNode(w io.Writer, node html.Token, parent string, elementName string) {
 	switch node.Type {
-	case html.ErrorNode:
-		return
-	case html.CommentNode:
+	case html.CommentToken:
 		writeText(w, "trees.NewText(\"<---%s --->\").Apply(%s)", node.Data, parent)
 		return
-	case html.DoctypeNode:
-		return
-	case html.DocumentNode:
-		return
-	case html.ElementNode:
-		writeText(w, "%s := trees.NewMarkup(%q, %t)\n%s.Apply(%s)", elementName, node.Data, false, elementName, parent)
+	case html.StartTagToken, html.SelfClosingTagToken:
+		writeText(w, "%s := trees.NewMarkup(%q, %t)\n%s.Apply(%s)", elementName, node.Data, node.Type == html.SelfClosingTagToken, elementName, parent)
 
 		for _, attr := range node.Attr {
 			if attr.Namespace != "" {
@@ -274,7 +279,7 @@ func writeNode(w io.Writer, node *html.Node, parent string, elementName string) 
 		}
 
 		return
-	case html.TextNode:
+	case html.TextToken:
 		text := strings.TrimSpace(node.Data)
 		if text == "" {
 			return

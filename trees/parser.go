@@ -231,6 +231,8 @@ func pullNodeToText(tokens *html.Tokenizer, root io.Writer, rootVar string, name
 			elemName := fmt.Sprintf("elem%d", nameCounter)
 			writeText(root, "%s := trees.NewMarkup(%+q, %t)\n%s.Apply(%s)", elemName, tagName, token == html.SelfClosingTagToken, elemName, rootVar)
 
+			nameCounter++
+
 			if hasAttr {
 			attrLoop:
 				for {
@@ -250,7 +252,6 @@ func pullNodeToText(tokens *html.Tokenizer, root io.Writer, rootVar string, name
 				continue
 			}
 
-			nameCounter++
 			pullNodeToText(tokens, root, elemName, nameCounter, string(tagName))
 		}
 	}

@@ -2,6 +2,7 @@ package trees_test
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -58,10 +59,18 @@ func TestParserToText(t *testing.T) {
 		</header>
 	`
 
-	expected := "elemRoot := trees.NewMarkup(\"div\", false)\nelem1 := trees.NewMarkup(\"header\", false)\nelem1.Apply(elemRoot)\ntrees.NewAttr(\"class\", \"grid32 device\").Apply(elem1)\nelem2 := trees.NewMarkup(\"div\", false)\nelem2.Apply(elem1)\ntrees.NewAttr(\"class\", \"grid--block one-whole intro\").Apply(elem2)\n"
+	expected := "root := trees.NewMarkup(\"div\", false)\n\nelem1 := trees.NewMarkup(\"header\", false)\nelem1.Apply(root)\ntrees.NewAttr(\"class\", \"grid32 device\").Apply(elem1)\nelem3 := trees.NewMarkup(\"div\", false)\nelem3.Apply(elem1)\ntrees.NewAttr(\"class\", \"grid--block one-whole intro\").Apply(elem3)\n"
 
 	var content bytes.Buffer
-	trees.ParseTreeToText(input, false).WriteTo(&content)
+	wl, err := trees.ParseTreeToText(input, false)
+	if err != nil {
+		t.Fatalf("Parser should have successfully created markup snippet: %+q", err)
+	}
+	t.Log("Parser should have successfully created markup snippet")
+
+	wl.WriteTo(&content)
+
+	fmt.Printf("%s\n", content.String())
 
 	if content.String() != expected {
 		t.Fatal("Parser should have successfully created markup in trees object format")

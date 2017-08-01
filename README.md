@@ -46,8 +46,7 @@ It is provided to both improve the workflow of the user, as well as to provide q
 - Adding a rendering driver that uses GopherJS (https://github.com/gu-io/gopherjs)
 
 ```
-➜  gu-io cd box
-
+➜ cd box
 ➜ gu driver js
 - Creating package directory: "driver/js"
 - Add file to package directory: "driver/js/main.go"

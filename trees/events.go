@@ -3,25 +3,54 @@ package trees
 import (
 	"fmt"
 	"strings"
+
+	"github.com/gu-io/gu/common"
 )
 
-// EventBroadcast defines a struct which gets published for the events.
-type EventBroadcast struct {
-	EventName string      `json:"event"`
-	EventID   string      `json:"event_id"`
-	Event     EventObject `json:"event_object"`
+// EventOptions defines a function type used to apply specific operations to a
+// Event object.
+type EventOptions func(*Event)
+
+// EventType sets the type of event.
+func EventType(eventType string) EventOptions {
+	return func(ev *Event) {
+		ev.Type = eventType
+	}
 }
 
-// EventObject defines a interface for the basic methods which events needs
-// expose.
-type EventObject interface {
-	RemoveEvent()
-	Underlying() interface{}
+// EventTarget sets the type of event.
+func EventTarget(target string) EventOptions {
+	return func(ev *Event) {
+		ev.secTarget = target
+	}
 }
 
-// Remover defines an interface that exposes a method to remove a giving event.
-type Remover interface {
-	Remove()
+// StopImmediatePropagation sets the type of event.
+func StopImmediatePropagation(state bool) EventOptions {
+	return func(ev *Event) {
+		ev.StopImmediatePropagation = state
+	}
+}
+
+// StopPropagation sets the type of event.
+func StopPropagation(state bool) EventOptions {
+	return func(ev *Event) {
+		ev.StopPropagation = state
+	}
+}
+
+// UseCapture sets the type of event.
+func UseCapture(state bool) EventOptions {
+	return func(ev *Event) {
+		ev.UseCapture = state
+	}
+}
+
+// PreventDefault sets the type of event.
+func PreventDefault(state bool) EventOptions {
+	return func(ev *Event) {
+		ev.PreventDefault = state
+	}
 }
 
 // Event provide a meta registry for helps in registering events for dom markups
@@ -33,20 +62,22 @@ type Event struct {
 	UseCapture               bool
 	StopImmediatePropagation bool
 	Tree                     *Markup
-	Remove                   Remover
+	Remove                   common.Remover
 	secTarget                string
 }
 
 // NewEvent returns a event object that allows registering events to eventlisteners.
-func NewEvent(evtype string, evtarget string, preventdef bool, stopPropagation bool, stopImmediate bool, useCapture bool) *Event {
-	return &Event{
-		Type:                     evtype,
-		PreventDefault:           preventdef,
-		StopPropagation:          stopPropagation,
-		StopImmediatePropagation: stopImmediate,
-		UseCapture:               useCapture,
-		secTarget:                evtarget,
+func NewEvent(options ...EventOptions) *Event {
+	evm := &Event{}
+
+	for _, option := range options {
+		if option == nil {
+			continue
+		}
+		option(evm)
 	}
+
+	return evm
 }
 
 // Target returns the target of the giving event.

@@ -3,6 +3,7 @@ package generators
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -13,6 +14,11 @@ import (
 	"github.com/influx6/moz/gen"
 )
 
+var (
+	inGOPATH    = os.Getenv("GOPATH")
+	inGOPATHSrc = filepath.Join(inGOPATH, "src")
+)
+
 // GuPackageGenerator which defines a  function for generating a type for receiving a giving
 //	struct type has a notification type which can then be wired as a notification.EventDistributor.
 //
@@ -21,8 +27,20 @@ func GuPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration
 		return nil, errors.New("Expected atleast one argument for annotation as component name")
 	}
 
+	workDir, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to retrieve current directory path: %+q", err)
+	}
+
+	packageDir, err := filepath.Rel(inGOPATHSrc, workDir)
+	if err != nil {
+		fmt.Printf("Failed to retrieve package directory path in go src: %+q\n", err)
+	}
+
 	componentName := an.Arguments[0]
 	componentNameLower := strings.ToLower(componentName)
+
+	componentPackageDir := filepath.Join(packageDir, componentNameLower)
 
 	typeGen := gen.Block(
 		gen.SourceText(
@@ -99,7 +117,13 @@ func GuPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration
 	tomlGen := gen.Block(
 		gen.SourceText(
 			string(data.Must("scaffolds/settings.toml.gen")),
-			nil,
+			struct {
+				Name    string
+				Package string
+			}{
+				Name:    componentName,
+				Package: componentPackageDir,
+			},
 		),
 	)
 

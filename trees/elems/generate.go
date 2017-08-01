@@ -158,9 +158,9 @@ import (
 	"github.com/russross/blackfriday"
 )
 
-// SpaceCharacter provides text markup which contains the '&nbsp' text for
+// Space provides text markup which contains the '&nbsp' text for
 // a space element.
-func SpaceCharacter(count int) *trees.Markup {
+func Space(count int) *trees.Markup {
 	if count < 1 {
 		count = 0
 	}

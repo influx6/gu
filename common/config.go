@@ -5,13 +5,16 @@ import "errors"
 // Remover defines an interface which exposes a remove method.
 type Remover interface {
 	Remove()
+	Add(func())
 }
 
 // Settings defines a structure which contains fields that are used to contain
 // specific user settings for the gu build system.
 type Settings struct {
-	Public Public `toml:"public"`
-	Theme  Theme  `toml:"theme"`
+	App     string `toml:"app"`
+	Package string `toml:"package"`
+	Public  Public `toml:"public"`
+	Theme   Theme  `toml:"theme"`
 }
 
 // Validate will validate the state of the giving fields.
@@ -26,8 +29,8 @@ func (s Settings) Validate() error {
 // Public defines giving settings for the public assets folder which will be build
 // to generate a embeddeable and servable assets package.
 type Public struct {
-	Path    string `toml:"path"`
-	Package string `toml:"package"`
+	Path        string `toml:"path"`
+	PackageName string `toml:"packageName"`
 }
 
 // Validate will validate the state of the giving fields.
@@ -36,8 +39,8 @@ func (p Public) Validate() error {
 		return errors.New("Public.Path must be set")
 	}
 
-	if p.Package == "" {
-		return errors.New("Public.Package must be set")
+	if p.PackageName == "" {
+		return errors.New("Public.PackageName must be set")
 	}
 
 	return nil

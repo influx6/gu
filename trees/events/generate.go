@@ -185,24 +185,26 @@ package events
 
 import (
 	"github.com/gu-io/gu/trees"
+	"github.com/gu-io/gu/common"
 	"github.com/gu-io/gu/notifications"
 )
 
+
 // EventHandler defines a function type for event callbacks.
-type EventHandler func(trees.EventObject, *trees.Markup)
+type EventHandler func(common.EventObject, *trees.Markup)
 
 // WrapHandler wraps the function returning a EventHandler to call the provided
 // function to be called when the event occurs without need for the arguments.
 func WrapHandler(callback func()) EventHandler {
-	return func(ev trees.EventObject, root *trees.Markup){
+	return func(ev common.EventObject, root *trees.Markup){
 		callback()
 	}
 }
 
 // WrapEventOnlyHandler wraps the function returning a EventHandler to call the provided
 // function to be called when the event occurs without need for the arguments.
-func WrapEventOnlyHandler(callback func(trees.EventObject)) EventHandler {
-	return func(ev trees.EventObject, root *trees.Markup) {
+func WrapEventOnlyHandler(callback func(common.EventObject)) EventHandler {
+	return func(ev common.EventObject, root *trees.Markup) {
 		callback(ev)
 	}
 }
@@ -217,55 +219,33 @@ func WrapEventOnlyHandler(callback func(trees.EventObject)) EventHandler {
 // mechanism of the domtrees.Element i.e if the selectorOverride argument is an empty string then domtrees.Element will create an
 // appropriate selector matching its type and uid value in this format  (ElementType[uid='UID_VALUE']) but if
 // the selector value is not empty then that becomes the default selector used match the event with.
-func %sEvent(callback interface{}, sel string, states ...bool) *trees.Event {
-	var preventDefault bool
-	var stopPropagation bool
-	var useCapture bool
-	var stopImmediatePropagation bool
-
-	if states != nil && len(states) == 4 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-		useCapture = states[3]
-	}
-
-	if states != nil && len(states) == 3 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-		stopImmediatePropagation = states[2]
-	}
-
-	if states != nil && len(states) == 2 {
-		preventDefault = states[0]
-		stopPropagation = states[1]
-	}
-
-	if states != nil && len(states) == 1 {
-		preventDefault = states[0]
-	}
-
+func %sEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
 	switch cb := callback.(type){
 	case func():
 		handler = WrapHandler(cb)
-	case func(trees.EventObject):
+	case func(common.EventObject):
 		handler = WrapEventOnlyHandler(cb)
-	case func(trees.EventObject, *trees.Markup):
+	case func(common.EventObject, *trees.Markup):
 		handler = cb
 	default:
 		panic("Unacceptable type for event callback")
 	}
 
-	ev := trees.NewEvent("%s",sel, preventDefault, stopPropagation, stopImmediatePropagation, useCapture)
-	ev.Handle = notifications.Subscribe(func(evm trees.EventBroadcast){
+	ops := append([]trees.EventOptions{trees.EventType(%q)}, options...)
+
+	ev := trees.NewEvent(ops...)
+
+	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
 		if ev.ID() != evm.EventID{
 			return
 		}
 
 		handler(evm.Event, ev.Tree)
 	})
+
+	ev.Remove = notifications.SubscribeWithRemover(eventHandler)
 
 	return ev
 }

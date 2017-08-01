@@ -1,3 +1,5 @@
+// +build !js
+
 package generators
 
 import "github.com/influx6/moz/ast"

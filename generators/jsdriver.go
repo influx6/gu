@@ -2,6 +2,7 @@ package generators
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -20,12 +21,14 @@ func JSDriverGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration)
 
 	// Load settings into configuration.
 	if _, err := toml.DecodeFile("./settings.toml", &config); err != nil {
-		return nil, fmt.Errorf("Please execute command where setthings.toml file is located: %+q", err)
+		return nil, fmt.Errorf("Please execute command where settings.toml file is located: %+q", err)
 	}
 
 	if err := config.Public.Validate(); err != nil {
 		return nil, err
 	}
+
+	jsFileName := fmt.Sprintf("%s_app_bundle.js", strings.ToLower(config.App))
 
 	htmlGen := gen.Block(
 		gen.SourceText(
@@ -37,7 +40,7 @@ func JSDriverGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration)
 			}{
 				Name:   config.App,
 				Path:   config.Public.Path,
-				JSFile: fmt.Sprintf("%s_app_bundle.js", strings.ToLower(config.App)),
+				JSFile: fmt.Sprintf("js/%s", jsFileName),
 			},
 		),
 	)
@@ -54,7 +57,7 @@ func JSDriverGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration)
 				Name:    config.App,
 				Package: config.Package,
 				Path:    config.Public.Path,
-				JSFile:  fmt.Sprintf("%s_app_bundle.js", strings.ToLower(config.App)),
+				JSFile:  filepath.Join("../", config.Public.Path, jsFileName),
 			},
 		),
 	)

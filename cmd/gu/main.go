@@ -142,6 +142,8 @@ func initCommands() {
 			case "js":
 				directives, err = generators.JSDriverGenerator(ast.AnnotationDeclaration{}, ast.PackageDeclaration{FilePath: currentDir})
 				break
+			default:
+				return fmt.Errorf("Driver %s not supported yet", driver)
 			}
 
 			if err != nil {

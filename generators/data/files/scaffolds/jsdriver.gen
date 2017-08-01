@@ -2,7 +2,7 @@
 
 //go:generate go generate ./...
 //go:generate go get github.com/gopherjs/gopherjs
-//go:generate gopherjs build -o {{.Path}}/js/{{.JSFile}}
+//go:generate gopherjs build -o {{.JSFile}}
 
 package main
 

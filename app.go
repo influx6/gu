@@ -368,7 +368,7 @@ func (v *NView) UUID() string {
 // Do calls the giving function providing it with the NApp instance.
 func (v *NView) Do(viewFun func(*NView)) bool {
 	if viewFun != nil {
-		viewFun(app)
+		viewFun(v)
 		return true
 	}
 

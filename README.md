@@ -48,7 +48,7 @@ It is provided to both improve the workflow of the user, as well as to provide q
 ```
 ➜  gu-io cd box
 
-➜  box gu driver js
+➜ gu driver js
 - Creating package directory: "driver/js"
 - Add file to package directory: "driver/js/main.go"
 - Add file to package directory: "public/index.html"
@@ -59,7 +59,7 @@ It is provided to both improve the workflow of the user, as well as to provide q
 
 ```
 
-➜  box gu component sugarbar
+➜ gu component sugarbar
 - Creating package directory: "/home/ewe/devlabs/src/github.com/gu-io/box/sugarbar"
 - Add file to package directory: "sugarbar/sugarbar.go"
 - Add file to package directory: "sugarbar/sugarbar_bundle.go"

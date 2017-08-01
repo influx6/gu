@@ -4,8 +4,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"net/http"
-	"os"
+	"sync"
 	"path/filepath"
 	"time"
 )
@@ -38,6 +37,13 @@ var (
       {{ end }}
     {{ end}}
   }
+
+	assetsCache = struct{
+		ml sync.RWMutex
+		cache map[string]string
+	}{
+		cache: make(map[string]string, 0),
+	}
 )
 
 //==============================================================================
@@ -60,6 +66,13 @@ func MustFindFile(path string, doGzip bool) io.Reader {
 
 // FindFile returns a io.Reader by seeking the giving file path if it exists.
 func FindFile(path string, doGzip bool) (io.Reader, error){
+	assetsCache.ml.RLock()
+	if data, ok := assetsCache.cache[path]; ok {
+		assetsCache.ml.RUnlock()
+		return bytes.NewBufferString(data), nil
+	}
+	assetsCache.ml.RUnlock()
+
   item, ok := assetFiles[path]
   if !ok {
     return nil, fmt.Errorf("File %q not found in file system", path)
@@ -85,6 +98,13 @@ func MustReadFile(path string, doGzip bool) []byte {
 // ReadFile attempts to return the underline data associated with the given path
 // if it exists else returns an error.
 func ReadFile(path string, doGzip bool) ([]byte, error){
+	assetsCache.ml.RLock()
+	if data, ok := assetsCache.cache[path]; ok {
+		assetsCache.ml.RUnlock()
+		return []byte(data), nil
+	}
+	assetsCache.ml.RUnlock()
+
   reader, err := FindFile(path, doGzip)
   if err != nil {
     return nil, err
@@ -96,138 +116,9 @@ func ReadFile(path string, doGzip bool) ([]byte, error){
     return nil, err
   }
 
+	assetsCache.ml.Lock()
+	assetsCache.cache[path] = string(bu.Bytes())
+	assetsCache.ml.Unlock()
+
   return bu.Bytes(), nil
-}
-
-//==============================================================================
-
-// FileSystem defines a struct to implement http.FileSystem for serving request
-// for registered files in assetsFiles.
-type FileSystem struct{
-  Decompress bool
-  StripPath string
-}
-
-// Open checks for the giving filepath returning a structure that implements the
-// http.File else an error.
-func (f FileSystem) Open(path string) (http.File, error){
-  var err error
-
-  if f.StripPath != "" {
-    path, err = filepath.Rel(f.StripPath, path)
-    if err != nil {
-      return nil, err
-    }
-  }
-
-  item, ok := assetFiles[path]
-  if !ok {
-    return nil, fmt.Errorf("File %q not found in file system", path)
-  }
-
-	var zipper *gzip.Reader
-
-	reader := bytes.NewReader(item.data)
-
-	if f.Decompress {
-		zipper, err = gzip.NewReader(reader)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-  return &dodFile{
-		Reader: reader,
-    gzipper: zipper,
-		Info: &dodInfo{
-			FileName: item.path,
-			FileSize: int64(len(item.data)),
-		},
-  }, nil
-}
-
-//==============================================================================
-
-// dodFile defines a standin structure for a giving http.File object.
-type dodFile struct {
-	Info   os.FileInfo
-	Dirs   []os.FileInfo
-	Reader *bytes.Reader
-  gzipper *gzip.Reader
-}
-
-// Read reads data into the byte slice.
-func (d *dodFile) Read(b []byte) (int, error) {
-	return d.gzipper.Read(b)
-}
-
-// Seek implements the io.Seeker interface.
-func (d *dodFile) Seek(offset int64, whence int) (int64, error) {
-	return d.Reader.Seek(offset, whence)
-}
-
-// Close returns nil always.
-func (d *dodFile) Close() error {
-  if d.gzipper != nil {
-  	return d.gzipper.Close()
-  }
-
-  return nil
-}
-
-// Stat returns the FileInfo associated wih the dodfile.
-func (d dodFile) Stat() (os.FileInfo, error) {
-	return d.Info, nil
-}
-
-// Readdir returns the Dirs field as the list of directories.
-func (d dodFile) Readdir(dm int) ([]os.FileInfo, error) {
-	return d.Dirs, nil
-}
-
-// dodInfo implements the FileInfo for usage as a os.FileInfo.
-type dodInfo struct {
-	FileName string
-	FileSize int64
-}
-
-// Sys returns always nil.
-func (m dodInfo) Sys() interface{} {
-	return nil
-}
-
-// Mode returns the current time.
-func (m dodInfo) Mode() os.FileMode {
-	return 0777
-}
-
-// ModTime returns the current time.
-func (m dodInfo) ModTime() time.Time {
-	return time.Now()
-}
-
-// Size returns the size associated for the structure.
-func (m dodInfo) Size() int64 {
-	return m.FileSize
-}
-
-// IsDir returns always false.
-func (m dodInfo) IsDir() bool {
-	return false
-}
-
-// IsRegular reports whether m describes a regular file.
-func (m dodInfo) IsRegular() bool {
-	return true
-}
-
-// Perm returns the Unix permission bits in m.
-func (m dodInfo) Perm() os.FileMode {
-	return 0700
-}
-
-// Name returns the name associated for the dodInfo
-func (m dodInfo) Name() string {
-	return m.FileName
 }

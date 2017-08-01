@@ -34,8 +34,13 @@ func (static StaticMarkupPacker) Pack(statements []assets.FileStatement, dir ass
 			return nil, fmt.Errorf("Failed to read file %q: %s", statement.AbsPath, err)
 		}
 
+		writer, err := trees.ParseTreeToText(string(fileHTML), true)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse markup: %q", err.Error())
+		}
+
 		var treeWriter bytes.Buffer
-		if _, err := trees.ParseTreeToText(string(fileHTML), true).WriteTo(&treeWriter); err != nil {
+		if _, err := writer.WriteTo(&treeWriter); err != nil {
 			return nil, fmt.Errorf("Failed to write markup to code for file %q: %s", statement.AbsPath, err)
 		}
 

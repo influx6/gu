@@ -57,7 +57,7 @@ func JSDriverGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration)
 				Name:    config.App,
 				Package: config.Package,
 				Path:    config.Public.Path,
-				JSFile:  filepath.Join("../", config.Public.Path, jsFileName),
+				JSFile:  filepath.Join("../../", config.Public.Path, "js", jsFileName),
 			},
 		),
 	)

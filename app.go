@@ -57,6 +57,16 @@ func (app *NApp) InitApp(location Location) {
 	app.location = location
 }
 
+// Do calls the giving function providing it with the NApp instance.
+func (app *NApp) Do(appFun func(*NApp)) bool {
+	if appFun != nil {
+		appFun(app)
+		return true
+	}
+
+	return false
+}
+
 // initSanitCheck will perform series of checks to ensure the needed features or
 // structures required by the app is set else will panic.
 func (app *NApp) initSanitCheck() {
@@ -353,6 +363,16 @@ type NView struct {
 // UUID returns the uuid specific to the giving view.
 func (v *NView) UUID() string {
 	return v.uuid
+}
+
+// Do calls the giving function providing it with the NApp instance.
+func (v *NView) Do(viewFun func(*NView)) bool {
+	if viewFun != nil {
+		viewFun(app)
+		return true
+	}
+
+	return false
 }
 
 // totalComponents returns the total component list.

@@ -1,7 +1,6 @@
 package trees
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -196,10 +195,6 @@ func pullNode(tokens *html.Tokenizer, root *Markup) {
 func ParseTreeToText(markup string, withReturns bool) (io.WriterTo, error) {
 	reader := strings.NewReader(markup)
 	tokenizer := html.NewTokenizer(reader)
-
-	if c := tokenizer.Next(); c == html.ErrorToken {
-		return nil, errors.New("Error token at start of tokenizer")
-	}
 
 	nameCounter := &cn{}
 	var rootName = "root"

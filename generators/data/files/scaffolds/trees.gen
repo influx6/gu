@@ -24,7 +24,7 @@ func TreeFiles() []string{
 
 // MustGetTree returns the tree.Makrup associated with the given filename.
 func MustGetTree(name string) *trees.Markup {
-  markup, err := Get(name)
+  markup, err := GetTree(name)
   if err != nil {
     panic(err)
   }
@@ -35,7 +35,7 @@ func MustGetTree(name string) *trees.Markup {
 // GetTree returns the associated tree.Markup generated from the corresponding
 // asset.
 func GetTree(name string) (*trees.Markup, error) {
-  fn, err := GetFunction(name)
+  fn, err := GetTreeFunction(name)
   if err != nil {
     return nil, err
   }

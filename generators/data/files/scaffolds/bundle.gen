@@ -4,8 +4,6 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"path/filepath"
-	"time"
 )
 
 var (

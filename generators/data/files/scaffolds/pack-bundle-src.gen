@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"sync"
-	"path/filepath"
-	"time"
 )
 
 type fileData struct{

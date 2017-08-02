@@ -128,7 +128,7 @@ func ReadFileByte(path string, doGzip bool) ([]byte, error){
   var bu bytes.Buffer
 
   if _, err := io.Copy(&bu, reader); err != nil && err != io.EOF{
-    return nil, err
+    return nil, fmt.Errorf("File %q failed to be read: %+q", path, err)
   }
 
 	assetsCache.ml.Lock()

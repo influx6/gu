@@ -3,7 +3,7 @@
 
 //go:generate go run settings_bundle.go
 //go:generate go run public_bundle.go
-//go:generate go generate ./drivers/...
+//go:generate go generate ./driver/...
 
 package {{.Name}}
 

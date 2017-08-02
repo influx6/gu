@@ -13,6 +13,7 @@ type Remover interface {
 type Settings struct {
 	App     string `toml:"app"`
 	Package string `toml:"package"`
+	Static  Static `toml:"static"`
 	Public  Public `toml:"public"`
 	Theme   Theme  `toml:"theme"`
 }
@@ -24,6 +25,13 @@ func (s Settings) Validate() error {
 	}
 
 	return nil
+}
+
+// Static defines a configuration which details the place
+// where static content and the html file for a driver should be
+// located. This will mostly be used by js driver.
+type Static struct {
+	IndexDir string `toml:"indexDir"`
 }
 
 // Public defines giving settings for the public assets folder which will be build

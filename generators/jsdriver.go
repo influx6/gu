@@ -73,9 +73,9 @@ func JSDriverGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration)
 		},
 		{
 			DontOverride: false,
-			FileName:     "index.html",
-			Dir:          "public",
 			Writer:       htmlGen,
+			FileName:     "index.html",
+			Dir:          config.Static.IndexDir,
 		},
 	}, nil
 }

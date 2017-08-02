@@ -86,8 +86,25 @@ func FindFile(path string, doGzip bool) (io.Reader, error){
 }
 
 // MustReadFile calls ReadFile to retrieve file content with path else panics.
-func MustReadFile(path string, doGzip bool) []byte {
+func MustReadFile(path string, doGzip bool) string {
   body, err := ReadFile(path, doGzip)
+  if err != nil {
+    panic(err)
+  }
+  
+  return body
+}
+
+// ReadFile attempts to return the underline data associated with the given path
+// if it exists else returns an error.
+func ReadFile(path string, doGzip bool) (string, error){
+  body, err := ReadFileByte(path, doGzip)
+  return string(body), err
+}
+
+// MustReadFileByte calls ReadFile to retrieve file content with path else panics.
+func MustReadFileByte(path string, doGzip bool) []byte {
+  body, err := ReadFileByte(path, doGzip)
   if err != nil {
     panic(err)
   }
@@ -95,9 +112,9 @@ func MustReadFile(path string, doGzip bool) []byte {
   return body
 }
 
-// ReadFile attempts to return the underline data associated with the given path
+// ReadFileByte attempts to return the underline data associated with the given path
 // if it exists else returns an error.
-func ReadFile(path string, doGzip bool) ([]byte, error){
+func ReadFileByte(path string, doGzip bool) ([]byte, error){
 	assetsCache.ml.RLock()
 	if data, ok := assetsCache.cache[path]; ok {
 		assetsCache.ml.RUnlock()

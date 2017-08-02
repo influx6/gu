@@ -32,6 +32,14 @@ func JSDriverGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration)
 
 	jsFileName := fmt.Sprintf("%s_app_bundle.js", strings.ToLower(config.App))
 
+	var jsPath string
+
+	if config.Static.IndexDir == "./" {
+		jsPath = filepath.Join("public", "js")
+	} else {
+		jsPath = "js"
+	}
+
 	htmlGen := gen.Block(
 		gen.SourceText(
 			string(data.Must("scaffolds/base.html.gen")),
@@ -42,7 +50,7 @@ func JSDriverGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration)
 			}{
 				Name:   config.App,
 				Path:   config.Public.Path,
-				JSFile: fmt.Sprintf("js/%s", jsFileName),
+				JSFile: fmt.Sprintf("%s/%s", jsPath, jsFileName),
 			},
 		),
 	)

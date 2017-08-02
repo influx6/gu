@@ -13,8 +13,8 @@ var (
   }
 )
 
-// Files returns the giving path of all generated files.
-func Files() []string{
+// TreeFiles returns the giving path of all generated files.
+func TreeFiles() []string{
   return []string{
     {{ range $name, $_ := .Trees }}
       {{quote $name}},
@@ -22,8 +22,8 @@ func Files() []string{
   }
 }
 
-// Must returns the tree.Makrup associated with the given filename.
-func Must(name string) *trees.Markup {
+// MustGetTree returns the tree.Makrup associated with the given filename.
+func MustGetTree(name string) *trees.Markup {
   markup, err := Get(name)
   if err != nil {
     panic(err)
@@ -32,9 +32,9 @@ func Must(name string) *trees.Markup {
   return markup
 }
 
-// Get returns the associated tree.Markup generated from the corresponding
+// GetTree returns the associated tree.Markup generated from the corresponding
 // asset.
-func Get(name string) (*trees.Markup, error) {
+func GetTree(name string) (*trees.Markup, error) {
   fn, err := GetFunction(name)
   if err != nil {
     return nil, err
@@ -43,9 +43,9 @@ func Get(name string) (*trees.Markup, error) {
   return fn(),nil
 }
 
-// GetFunction returns the associated func() tree.Markup generated from the corresponding
+// GetTreeFunction returns the associated func() tree.Markup generated from the corresponding
 // asset.
-func GetFunction(name string) (func() *trees.Markup, error) {
+func GetTreeFunction(name string) (func() *trees.Markup, error) {
   markup, ok := markupFiles[name]
   if !ok{
     return nil, fmt.Errorf("Markup for giving file %q not found", name)

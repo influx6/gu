@@ -58,13 +58,13 @@ func (app *NApp) InitApp(location Location) {
 }
 
 // Do calls the giving function providing it with the NApp instance.
-func (app *NApp) Do(appFun func(*NApp)) bool {
+func (app *NApp) Do(appFun func(*NApp)) *NApp {
 	if appFun != nil {
 		appFun(app)
-		return true
+		return app
 	}
 
-	return false
+	return app
 }
 
 // initSanitCheck will perform series of checks to ensure the needed features or
@@ -211,9 +211,6 @@ func (app *NApp) Render(es interface{}) *trees.Markup {
 
 	body.AddChild(toBody...)
 
-	// Ensure to have this gc'ed.
-	last = nil
-
 	return html
 }
 
@@ -246,11 +243,7 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 	var head, body []*trees.Markup
 
 	head = append(head, elems.Title(elems.Text(app.title)))
-	head = append(head, elems.Meta(trees.NewAttr("gu-app-id", app.uuid)))
-
-	// if !app.attr.SkipFonts {
-	// 	head = append(head, elems.Link(property.HrefAttr("https://fonts.googleapis.com/css?family=Monoton|Noto+Sans|Noto+Serif|Roboto|Roboto+Condensed|Roboto+Mono")))
-	// }
+	head = append(head, elems.Meta(trees.NewAttr("app-id", app.uuid)))
 
 	app.resourceHeader = head
 	app.resourceBody = body
@@ -366,13 +359,13 @@ func (v *NView) UUID() string {
 }
 
 // Do calls the giving function providing it with the NApp instance.
-func (v *NView) Do(viewFun func(*NView)) bool {
+func (v *NView) Do(viewFun func(*NView)) *NView {
 	if viewFun != nil {
 		viewFun(v)
-		return true
+		return v
 	}
 
-	return false
+	return v
 }
 
 // totalComponents returns the total component list.

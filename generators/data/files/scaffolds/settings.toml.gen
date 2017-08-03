@@ -9,6 +9,8 @@ package = {{quote .Package}}
 
 [static]
 indexDir = "./public" # sets where index.html will be located
+jsFile = "{{lower .Name}}_app_bundle.js"
+jsMapFile = "{{lower .Name}}_app_bundle.js.map"
 
 [public]
 path = "./public"

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -75,6 +76,8 @@ type DirWalker func(rel string, abs string, info os.FileInfo) bool
 // WalkDir will run through the provided path which is expected to be a directory
 // and runs the provided callback with the current path and FileInfo.
 func WalkDir(dir string, callback DirWalker) error {
+	isWin := runtime.GOOS == "windows"
+
 	cerr := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		// If we got an error then stop and return it.
 		if err != nil {
@@ -84,6 +87,11 @@ func WalkDir(dir string, callback DirWalker) error {
 		// If its a symlink, don't deal with it.
 		if !info.Mode().IsRegular() {
 			return nil
+		}
+
+		// If on windows, correct path slash.
+		if isWin {
+			path = filepath.ToSlash(path)
 		}
 
 		// Retrive relative path for giving path.

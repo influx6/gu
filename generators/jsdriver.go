@@ -5,7 +5,6 @@ package generators
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/gu-io/gu/common"
@@ -30,8 +29,6 @@ func JSDriverGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration)
 		return nil, err
 	}
 
-	jsFileName := fmt.Sprintf("%s_app_bundle.js", strings.ToLower(config.App))
-
 	var jsPath string
 
 	if config.Static.IndexDir == "./" {
@@ -50,7 +47,7 @@ func JSDriverGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration)
 			}{
 				Name:   config.App,
 				Path:   config.Public.Path,
-				JSFile: fmt.Sprintf("%s/%s", jsPath, jsFileName),
+				JSFile: fmt.Sprintf("%s/%s", jsPath, config.Static.JSFileName),
 			},
 		),
 	)
@@ -67,7 +64,7 @@ func JSDriverGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration)
 				Name:    config.App,
 				Package: config.Package,
 				Path:    config.Public.Path,
-				JSFile:  filepath.Join("../../", config.Public.Path, "js", jsFileName),
+				JSFile:  filepath.Join("../../", config.Public.Path, "js", config.Static.JSFileName),
 			},
 		),
 	)

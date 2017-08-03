@@ -73,7 +73,7 @@ func GuPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration
 
 	publicGen := gen.Block(
 		gen.SourceText(
-			string(data.Must("scaffolds/pack-bundle.gen")),
+			string(data.Must("scaffolds/pack-bundle-public.gen")),
 			struct {
 				Name          string
 				LessFile      string

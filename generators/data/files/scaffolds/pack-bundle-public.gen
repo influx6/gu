@@ -5,16 +5,39 @@ package main
 import (
 	"fmt"
 	"os"
+    "path/filepath"
 
+	"github.com/BurntSushi/toml"
+	"github.com/gu-io/gu/common"
 	"github.com/gu-io/gu/assets"
 	"github.com/gu-io/gu/assets/packers"
 	"github.com/influx6/moz/gen"
 )
 
 func main(){
+  var config common.Settings
+
+  // Load settings into configuration.
+  if _, err := toml.DecodeFile("./settings.toml", &config); err != nil {
+    panic(err)
+  }
+
+  if err := config.Validate(); err != nil {
+    panic(err)
+  }
+
   aspacker := assets.New(packers.RawPacker{})
 
-  aspacker.Register(".js", packers.JSPacker{})
+	jspacker := packers.JSPacker{
+      Exceptions: []string{
+        filepath.Join(config.Public.Path,"js", config.Static.JSFileName),
+        filepath.Join(config.Public.Path,"js", config.Static.JSMapFileName),
+      },
+  }
+
+  aspacker.Register(".js", &jspacker)
+  aspacker.Register(".js.map", &jspacker)
+	
   aspacker.Register(".css", packers.CSSPacker{})
   aspacker.Register(".static.html", packers.StaticMarkupPacker{
 		PackageName: {{quote .TargetPackage}},

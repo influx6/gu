@@ -107,10 +107,16 @@ func (w *Webpack) Build(dir string, doGoSources bool) (map[string][]WriteDirecti
 			continue
 		}
 
+		// By default Go files will be omitted except they have a packer
+		// registered for their types.
+		if !ok && w.defaultPacker != nil && ext == ".go" {
+			continue
+		}
+
 		var derr error
 		var directives []WriteDirective
 
-		if w.defaultPacker != nil && !ok {
+		if !ok && w.defaultPacker != nil {
 			directives, derr = w.defaultPacker.Pack(fileStatement, statement)
 		} else {
 			directives, derr = packer.Pack(fileStatement, statement)

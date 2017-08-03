@@ -31,7 +31,9 @@ func (s Settings) Validate() error {
 // where static content and the html file for a driver should be
 // located. This will mostly be used by js driver.
 type Static struct {
-	IndexDir string `toml:"indexDir"`
+	IndexDir      string `toml:"indexDir"`
+	JSFileName    string `toml:"jsFile"`
+	JSMapFileName string `toml:"jsMapFile"`
 }
 
 // Public defines giving settings for the public assets folder which will be build

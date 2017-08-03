@@ -126,26 +126,20 @@ func (w *Webpack) Build(dir string, doGoSources bool) (map[string][]WriteDirecti
 			return wd, staticWd, err
 		}
 
-		for _, directive := range directives {
-			fileExt := getExtension(directive.OriginPath)
+		func(drs []WriteDirective) {
+			for _, directive := range drs {
+				fileExt := getExtension(directive.OriginPath)
 
-			if directive.Static != nil {
-				if ext == fileExt {
-					staticWd[ext] = append(staticWd[ext], directive)
+				// fmt.Printf("- Packing %q under %q\n", directive.OriginAbsPath, fileExt)
+
+				if directive.Static != nil {
+					staticWd[fileExt] = append(staticWd[fileExt], directive)
 					continue
 				}
 
-				staticWd[fileExt] = append(staticWd[ext], directive)
-				continue
+				wd[fileExt] = append(wd[fileExt], directive)
 			}
-
-			if ext == fileExt {
-				wd[ext] = append(wd[ext], directive)
-				continue
-			}
-
-			wd[fileExt] = append(wd[ext], directive)
-		}
+		}(directives)
 	}
 
 	return wd, staticWd, nil

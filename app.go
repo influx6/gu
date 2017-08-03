@@ -407,11 +407,6 @@ func (v *NView) Target() ViewTarget {
 func (v *NView) Render() *trees.Markup {
 	base := v.base.Render()
 
-	base.SwapUID(v.uuid)
-
-	// Update the base hash.
-	base.UpdateHash()
-
 	// Process the begin components and immediately add appropriately into base.
 	for _, component := range v.beginComponents {
 		if component.Target == "" {
@@ -456,6 +451,17 @@ func (v *NView) Render() *trees.Markup {
 			target.UpdateHash()
 		}
 	}
+
+	if len(base.Children()) == 1 {
+		child := base.Children()[0]
+		child.SwapUID(v.uuid)
+		child.UpdateHash()
+
+		return child
+	}
+
+	base.SwapUID(v.uuid)
+	base.UpdateHash()
 
 	return base
 }

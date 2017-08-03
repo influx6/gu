@@ -521,16 +521,32 @@ func (v *NView) Services() Services {
 }
 
 // Component adds the provided component into the selected view.
-func (v *NView) Component(renderable Renderable, order RenderingOrder, route string, target string) {
+func (v *NView) Component(renderable interface{}, order RenderingOrder, route string, target string) {
+	var base Renderable
+
+	switch rnb := renderable.(type) {
+	case Renderable:
+		base = rnb
+		break
+	case *trees.Markup:
+		base = Static(rnb)
+		break
+	case trees.Appliable:
+		base = ApplyStatic(rnb)
+		break
+	default:
+		panic("Only Renderable/trees.Markup allowed")
+	}
+
 	var c Component
 	c.uuid = NewKey()
 	c.Target = target
-	c.Rendering = renderable
+	c.Rendering = base
 	c.Reactive = NewReactive()
 	c.Router = router.NewResolver(route)
 
 	// if the renderable can push reactions then listen.
-	if rr, ok := renderable.(Reactor); ok {
+	if rr, ok := base.(Reactor); ok {
 		rr.React(c.Reactive.Publish)
 	}
 

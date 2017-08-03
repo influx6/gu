@@ -290,6 +290,9 @@ func (app *NApp) View(renderable interface{}, route string, target ViewTarget) *
 		break
 	case *trees.Markup:
 		base = Static(rnb)
+		break
+	default:
+		panic("Only Renderable/trees.Markup allowed")
 	}
 
 	var vw NView

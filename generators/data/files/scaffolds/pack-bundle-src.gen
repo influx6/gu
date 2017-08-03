@@ -28,7 +28,7 @@ var (
     {{ range $ext, $directives := .Directives }}
       {{ range $directives }}
         {{quote .OriginPath}}: { // all {{ $ext }} assets.
-          data: []byte({{ .Read }}),
+          data: []byte("{{.Read }}"),
           path: {{quote .OriginPath }},
           root: {{quote .OriginAbsPath }},
         },
@@ -125,10 +125,15 @@ func ReadFileByte(path string, doGzip bool) ([]byte, error){
     return nil, err
   }
 
+  if closer, ok := reader.(io.Closer); ok {
+    defer closer.Close()
+  }
+
   var bu bytes.Buffer
 
-  if _, err := io.Copy(&bu, reader); err != nil && err != io.EOF{
-    return nil, fmt.Errorf("File %q failed to be read: %+q", path, err)
+  _, err = io.Copy(&bu, reader); 
+  if err != nil && err != io.EOF {
+   return nil, fmt.Errorf("File %q failed to be read: %+q", path, err)
   }
 
 	assetsCache.ml.Lock()

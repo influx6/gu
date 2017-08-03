@@ -244,6 +244,7 @@ func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
 
 	head = append(head, elems.Title(elems.Text(app.title)))
 	head = append(head, elems.Meta(trees.NewAttr("app-id", app.uuid)))
+	head = append(head, elems.Meta(trees.NewAttr("charset", "utf-8")))
 
 	app.resourceHeader = head
 	app.resourceBody = body
@@ -290,6 +291,9 @@ func (app *NApp) View(renderable interface{}, route string, target ViewTarget) *
 		break
 	case *trees.Markup:
 		base = Static(rnb)
+		break
+	case trees.Appliable:
+		base = ApplyStatic(rnb)
 		break
 	default:
 		panic("Only Renderable/trees.Markup allowed")
@@ -585,28 +589,70 @@ func (c *Component) Render() *trees.Markup {
 
 // Disabled returns true/false if the giving view is disabled.
 func (v *NView) Disabled() bool {
-	// v.rl.RLock()
-	// defer v.rl.RUnlock()
-
 	return v.active
 }
 
 // enableView enables the active state of the view.
 func (v *NView) enableView() {
-	// v.rl.Lock()
-	// {
 	v.active = true
-	// }
-	// v.rl.Unlock()
 }
 
 // disableView disables the active state of the view.
 func (v *NView) disableView() {
-	// v.rl.Lock()
-	// {
 	v.active = false
-	// }
-	// v.rl.Unlock()
+}
+
+//==============================================================================
+
+// ApplyView defines a MarkupRenderer implementing structure which returns its Content has
+// its markup.
+type ApplyView struct {
+	uid      string
+	Morph    bool
+	Mounted  Subscriptions
+	Rendered Subscriptions
+	Content  trees.Appliable
+	base     *trees.Markup
+}
+
+// ApplyStatic defines a toplevel function which returns a new instance of a StaticView using the
+// provided markup as its content.
+func ApplyStatic(tree trees.Appliable) *ApplyView {
+	return &ApplyView{
+		Content: tree,
+		uid:     NewKey(),
+		base:    trees.NewMarkup("div", false),
+	}
+}
+
+// UUID returns the RenderGroup UUID for identification.
+func (a *ApplyView) UUID() string {
+	return a.uid
+}
+
+// Render returns the markup for the static view.
+func (a *ApplyView) Render() *trees.Markup {
+	a.Content.Apply(a.base)
+
+	children := a.base.Children()
+
+	if len(children) == 0 {
+		return a.base
+	}
+
+	a.base.Empty()
+
+	root := children[0]
+	if a.Morph {
+		return root.ApplyMorphers()
+	}
+
+	return root
+}
+
+// RenderHTML returns the html template version of the StaticView content.
+func (a *ApplyView) RenderHTML() template.HTML {
+	return a.Render().EHTML()
 }
 
 //==============================================================================
@@ -633,13 +679,6 @@ func Static(tree *trees.Markup) *StaticView {
 // UUID returns the RenderGroup UUID for identification.
 func (s *StaticView) UUID() string {
 	return s.uid
-}
-
-// Dependencies returns the list of all internal dependencies of the given view.
-// It returns the names of the structs and their internals composed values/fields
-// to help conditional resource loading.
-func (s *StaticView) Dependencies() []RenderableData {
-	return nil
 }
 
 // Render returns the markup for the static view.

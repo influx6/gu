@@ -590,6 +590,17 @@ type Appliable interface {
 	Apply(*Markup)
 }
 
+// ApplyChildren applies the internal children of the markup to the provided parent.
+func (e *Markup) ApplyChildren(em *Markup) {
+	if em == nil {
+		return
+	}
+
+	for _, child := range e.children {
+		em.AddChild(child)
+	}
+}
+
 //Apply adds the giving element into the current elements children tree
 func (e *Markup) Apply(em *Markup) {
 	if em == nil {

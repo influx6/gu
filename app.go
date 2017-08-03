@@ -207,7 +207,7 @@ func (app *NApp) Render(es interface{}) *trees.Markup {
 
 	script.Apply(last)
 
-	body.AddChild(last.Children()...)
+	last.ApplyChildren(body)
 
 	body.AddChild(toBody...)
 
@@ -450,14 +450,6 @@ func (v *NView) Render() *trees.Markup {
 			target.AddChild(render)
 			target.UpdateHash()
 		}
-	}
-
-	if len(base.Children()) == 1 {
-		child := base.Children()[0]
-		child.SwapUID(v.uuid)
-		child.UpdateHash()
-
-		return child
 	}
 
 	base.SwapUID(v.uuid)

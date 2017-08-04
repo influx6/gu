@@ -16,7 +16,7 @@ func TestCleanCSSPacker(t *testing.T) {
 	bombless := filepath.Join(fixtures, "wordan.css")
 	bomblessRel := filepath.Join("./packers/fixtures/", "bomb.less")
 
-	var clean packers.CleanCSSPacker
+	clean := packers.CleanCSSPacker{Args: []string{"-O", "1"}}
 
 	response, err := clean.Pack([]assets.FileStatement{{
 		Path:    bomblessRel,

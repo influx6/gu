@@ -11,11 +11,17 @@ import (
 )
 
 // CSSPacker defines an implementation for parsing css files.
-type CSSPacker struct{}
+type CSSPacker struct {
+	CleanCSS bool
+}
 
 // Pack process all files present in the FileStatment slice and returns WriteDirectives
 // which contains expected outputs for these files.
 func (csp CSSPacker) Pack(statements []assets.FileStatement, dir assets.DirStatement) ([]assets.WriteDirective, error) {
+	if csp.CleanCSS {
+		return (CleanCSSPacker{Args: []string{"-O", "1"}}).Pack(statements, dir)
+	}
+
 	var directives []assets.WriteDirective
 
 	for _, statement := range statements {

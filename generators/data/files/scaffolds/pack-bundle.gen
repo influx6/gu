@@ -15,7 +15,7 @@ func main(){
   aspacker := assets.New(packers.RawPacker{})
 
   aspacker.Register(".js", packers.JSPacker{})
-  aspacker.Register(".css", packers.CSSPacker{})
+  aspacker.Register(".css", packers.CSSPacker{CleanCSS: true})
   aspacker.Register(".static.html", packers.StaticMarkupPacker{
 		PackageName: {{quote .TargetPackage}},
 		DestinationFile: "{{.TargetDir}}/{{lower .Package}}_static_bundle.go",

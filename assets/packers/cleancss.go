@@ -25,7 +25,7 @@ var (
 // CleanCSSPacker defines an implementation for parsing css files.
 // WARNING: Requires Nodejs to be installed.
 type CleanCSSPacker struct {
-	Options map[string]string
+	Args []string
 }
 
 // Pack process all files present in the FileStatment slice and returns WriteDirectives
@@ -43,12 +43,7 @@ func (cess CleanCSSPacker) Pack(statements []assets.FileStatement, dir assets.Di
 }
 
 func processCleanStatement(statement assets.FileStatement, cess CleanCSSPacker, directives *[]assets.WriteDirective) error {
-	var args []string
-
-	for option, value := range cess.Options {
-		args = append(args, option, value)
-	}
-
+	args := append([]string{}, cess.Args...)
 	args = append(args, filepath.Clean(statement.AbsPath))
 
 	cmd := process.Command{

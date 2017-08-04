@@ -14,7 +14,8 @@ import (
 	"github.com/influx6/faux/process"
 )
 
-// LessPacker defines an implementation for parsing css files.
+// LessPacker defines an implementation for parsing .less files into css files using the less compiler in nodejs.
+// WARNING: Requires Nodejs to be installed.
 type LessPacker struct {
 	MainFile string
 	Options  map[string]string
@@ -67,13 +68,13 @@ func processStatement(statement assets.FileStatement, less LessPacker, directive
 
 	cmd := process.Command{
 		Args:  args,
-		Name:  "lessc",
+		Name:  filepath.Join(guSrcNodeModulesBin, "lessc"),
 		Level: process.RedAlert,
 	}
 
 	var errBuf, outBuf bytes.Buffer
 
-	ctx, cancl := context.WithDeadline(context.Background(), time.Now().Add(1*time.Minute))
+	ctx, cancl := context.WithTimeout(context.Background(), time.Minute)
 	defer cancl()
 
 	if err := cmd.Run(ctx, &outBuf, &errBuf, nil); err != nil {

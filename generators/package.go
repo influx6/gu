@@ -3,8 +3,10 @@
 package generators
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -32,6 +34,23 @@ func GuPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration
 	workDir, err := os.Getwd()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to retrieve current directory path: %+q", err)
+	}
+
+	guSrc := filepath.Join(inGOPATHSrc, "github.com/gu-io/gu")
+	gutheme := filepath.Join(guSrc, "common/themes")
+	guGridCSS := filepath.Join(gutheme, "/grids/grid.css")
+	guNormCSS := filepath.Join(gutheme, "/normalize/normalize.css")
+
+	gridCSSData, err := ioutil.ReadFile(guGridCSS)
+	if err != nil {
+		fmt.Printf("Failed to retrieve /grid/grid.css file from gu src dir: %q -> %+q\n", guGridCSS, err)
+		return nil, err
+	}
+
+	gridNormCSS, err := ioutil.ReadFile(guNormCSS)
+	if err != nil {
+		fmt.Printf("Failed to retrieve /normalize/normalize.css file from gu src dir: %q -> %+q\n", guNormCSS, err)
+		return nil, err
 	}
 
 	packageDir, err := filepath.Rel(inGOPATHSrc, workDir)
@@ -137,6 +156,18 @@ func GuPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration
 		{
 			DontOverride: false,
 			Dir:          filepath.Join(componentNameLower, "public"),
+		},
+		{
+			DontOverride: false,
+			Dir:          filepath.Join(componentNameLower, "public/css"),
+			FileName:     "normalize.css",
+			Writer:       bytes.NewBuffer(gridNormCSS),
+		},
+		{
+			DontOverride: false,
+			Dir:          filepath.Join(componentNameLower, "public/css"),
+			FileName:     "grid.css",
+			Writer:       bytes.NewBuffer(gridCSSData),
 		},
 		{
 			DontOverride: false,

@@ -35,6 +35,13 @@ func App(title string, router *router.Router) *NApp {
 	app.router = router
 	app.notifications = notifications.AppNotification(app.uuid)
 
+	var head []*trees.Markup
+	head = append(head, elems.Title(elems.Text(app.title)))
+	head = append(head, elems.Meta(trees.NewAttr("app-id", app.uuid)))
+	head = append(head, elems.Meta(trees.NewAttr("charset", "utf-8")))
+
+	app.resourceHeader = head
+
 	return &app
 }
 
@@ -233,23 +240,23 @@ func (app *NApp) PushViews(event router.PushEvent) []*NView {
 	return active
 }
 
+// AddAsset adds giving tree.Markup has assets to be loaded either in the head
+// or body based on the posiiton desired.
+func (app *NApp) AddAsset(asset *trees.Markup, target ViewTarget) {
+	switch target {
+	case HeadTarget:
+		app.resourceHeader = append(app.resourceHeader, asset)
+		return
+	case BodyTarget:
+		app.resourceBody = append(app.resourceBody, asset)
+		return
+	}
+}
+
 // Resources return the giving resource headers which relate with the
 // view.
 func (app *NApp) Resources() ([]*trees.Markup, []*trees.Markup) {
-	if app.resourceHeader != nil && app.resourceBody != nil {
-		return app.resourceHeader, app.resourceBody
-	}
-
-	var head, body []*trees.Markup
-
-	head = append(head, elems.Title(elems.Text(app.title)))
-	head = append(head, elems.Meta(trees.NewAttr("app-id", app.uuid)))
-	head = append(head, elems.Meta(trees.NewAttr("charset", "utf-8")))
-
-	app.resourceHeader = head
-	app.resourceBody = body
-
-	return head, body
+	return app.resourceHeader, app.resourceBody
 }
 
 // UUID returns the uuid specific to the giving view.

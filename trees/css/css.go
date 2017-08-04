@@ -232,7 +232,6 @@ func (r *Rule) Add(c *Rule) *Rule {
 // extend attempts to pull a giving set of classes and assigns into
 // a target class.
 func (r *Rule) extend(item string) string {
-	// fmt.Printf("Find: %q %#v\n", item, r.feed)
 	if r.feedStyle == nil {
 		return ""
 	}
@@ -253,8 +252,6 @@ func (r *Rule) extend(item string) string {
 		}
 		break
 	}
-
-	// fmt.Printf("Attr: %q -> %+q\n", item, attrs)
 
 	return strings.Join(attrs, "\n")
 }

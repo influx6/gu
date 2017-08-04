@@ -12,10 +12,10 @@ type Remover interface {
 // specific user settings for the gu build system.
 type Settings struct {
 	App     string `toml:"app"`
+	Theme   Theme  `toml:"theme"`
 	Package string `toml:"package"`
 	Static  Static `toml:"static"`
 	Public  Public `toml:"public"`
-	Theme   Theme  `toml:"theme"`
 }
 
 // Validate will validate the state of the giving fields.

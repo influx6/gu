@@ -77,6 +77,8 @@ Goals
 -	Able to render on both front and back end.
 -	Quickly craft your UI without touching HTML.
 -	Share code between backend and frontend.
+-   Efficient and extendable asset bundling for all possible file types.
+
 
 Advantages
 ----------
@@ -85,6 +87,8 @@ Advantages
 -	Components are hierarchical allowing further reuse.
 -	Event handling is simple and strongly typed.
 -	Compile time safety
+-   Bundles all assets (with `less` files natively converted)
+-   Minify all css outputs.
 
 Examples
 --------

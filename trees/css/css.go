@@ -176,6 +176,7 @@ type Rule struct {
 	feed      *Rule
 	depends   []*Rule
 	feedStyle *bcss.Stylesheet
+	baseStyle *bcss.Stylesheet
 	template  *template.Template
 }
 
@@ -188,6 +189,10 @@ type Rule struct {
 // 				extend a rule sets property.
 func New(rules string, extension *Rule, rs ...*Rule) *Rule {
 	rsc := &Rule{depends: rs, feed: extension}
+
+	if extend, err := parser.Parse(base); err == nil {
+		rsc.baseStyle = extend
+	}
 
 	tmp, err := template.New("css").Funcs(helpers).Funcs(template.FuncMap{
 		"extend": rsc.extend,
@@ -205,11 +210,17 @@ func New(rules string, extension *Rule, rs ...*Rule) *Rule {
 // of parsing with a template has the source of the stylesheet to be parsed. No processing
 // will be done on it.
 func Plain(rule string, extension *Rule, rs ...*Rule) *Rule {
-	return &Rule{
+	rsc := &Rule{
 		plain:   rule,
 		feed:    extension,
 		depends: rs,
 	}
+
+	if extend, err := parser.Parse(base); err == nil {
+		rsc.baseStyle = extend
+	}
+
+	return rsc
 }
 
 // UseExtension sets the css.Rule to be used for extensions and
@@ -238,7 +249,7 @@ func (r *Rule) extend(item string) string {
 
 	var attrs []string
 
-	for _, rule := range r.feedStyle.Rules {
+	for _, rule := range r.baseStyle.Rules {
 		if rule.Prelude != item {
 			continue
 		}
@@ -251,6 +262,23 @@ func (r *Rule) extend(item string) string {
 			}
 		}
 		break
+	}
+
+	if len(attrs) == 0 {
+		for _, rule := range r.feedStyle.Rules {
+			if rule.Prelude != item {
+				continue
+			}
+
+			for _, prop := range rule.Declarations {
+				if prop.Important {
+					attrs = append(attrs, prop.StringWithImportant(prop.Important))
+				} else {
+					attrs = append(attrs, prop.String())
+				}
+			}
+			break
+		}
 	}
 
 	return strings.Join(attrs, "\n")

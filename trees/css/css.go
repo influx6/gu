@@ -197,7 +197,6 @@ type Rule struct {
 	feed      *Rule
 	depends   []*Rule
 	feedStyle *bcss.Stylesheet
-	baseStyle *bcss.Stylesheet
 	template  *template.Template
 }
 
@@ -374,11 +373,5 @@ func (r *Rule) morphRule(base *bcss.Rule, parentNode string) {
 		for index, sel := range rule.Selectors {
 			rule.Selectors[index] = r.adjustName(sel, parentNode)
 		}
-	}
-}
-
-func init() {
-	if extend, err := parser.Parse(base); err == nil {
-		baseStyles = extend
 	}
 }

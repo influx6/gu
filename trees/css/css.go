@@ -17,8 +17,29 @@ var (
 	animationCurveLinearOutSlowIn = "cubic-bezier(0, 0, 0.2, 1)"
 	animationCurveFastOutLinearIn = "cubic-bezier(0.4, 0, 1, 1)"
 	animationCurveDefault         = animationCurveFastOutSlowIn
+	helpers                       = template.FuncMap{
+		"materialColors": func(colorName string, grade int) string {
+			colorName = strings.ToLower(colorName)
 
-	helpers = template.FuncMap{
+			if grade < 0 {
+				grade = 0
+			}
+
+			wantedColor, ok := materialPalettes[colorName]
+			if !ok {
+				return "rgba(0,0,0,1)"
+			}
+
+			var colorVals string
+
+			if grade >= len(wantedColor) {
+				colorVals = wantedColor[len(wantedColor)-1]
+			} else {
+				colorVals = wantedColor[grade]
+			}
+
+			return fmt.Sprintf("rgba(%s,1)", colorVals)
+		},
 		"quote": func(b interface{}) string {
 			switch bo := b.(type) {
 			case string:
@@ -190,10 +211,6 @@ type Rule struct {
 func New(rules string, extension *Rule, rs ...*Rule) *Rule {
 	rsc := &Rule{depends: rs, feed: extension}
 
-	if extend, err := parser.Parse(base); err == nil {
-		rsc.baseStyle = extend
-	}
-
 	tmp, err := template.New("css").Funcs(helpers).Funcs(template.FuncMap{
 		"extend": rsc.extend,
 	}).Parse(rules)
@@ -214,10 +231,6 @@ func Plain(rule string, extension *Rule, rs ...*Rule) *Rule {
 		plain:   rule,
 		feed:    extension,
 		depends: rs,
-	}
-
-	if extend, err := parser.Parse(base); err == nil {
-		rsc.baseStyle = extend
 	}
 
 	return rsc
@@ -243,13 +256,9 @@ func (r *Rule) Add(c *Rule) *Rule {
 // extend attempts to pull a giving set of classes and assigns into
 // a target class.
 func (r *Rule) extend(item string) string {
-	if r.feedStyle == nil {
-		return ""
-	}
-
 	var attrs []string
 
-	for _, rule := range r.baseStyle.Rules {
+	for _, rule := range baseStyles.Rules {
 		if rule.Prelude != item {
 			continue
 		}
@@ -264,7 +273,7 @@ func (r *Rule) extend(item string) string {
 		break
 	}
 
-	if len(attrs) == 0 {
+	if len(attrs) == 0 && r.feedStyle != nil {
 		for _, rule := range r.feedStyle.Rules {
 			if rule.Prelude != item {
 				continue
@@ -365,5 +374,11 @@ func (r *Rule) morphRule(base *bcss.Rule, parentNode string) {
 		for index, sel := range rule.Selectors {
 			rule.Selectors[index] = r.adjustName(sel, parentNode)
 		}
+	}
+}
+
+func init() {
+	if extend, err := parser.Parse(base); err == nil {
+		baseStyles = extend
 	}
 }

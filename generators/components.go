@@ -19,7 +19,7 @@ import (
 //	struct type has a notification type which can then be wired as a notification.EventDistributor.
 //
 //	Annotation: @notification:event
-func ComponentPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration) ([]gen.WriteDirective, error) {
+func ComponentPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration, pk ast.Package) ([]gen.WriteDirective, error) {
 	if len(an.Arguments) == 0 {
 		return nil, errors.New("Expected atleast one argument for annotation as component name")
 	}

@@ -10,7 +10,7 @@ import (
 
 	"github.com/gu-io/gu/generators"
 	"github.com/influx6/faux/metrics"
-	"github.com/influx6/faux/metrics/sentries/stdout"
+	"github.com/influx6/faux/metrics/custom"
 	"github.com/influx6/moz/annotations"
 	"github.com/influx6/moz/ast"
 	"github.com/influx6/moz/gen"
@@ -69,7 +69,7 @@ func initCommands() {
 				return err
 			}
 
-			directives, err := generators.ComponentPackageGenerator(ast.AnnotationDeclaration{Arguments: []string{component}}, ast.PackageDeclaration{FilePath: currentDir})
+			directives, err := generators.ComponentPackageGenerator(ast.AnnotationDeclaration{Arguments: []string{component}}, ast.PackageDeclaration{FilePath: currentDir}, ast.Package{})
 			if err != nil {
 				return err
 			}
@@ -140,7 +140,7 @@ func initCommands() {
 
 			switch driver {
 			case "js":
-				directives, err = generators.JSDriverGenerator(ast.AnnotationDeclaration{}, ast.PackageDeclaration{FilePath: currentDir})
+				directives, err = generators.JSDriverGenerator(ast.AnnotationDeclaration{}, ast.PackageDeclaration{FilePath: currentDir}, ast.Package{})
 				break
 			default:
 				return fmt.Errorf("Driver %s not supported yet", driver)
@@ -216,7 +216,7 @@ func initCommands() {
 				return err
 			}
 
-			directives, err := generators.GuPackageGenerator(ast.AnnotationDeclaration{Arguments: []string{component}}, ast.PackageDeclaration{FilePath: currentDir})
+			directives, err := generators.GuPackageGenerator(ast.AnnotationDeclaration{Arguments: []string{component}}, ast.PackageDeclaration{FilePath: currentDir}, ast.Package{})
 			if err != nil {
 				return err
 			}
@@ -300,15 +300,15 @@ func initCommands() {
 			// Register @assets annotation for our registery as well.
 			register.Register("assets", annotations.AssetsAnnotationGenerator)
 
-			events := metrics.New(stdout.Stderr{})
-			pkgs, err := ast.ParseAnnotations(events, indir)
+			events := metrics.New(custom.BlockDisplay(os.Stdout))
+			pkg, err := ast.ParseAnnotations(events, indir)
 			if err != nil {
-				events.Emit(stdout.Error(err).With("dir", indir).With("message", "Failed to parse package annotations"))
+				events.Emit(metrics.Error(err).With("dir", indir).With("message", "Failed to parse package annotations"))
 				return err
 			}
 
-			if err := ast.Parse("", events, register, false, pkgs...); err != nil {
-				events.Emit(stdout.Error(err).With("dir", indir).With("message", "Failed to parse package annotations"))
+			if err := ast.Parse("", events, register, false, pkg.PackageList()...); err != nil {
+				events.Emit(metrics.Error(err).With("dir", indir).With("message", "Failed to parse package annotations"))
 				return err
 			}
 

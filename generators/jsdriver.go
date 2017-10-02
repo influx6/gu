@@ -17,7 +17,7 @@ import (
 // JSDriverGenerator which defines a  function for generating a type for receiving a giving
 //	struct type has a notification type which can then be wired as a notification.EventDistributor.
 //
-func JSDriverGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration) ([]gen.WriteDirective, error) {
+func JSDriverGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration, pk ast.Package) ([]gen.WriteDirective, error) {
 	var config common.Settings
 
 	// Load settings into configuration.

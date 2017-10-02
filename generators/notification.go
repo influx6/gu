@@ -31,7 +31,7 @@ import (
 //	for that event without need to worry about that themselves.
 //
 //
-func NotificationTypeGenerator(an ast.AnnotationDeclaration, str ast.StructDeclaration, pkg ast.PackageDeclaration) ([]gen.WriteDirective, error) {
+func NotificationTypeGenerator(an ast.AnnotationDeclaration, str ast.StructDeclaration, pkg ast.PackageDeclaration, pk ast.Package) ([]gen.WriteDirective, error) {
 	eventFileName := fmt.Sprintf("%s_event.go", strings.ToLower(str.Object.Name.Name))
 
 	typeGen := gen.Block(

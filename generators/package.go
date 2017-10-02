@@ -26,7 +26,7 @@ var (
 // GuPackageGenerator which defines a  function for generating a type for receiving a giving
 //	struct type has a notification type which can then be wired as a notification.EventDistributor.
 //
-func GuPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration) ([]gen.WriteDirective, error) {
+func GuPackageGenerator(an ast.AnnotationDeclaration, pkg ast.PackageDeclaration, pkgDir ast.Package) ([]gen.WriteDirective, error) {
 	if len(an.Arguments) == 0 {
 		return nil, errors.New("Expected atleast one argument for annotation as component name")
 	}

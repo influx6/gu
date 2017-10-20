@@ -307,7 +307,7 @@ func initCommands() {
 				return err
 			}
 
-			if err := ast.Parse("", events, register, false, pkg.PackageList()...); err != nil {
+			if err := ast.Parse("", events, register, false, pkg...); err != nil {
 				events.Emit(metrics.Error(err).With("dir", indir).With("message", "Failed to parse package annotations"))
 				return err
 			}

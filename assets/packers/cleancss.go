@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gu-io/gu/assets"
-	"github.com/influx6/faux/process"
+	"github.com/influx6/faux/exec"
+	"github.com/influx6/faux/metrics"
 )
 
 var (
@@ -46,18 +48,20 @@ func processCleanStatement(statement assets.FileStatement, cess CleanCSSPacker, 
 	args := append([]string{}, cess.Args...)
 	args = append(args, filepath.Clean(statement.AbsPath))
 
-	cmd := process.Command{
-		Args:  args,
-		Name:  filepath.Join(guSrcNodeModulesBin, "cleancss"),
-		Level: process.RedAlert,
-	}
+	command := fmt.Sprintf("%s ", filepath.Join(guSrcNodeModulesBin, "cleancss"), strings.Join(args, " "))
 
 	var errBuf, outBuf bytes.Buffer
+	cleanCmd := exec.New(
+		exec.Async(),
+		exec.Command(command),
+		exec.Output(&outBuf),
+		exec.Err(&errBuf),
+	)
 
 	ctx, cancl := context.WithTimeout(context.Background(), time.Minute)
 	defer cancl()
 
-	if err := cmd.Run(ctx, &outBuf, &errBuf, nil); err != nil {
+	if err := cleanCmd.Exec(ctx, metrics.New()); err != nil {
 		return fmt.Errorf("Command Execution Failed: %+q\n Response: %+q", err, errBuf.String())
 	}
 

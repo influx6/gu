@@ -11,7 +11,8 @@ import (
 	"time"
 
 	"github.com/gu-io/gu/assets"
-	"github.com/influx6/faux/process"
+	"github.com/influx6/faux/exec"
+	"github.com/influx6/faux/metrics"
 )
 
 // LessPacker defines an implementation for parsing .less files into css files using the less compiler in nodejs.
@@ -66,18 +67,20 @@ func processStatement(statement assets.FileStatement, less LessPacker, directive
 
 	args = append(args, filepath.Clean(statement.AbsPath))
 
-	cmd := process.Command{
-		Args:  args,
-		Name:  filepath.Join(guSrcNodeModulesBin, "lessc"),
-		Level: process.RedAlert,
-	}
+	command := fmt.Sprintf("%s ", filepath.Join(guSrcNodeModulesBin, "lessc"), strings.Join(args, " "))
 
 	var errBuf, outBuf bytes.Buffer
+	cleanCmd := exec.New(
+		exec.Async(),
+		exec.Command(command),
+		exec.Output(&outBuf),
+		exec.Err(&errBuf),
+	)
 
 	ctx, cancl := context.WithTimeout(context.Background(), time.Minute)
 	defer cancl()
 
-	if err := cmd.Run(ctx, &outBuf, &errBuf, nil); err != nil {
+	if err := cleanCmd.Exec(ctx, metrics.New()); err != nil {
 		return fmt.Errorf("Command Execution Failed: %+q\n Response: %+q", err, errBuf.String())
 	}
 

@@ -81,7 +81,7 @@ func processStatement(statement assets.FileStatement, less LessPacker, directive
 	defer cancl()
 
 	if err := cleanCmd.Exec(ctx, metrics.New()); err != nil {
-		return fmt.Errorf("Command Execution Failed: %+q\n Response: %+q", err, errBuf.String())
+		return fmt.Errorf("Command Execution Failed: %+q\n Response: %+q\n Command: %+q", err, errBuf.String(), command)
 	}
 
 	*directives = append(*directives, assets.WriteDirective{

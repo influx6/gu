@@ -17,6 +17,10 @@ import (
 	"github.com/influx6/faux/metrics"
 )
 
+var (
+	lessBin = filepath.Join(inGOPATHSrc, "github.com/gu-io/gu/node_modules/less/bin")
+)
+
 // LessPacker defines an implementation for parsing .less files into css files using the less compiler in nodejs.
 // WARNING: Requires Nodejs to be installed.
 type LessPacker struct {
@@ -76,7 +80,7 @@ func processStatement(statement assets.FileStatement, less LessPacker, directive
 
 	os.Setenv("node", node)
 
-	command := fmt.Sprintf("%s %s", filepath.Join(guSrcNodeModulesBin, "lessc"), strings.Join(args, " "))
+	command := fmt.Sprintf("%s %s", filepath.Join(lessBin, "lessc"), strings.Join(args, " "))
 
 	var errBuf, outBuf bytes.Buffer
 	cleanCmd := exec.New(

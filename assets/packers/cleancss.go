@@ -18,11 +18,11 @@ import (
 )
 
 var (
-	inGOPATH            = os.Getenv("GOPATH")
-	inGOPATHSrc         = filepath.Join(inGOPATH, "src")
-	guSrc               = filepath.Join(inGOPATHSrc, "github.com/gu-io/gu")
-	guSrcNodeModules    = filepath.Join(inGOPATHSrc, "github.com/gu-io/gu/node_modules")
-	guSrcNodeModulesBin = filepath.Join(inGOPATHSrc, "github.com/gu-io/gu/node_modules/.bin/")
+	inGOPATH         = os.Getenv("GOPATH")
+	inGOPATHSrc      = filepath.Join(inGOPATH, "src")
+	guSrc            = filepath.Join(inGOPATHSrc, "github.com/gu-io/gu")
+	guSrcNodeModules = filepath.Join(inGOPATHSrc, "github.com/gu-io/gu/node_modules")
+	cleanCSSBin      = filepath.Join(inGOPATHSrc, "github.com/gu-io/gu/node_modules/less/bin")
 )
 
 // CleanCSSPacker defines an implementation for parsing css files.
@@ -56,7 +56,7 @@ func processCleanStatement(statement assets.FileStatement, cess CleanCSSPacker, 
 
 	os.Setenv("node", node)
 
-	command := fmt.Sprintf("%s %s", filepath.Join(guSrcNodeModulesBin, "cleancss"), strings.Join(args, " "))
+	command := fmt.Sprintf("%s %s", filepath.Join(cleanCSSBin, "cleancss"), strings.Join(args, " "))
 
 	var errBuf, outBuf bytes.Buffer
 	cleanCmd := exec.New(

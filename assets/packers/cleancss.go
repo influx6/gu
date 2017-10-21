@@ -22,7 +22,7 @@ var (
 	inGOPATHSrc      = filepath.Join(inGOPATH, "src")
 	guSrc            = filepath.Join(inGOPATHSrc, "github.com/gu-io/gu")
 	guSrcNodeModules = filepath.Join(inGOPATHSrc, "github.com/gu-io/gu/node_modules")
-	cleanCSSBin      = filepath.Join(inGOPATHSrc, "github.com/gu-io/gu/node_modules/less/bin")
+	cleanCSSBin      = filepath.Join(inGOPATHSrc, "github.com/gu-io/gu/node_modules/clean-css-cli/bin")
 )
 
 // CleanCSSPacker defines an implementation for parsing css files.

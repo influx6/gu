@@ -67,7 +67,7 @@ func processStatement(statement assets.FileStatement, less LessPacker, directive
 
 	args = append(args, filepath.Clean(statement.AbsPath))
 
-	command := fmt.Sprintf("%s ", filepath.Join(guSrcNodeModulesBin, "lessc"), strings.Join(args, " "))
+	command := fmt.Sprintf("%s %s", filepath.Join(guSrcNodeModulesBin, "lessc"), strings.Join(args, " "))
 
 	var errBuf, outBuf bytes.Buffer
 	cleanCmd := exec.New(

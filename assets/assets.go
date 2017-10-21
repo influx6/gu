@@ -127,7 +127,7 @@ func (w *Webpack) Build(dir string, doGoSources bool) (map[string][]WriteDirecti
 		}
 
 		if derr != nil {
-			return wd, staticWd, err
+			return wd, staticWd, derr
 		}
 
 		func(drs []WriteDirective) {

@@ -48,7 +48,7 @@ func processCleanStatement(statement assets.FileStatement, cess CleanCSSPacker, 
 	args := append([]string{}, cess.Args...)
 	args = append(args, filepath.Clean(statement.AbsPath))
 
-	command := fmt.Sprintf("%s ", filepath.Join(guSrcNodeModulesBin, "cleancss"), strings.Join(args, " "))
+	command := fmt.Sprintf("%s %s", filepath.Join(guSrcNodeModulesBin, "cleancss"), strings.Join(args, " "))
 
 	var errBuf, outBuf bytes.Buffer
 	cleanCmd := exec.New(

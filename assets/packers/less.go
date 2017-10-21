@@ -6,6 +6,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
+	gexec "os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -66,6 +68,13 @@ func processStatement(statement assets.FileStatement, less LessPacker, directive
 	}
 
 	args = append(args, filepath.Clean(statement.AbsPath))
+
+	node, err := gexec.LookPath("node")
+	if err != nil {
+		return err
+	}
+
+	os.Setenv("node", node)
 
 	command := fmt.Sprintf("%s %s", filepath.Join(guSrcNodeModulesBin, "lessc"), strings.Join(args, " "))
 

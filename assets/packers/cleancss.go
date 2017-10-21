@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	gexec "os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -47,6 +48,13 @@ func (cess CleanCSSPacker) Pack(statements []assets.FileStatement, dir assets.Di
 func processCleanStatement(statement assets.FileStatement, cess CleanCSSPacker, directives *[]assets.WriteDirective) error {
 	args := append([]string{}, cess.Args...)
 	args = append(args, filepath.Clean(statement.AbsPath))
+
+	node, err := gexec.LookPath("node")
+	if err != nil {
+		return err
+	}
+
+	os.Setenv("node", node)
 
 	command := fmt.Sprintf("%s %s", filepath.Join(guSrcNodeModulesBin, "cleancss"), strings.Join(args, " "))
 

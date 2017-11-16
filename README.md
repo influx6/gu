@@ -109,7 +109,7 @@ Gu is fundamentally a library built to provide rendering capabilities with simpl
 
 -	[Components](./docs/concepts/components.md)
 
--	[Routing](./docs/concepts/routing.md)
+-	[Routing](./docs/concepts/routings.md)
 
 -	[Notifications](./docs/concepts/notifications.md)
 

@@ -17,7 +17,7 @@ Example
 -------
 
 ![Greeter Example](./media/greeter.png)
-![Components Example](./media/components.jpeg)
+[![Components Example](./media/components.jpeg)](https://gu-io.github.io/components)
 
 
 CLI

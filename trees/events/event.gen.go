@@ -8,11 +8,10 @@
 package events
 
 import (
-	"github.com/gu-io/gu/trees"
 	"github.com/gu-io/gu/common"
 	"github.com/gu-io/gu/notifications"
+	"github.com/gu-io/gu/trees"
 )
-
 
 // EventHandler defines a function type for event callbacks.
 type EventHandler func(common.EventObject, *trees.Markup)
@@ -20,7 +19,7 @@ type EventHandler func(common.EventObject, *trees.Markup)
 // WrapHandler wraps the function returning a EventHandler to call the provided
 // function to be called when the event occurs without need for the arguments.
 func WrapHandler(callback func()) EventHandler {
-	return func(ev common.EventObject, root *trees.Markup){
+	return func(ev common.EventObject, root *trees.Markup) {
 		callback()
 	}
 }
@@ -42,7 +41,7 @@ func WrapEventOnlyHandler(callback func(common.EventObject)) EventHandler {
 func AbortEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -57,8 +56,8 @@ func AbortEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -79,7 +78,7 @@ func AbortEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 func AfterPrintEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -94,8 +93,8 @@ func AfterPrintEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -116,7 +115,7 @@ func AfterPrintEvent(callback interface{}, options ...trees.EventOptions) *trees
 func AfterScriptExecuteEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -131,8 +130,8 @@ func AfterScriptExecuteEvent(callback interface{}, options ...trees.EventOptions
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -153,7 +152,7 @@ func AfterScriptExecuteEvent(callback interface{}, options ...trees.EventOptions
 func AlertActiveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -168,8 +167,8 @@ func AlertActiveEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -190,7 +189,7 @@ func AlertActiveEvent(callback interface{}, options ...trees.EventOptions) *tree
 func AlertCloseEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -205,8 +204,8 @@ func AlertCloseEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -227,7 +226,7 @@ func AlertCloseEvent(callback interface{}, options ...trees.EventOptions) *trees
 func AlertingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -242,8 +241,8 @@ func AlertingEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -264,7 +263,7 @@ func AlertingEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func AnimationEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -279,8 +278,8 @@ func AnimationEndEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -301,7 +300,7 @@ func AnimationEndEvent(callback interface{}, options ...trees.EventOptions) *tre
 func AnimationIterationEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -316,8 +315,8 @@ func AnimationIterationEvent(callback interface{}, options ...trees.EventOptions
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -338,7 +337,7 @@ func AnimationIterationEvent(callback interface{}, options ...trees.EventOptions
 func AnimationStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -353,8 +352,8 @@ func AnimationStartEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -375,7 +374,7 @@ func AnimationStartEvent(callback interface{}, options ...trees.EventOptions) *t
 func AppinstalledEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -390,8 +389,8 @@ func AppinstalledEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -412,7 +411,7 @@ func AppinstalledEvent(callback interface{}, options ...trees.EventOptions) *tre
 func AudioProcessEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -427,8 +426,8 @@ func AudioProcessEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -449,7 +448,7 @@ func AudioProcessEvent(callback interface{}, options ...trees.EventOptions) *tre
 func AudioendEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -464,8 +463,8 @@ func AudioendEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -486,7 +485,7 @@ func AudioendEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func AudiostartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -501,8 +500,8 @@ func AudiostartEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -523,7 +522,7 @@ func AudiostartEvent(callback interface{}, options ...trees.EventOptions) *trees
 func AuxclickEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -538,8 +537,8 @@ func AuxclickEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -560,7 +559,7 @@ func AuxclickEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func BeforeInstallPromptEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -575,8 +574,8 @@ func BeforeInstallPromptEvent(callback interface{}, options ...trees.EventOption
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -597,7 +596,7 @@ func BeforeInstallPromptEvent(callback interface{}, options ...trees.EventOption
 func BeforePrintEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -612,8 +611,8 @@ func BeforePrintEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -634,7 +633,7 @@ func BeforePrintEvent(callback interface{}, options ...trees.EventOptions) *tree
 func BeforeScriptExecuteEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -649,8 +648,8 @@ func BeforeScriptExecuteEvent(callback interface{}, options ...trees.EventOption
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -671,7 +670,7 @@ func BeforeScriptExecuteEvent(callback interface{}, options ...trees.EventOption
 func BeforeUnloadEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -686,8 +685,8 @@ func BeforeUnloadEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -708,7 +707,7 @@ func BeforeUnloadEvent(callback interface{}, options ...trees.EventOptions) *tre
 func BeginEventEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -723,8 +722,8 @@ func BeginEventEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -745,7 +744,7 @@ func BeginEventEvent(callback interface{}, options ...trees.EventOptions) *trees
 func BlockedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -760,8 +759,8 @@ func BlockedEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -782,7 +781,7 @@ func BlockedEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func BlurEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -797,8 +796,8 @@ func BlurEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -819,7 +818,7 @@ func BlurEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func BoundaryEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -834,8 +833,8 @@ func BoundaryEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -856,7 +855,7 @@ func BoundaryEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func BroadcastEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -871,8 +870,8 @@ func BroadcastEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -893,7 +892,7 @@ func BroadcastEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func BusyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -908,8 +907,8 @@ func BusyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -930,7 +929,7 @@ func BusyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func CSSRuleViewCSSLinkClickedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -945,8 +944,8 @@ func CSSRuleViewCSSLinkClickedEvent(callback interface{}, options ...trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -967,7 +966,7 @@ func CSSRuleViewCSSLinkClickedEvent(callback interface{}, options ...trees.Event
 func CSSRuleViewChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -982,8 +981,8 @@ func CSSRuleViewChangeEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1004,7 +1003,7 @@ func CSSRuleViewChangeEvent(callback interface{}, options ...trees.EventOptions)
 func CSSRuleViewRefreshedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1019,8 +1018,8 @@ func CSSRuleViewRefreshedEvent(callback interface{}, options ...trees.EventOptio
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1041,7 +1040,7 @@ func CSSRuleViewRefreshedEvent(callback interface{}, options ...trees.EventOptio
 func CachedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1056,8 +1055,8 @@ func CachedEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1078,7 +1077,7 @@ func CachedEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 func CallschangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1093,8 +1092,8 @@ func CallschangedEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1115,7 +1114,7 @@ func CallschangedEvent(callback interface{}, options ...trees.EventOptions) *tre
 func CanPlayEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1130,8 +1129,8 @@ func CanPlayEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1152,7 +1151,7 @@ func CanPlayEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func CanPlayThroughEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1167,8 +1166,8 @@ func CanPlayThroughEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1189,7 +1188,7 @@ func CanPlayThroughEvent(callback interface{}, options ...trees.EventOptions) *t
 func CardstatechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1204,8 +1203,8 @@ func CardstatechangeEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1226,7 +1225,7 @@ func CardstatechangeEvent(callback interface{}, options ...trees.EventOptions) *
 func CfstatechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1241,8 +1240,8 @@ func CfstatechangeEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1263,7 +1262,7 @@ func CfstatechangeEvent(callback interface{}, options ...trees.EventOptions) *tr
 func ChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1278,8 +1277,8 @@ func ChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1300,7 +1299,7 @@ func ChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 func ChargingChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1315,8 +1314,8 @@ func ChargingChangeEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1337,7 +1336,7 @@ func ChargingChangeEvent(callback interface{}, options ...trees.EventOptions) *t
 func ChargingTimeChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1352,8 +1351,8 @@ func ChargingTimeChangeEvent(callback interface{}, options ...trees.EventOptions
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1374,7 +1373,7 @@ func ChargingTimeChangeEvent(callback interface{}, options ...trees.EventOptions
 func CheckboxStateChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1389,8 +1388,8 @@ func CheckboxStateChangeEvent(callback interface{}, options ...trees.EventOption
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1411,7 +1410,7 @@ func CheckboxStateChangeEvent(callback interface{}, options ...trees.EventOption
 func CheckingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1426,8 +1425,8 @@ func CheckingEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1448,7 +1447,7 @@ func CheckingEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func ClickEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1463,8 +1462,8 @@ func ClickEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1485,7 +1484,7 @@ func ClickEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 func CloseEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1500,8 +1499,8 @@ func CloseEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1522,7 +1521,7 @@ func CloseEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 func CommandEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1537,8 +1536,8 @@ func CommandEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1559,7 +1558,7 @@ func CommandEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func CommandupdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1574,8 +1573,8 @@ func CommandupdateEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1596,7 +1595,7 @@ func CommandupdateEvent(callback interface{}, options ...trees.EventOptions) *tr
 func CompleteEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1611,8 +1610,8 @@ func CompleteEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1633,7 +1632,7 @@ func CompleteEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func CompositionEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1648,8 +1647,8 @@ func CompositionEndEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1670,7 +1669,7 @@ func CompositionEndEvent(callback interface{}, options ...trees.EventOptions) *t
 func CompositionStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1685,8 +1684,8 @@ func CompositionStartEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1707,7 +1706,7 @@ func CompositionStartEvent(callback interface{}, options ...trees.EventOptions) 
 func CompositionUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1722,8 +1721,8 @@ func CompositionUpdateEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1744,7 +1743,7 @@ func CompositionUpdateEvent(callback interface{}, options ...trees.EventOptions)
 func ConnectingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1759,8 +1758,8 @@ func ConnectingEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1781,7 +1780,7 @@ func ConnectingEvent(callback interface{}, options ...trees.EventOptions) *trees
 func ConnectionInfoUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1796,8 +1795,8 @@ func ConnectionInfoUpdateEvent(callback interface{}, options ...trees.EventOptio
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1818,7 +1817,7 @@ func ConnectionInfoUpdateEvent(callback interface{}, options ...trees.EventOptio
 func ContextMenuEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1833,8 +1832,8 @@ func ContextMenuEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1855,7 +1854,7 @@ func ContextMenuEvent(callback interface{}, options ...trees.EventOptions) *tree
 func CopyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1870,8 +1869,8 @@ func CopyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1892,7 +1891,7 @@ func CopyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func CutEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1907,8 +1906,8 @@ func CutEvent(callback interface{}, options ...trees.EventOptions) *trees.Event 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1929,7 +1928,7 @@ func CutEvent(callback interface{}, options ...trees.EventOptions) *trees.Event 
 func DOMAutoCompleteEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1944,8 +1943,8 @@ func DOMAutoCompleteEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -1966,7 +1965,7 @@ func DOMAutoCompleteEvent(callback interface{}, options ...trees.EventOptions) *
 func DOMContentLoadedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -1981,8 +1980,8 @@ func DOMContentLoadedEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2003,7 +2002,7 @@ func DOMContentLoadedEvent(callback interface{}, options ...trees.EventOptions) 
 func DOMFrameContentLoadedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2018,8 +2017,8 @@ func DOMFrameContentLoadedEvent(callback interface{}, options ...trees.EventOpti
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2040,7 +2039,7 @@ func DOMFrameContentLoadedEvent(callback interface{}, options ...trees.EventOpti
 func DOMLinkAddedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2055,8 +2054,8 @@ func DOMLinkAddedEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2077,7 +2076,7 @@ func DOMLinkAddedEvent(callback interface{}, options ...trees.EventOptions) *tre
 func DOMLinkRemovedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2092,8 +2091,8 @@ func DOMLinkRemovedEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2114,7 +2113,7 @@ func DOMLinkRemovedEvent(callback interface{}, options ...trees.EventOptions) *t
 func DOMMenuItemActiveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2129,8 +2128,8 @@ func DOMMenuItemActiveEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2151,7 +2150,7 @@ func DOMMenuItemActiveEvent(callback interface{}, options ...trees.EventOptions)
 func DOMMenuItemInactiveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2166,8 +2165,8 @@ func DOMMenuItemInactiveEvent(callback interface{}, options ...trees.EventOption
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2188,7 +2187,7 @@ func DOMMenuItemInactiveEvent(callback interface{}, options ...trees.EventOption
 func DOMMetaAddedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2203,8 +2202,8 @@ func DOMMetaAddedEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2225,7 +2224,7 @@ func DOMMetaAddedEvent(callback interface{}, options ...trees.EventOptions) *tre
 func DOMMetaRemovedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2240,8 +2239,8 @@ func DOMMetaRemovedEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2262,7 +2261,7 @@ func DOMMetaRemovedEvent(callback interface{}, options ...trees.EventOptions) *t
 func DOMModalDialogClosedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2277,8 +2276,8 @@ func DOMModalDialogClosedEvent(callback interface{}, options ...trees.EventOptio
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2299,7 +2298,7 @@ func DOMModalDialogClosedEvent(callback interface{}, options ...trees.EventOptio
 func DOMPopupBlockedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2314,8 +2313,8 @@ func DOMPopupBlockedEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2336,7 +2335,7 @@ func DOMPopupBlockedEvent(callback interface{}, options ...trees.EventOptions) *
 func DOMTitleChangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2351,8 +2350,8 @@ func DOMTitleChangedEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2373,7 +2372,7 @@ func DOMTitleChangedEvent(callback interface{}, options ...trees.EventOptions) *
 func DOMWillOpenModalDialogEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2388,8 +2387,8 @@ func DOMWillOpenModalDialogEvent(callback interface{}, options ...trees.EventOpt
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2410,7 +2409,7 @@ func DOMWillOpenModalDialogEvent(callback interface{}, options ...trees.EventOpt
 func DOMWindowCloseEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2425,8 +2424,8 @@ func DOMWindowCloseEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2447,7 +2446,7 @@ func DOMWindowCloseEvent(callback interface{}, options ...trees.EventOptions) *t
 func DOMWindowCreatedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2462,8 +2461,8 @@ func DOMWindowCreatedEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2484,7 +2483,7 @@ func DOMWindowCreatedEvent(callback interface{}, options ...trees.EventOptions) 
 func DatachangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2499,8 +2498,8 @@ func DatachangeEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2521,7 +2520,7 @@ func DatachangeEvent(callback interface{}, options ...trees.EventOptions) *trees
 func DataerrorEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2536,8 +2535,8 @@ func DataerrorEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2558,7 +2557,7 @@ func DataerrorEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func DblClickEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2573,8 +2572,8 @@ func DblClickEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2595,7 +2594,7 @@ func DblClickEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func DeliveredEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2610,8 +2609,8 @@ func DeliveredEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2632,7 +2631,7 @@ func DeliveredEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func DeviceLightEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2647,8 +2646,8 @@ func DeviceLightEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2669,7 +2668,7 @@ func DeviceLightEvent(callback interface{}, options ...trees.EventOptions) *tree
 func DeviceMotionEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2684,8 +2683,8 @@ func DeviceMotionEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2706,7 +2705,7 @@ func DeviceMotionEvent(callback interface{}, options ...trees.EventOptions) *tre
 func DeviceOrientationEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2721,8 +2720,8 @@ func DeviceOrientationEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2743,7 +2742,7 @@ func DeviceOrientationEvent(callback interface{}, options ...trees.EventOptions)
 func DeviceProximityEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2758,8 +2757,8 @@ func DeviceProximityEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2780,7 +2779,7 @@ func DeviceProximityEvent(callback interface{}, options ...trees.EventOptions) *
 func DevicechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2795,8 +2794,8 @@ func DevicechangeEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2817,7 +2816,7 @@ func DevicechangeEvent(callback interface{}, options ...trees.EventOptions) *tre
 func DialingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2832,8 +2831,8 @@ func DialingEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2854,7 +2853,7 @@ func DialingEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func DisabledEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2869,8 +2868,8 @@ func DisabledEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2891,7 +2890,7 @@ func DisabledEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func DischargingTimeChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2906,8 +2905,8 @@ func DischargingTimeChangeEvent(callback interface{}, options ...trees.EventOpti
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2928,7 +2927,7 @@ func DischargingTimeChangeEvent(callback interface{}, options ...trees.EventOpti
 func DisconnectedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2943,8 +2942,8 @@ func DisconnectedEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -2965,7 +2964,7 @@ func DisconnectedEvent(callback interface{}, options ...trees.EventOptions) *tre
 func DisconnectingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -2980,8 +2979,8 @@ func DisconnectingEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3002,7 +3001,7 @@ func DisconnectingEvent(callback interface{}, options ...trees.EventOptions) *tr
 func DownloadingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3017,8 +3016,8 @@ func DownloadingEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3039,7 +3038,7 @@ func DownloadingEvent(callback interface{}, options ...trees.EventOptions) *tree
 func DragEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3054,8 +3053,8 @@ func DragEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3076,7 +3075,7 @@ func DragEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func DragEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3091,8 +3090,8 @@ func DragEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3113,7 +3112,7 @@ func DragEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func DragEnterEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3128,8 +3127,8 @@ func DragEnterEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3150,7 +3149,7 @@ func DragEnterEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func DragLeaveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3165,8 +3164,8 @@ func DragLeaveEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3187,7 +3186,7 @@ func DragLeaveEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func DragOverEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3202,8 +3201,8 @@ func DragOverEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3224,7 +3223,7 @@ func DragOverEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func DragStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3239,8 +3238,8 @@ func DragStartEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3261,7 +3260,7 @@ func DragStartEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func DropEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3276,8 +3275,8 @@ func DropEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3298,7 +3297,7 @@ func DropEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func DurationChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3313,8 +3312,8 @@ func DurationChangeEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3335,7 +3334,7 @@ func DurationChangeEvent(callback interface{}, options ...trees.EventOptions) *t
 func EmptiedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3350,8 +3349,8 @@ func EmptiedEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3372,7 +3371,7 @@ func EmptiedEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func EnabledEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3387,8 +3386,8 @@ func EnabledEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3409,7 +3408,7 @@ func EnabledEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func EndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3424,8 +3423,8 @@ func EndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3446,7 +3445,7 @@ func EndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event 
 func EndEventEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3461,8 +3460,8 @@ func EndEventEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3483,7 +3482,7 @@ func EndEventEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func EndedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3498,8 +3497,8 @@ func EndedEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3520,7 +3519,7 @@ func EndedEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 func FocusEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3535,8 +3534,8 @@ func FocusEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3557,7 +3556,7 @@ func FocusEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 func FocusInEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3572,8 +3571,8 @@ func FocusInEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3594,7 +3593,7 @@ func FocusInEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func FocusOutEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3609,8 +3608,8 @@ func FocusOutEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3631,7 +3630,7 @@ func FocusOutEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func FullScreenChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3646,8 +3645,8 @@ func FullScreenChangeEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3668,7 +3667,7 @@ func FullScreenChangeEvent(callback interface{}, options ...trees.EventOptions) 
 func FullScreenErrorEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3683,8 +3682,8 @@ func FullScreenErrorEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3705,7 +3704,7 @@ func FullScreenErrorEvent(callback interface{}, options ...trees.EventOptions) *
 func FullscreenEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3720,8 +3719,8 @@ func FullscreenEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3742,7 +3741,7 @@ func FullscreenEvent(callback interface{}, options ...trees.EventOptions) *trees
 func GamepadConnectedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3757,8 +3756,8 @@ func GamepadConnectedEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3779,7 +3778,7 @@ func GamepadConnectedEvent(callback interface{}, options ...trees.EventOptions) 
 func GamepadDisconnectedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3794,8 +3793,8 @@ func GamepadDisconnectedEvent(callback interface{}, options ...trees.EventOption
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3816,7 +3815,7 @@ func GamepadDisconnectedEvent(callback interface{}, options ...trees.EventOption
 func GotpointercaptureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3831,8 +3830,8 @@ func GotpointercaptureEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3853,7 +3852,7 @@ func GotpointercaptureEvent(callback interface{}, options ...trees.EventOptions)
 func HashChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3868,8 +3867,8 @@ func HashChangeEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3890,7 +3889,7 @@ func HashChangeEvent(callback interface{}, options ...trees.EventOptions) *trees
 func HeldEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3905,8 +3904,8 @@ func HeldEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3927,7 +3926,7 @@ func HeldEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func HoldingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3942,8 +3941,8 @@ func HoldingEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -3964,7 +3963,7 @@ func HoldingEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func IcccardlockerrorEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -3979,8 +3978,8 @@ func IcccardlockerrorEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4001,7 +4000,7 @@ func IcccardlockerrorEvent(callback interface{}, options ...trees.EventOptions) 
 func IccinfochangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4016,8 +4015,8 @@ func IccinfochangeEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4038,7 +4037,7 @@ func IccinfochangeEvent(callback interface{}, options ...trees.EventOptions) *tr
 func IncomingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4053,8 +4052,8 @@ func IncomingEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4075,7 +4074,7 @@ func IncomingEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func InputEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4090,8 +4089,8 @@ func InputEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4112,7 +4111,7 @@ func InputEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 func InvalidEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4127,8 +4126,8 @@ func InvalidEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4149,7 +4148,7 @@ func InvalidEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func KeyDownEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4164,8 +4163,8 @@ func KeyDownEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4186,7 +4185,7 @@ func KeyDownEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func KeyPressEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4201,8 +4200,8 @@ func KeyPressEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4223,7 +4222,7 @@ func KeyPressEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func KeyUpEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4238,8 +4237,8 @@ func KeyUpEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4260,7 +4259,7 @@ func KeyUpEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 func LanguageChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4275,8 +4274,8 @@ func LanguageChangeEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4297,7 +4296,7 @@ func LanguageChangeEvent(callback interface{}, options ...trees.EventOptions) *t
 func LevelChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4312,8 +4311,8 @@ func LevelChangeEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4334,7 +4333,7 @@ func LevelChangeEvent(callback interface{}, options ...trees.EventOptions) *tree
 func LoadEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4349,8 +4348,8 @@ func LoadEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4371,7 +4370,7 @@ func LoadEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func LoadEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4386,8 +4385,8 @@ func LoadEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4408,7 +4407,7 @@ func LoadEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func LoadStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4423,8 +4422,8 @@ func LoadStartEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4445,7 +4444,7 @@ func LoadStartEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func LoadedDataEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4460,8 +4459,8 @@ func LoadedDataEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4482,7 +4481,7 @@ func LoadedDataEvent(callback interface{}, options ...trees.EventOptions) *trees
 func LoadedMetadataEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4497,8 +4496,8 @@ func LoadedMetadataEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4519,7 +4518,7 @@ func LoadedMetadataEvent(callback interface{}, options ...trees.EventOptions) *t
 func LocalizedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4534,8 +4533,8 @@ func LocalizedEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4556,7 +4555,7 @@ func LocalizedEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func LostpointercaptureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4571,8 +4570,8 @@ func LostpointercaptureEvent(callback interface{}, options ...trees.EventOptions
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4593,7 +4592,7 @@ func LostpointercaptureEvent(callback interface{}, options ...trees.EventOptions
 func MarkEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4608,8 +4607,8 @@ func MarkEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4630,7 +4629,7 @@ func MarkEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func MessageEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4645,8 +4644,8 @@ func MessageEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4667,7 +4666,7 @@ func MessageEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func MouseDownEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4682,8 +4681,8 @@ func MouseDownEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4704,7 +4703,7 @@ func MouseDownEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func MouseEnterEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4719,8 +4718,8 @@ func MouseEnterEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4741,7 +4740,7 @@ func MouseEnterEvent(callback interface{}, options ...trees.EventOptions) *trees
 func MouseLeaveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4756,8 +4755,8 @@ func MouseLeaveEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4778,7 +4777,7 @@ func MouseLeaveEvent(callback interface{}, options ...trees.EventOptions) *trees
 func MouseMoveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4793,8 +4792,8 @@ func MouseMoveEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4815,7 +4814,7 @@ func MouseMoveEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func MouseOutEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4830,8 +4829,8 @@ func MouseOutEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4852,7 +4851,7 @@ func MouseOutEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func MouseOverEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4867,8 +4866,8 @@ func MouseOverEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4889,7 +4888,7 @@ func MouseOverEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func MouseUpEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4904,8 +4903,8 @@ func MouseUpEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4926,7 +4925,7 @@ func MouseUpEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func MozAfterPaintEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4941,8 +4940,8 @@ func MozAfterPaintEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -4963,7 +4962,7 @@ func MozAfterPaintEvent(callback interface{}, options ...trees.EventOptions) *tr
 func MozAudioAvailableEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -4978,8 +4977,8 @@ func MozAudioAvailableEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5000,7 +4999,7 @@ func MozAudioAvailableEvent(callback interface{}, options ...trees.EventOptions)
 func MozBeforeResizeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5015,8 +5014,8 @@ func MozBeforeResizeEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5037,7 +5036,7 @@ func MozBeforeResizeEvent(callback interface{}, options ...trees.EventOptions) *
 func MozEdgeUIGestureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5052,8 +5051,8 @@ func MozEdgeUIGestureEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5074,7 +5073,7 @@ func MozEdgeUIGestureEvent(callback interface{}, options ...trees.EventOptions) 
 func MozEnteredDomFullscreenEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5089,8 +5088,8 @@ func MozEnteredDomFullscreenEvent(callback interface{}, options ...trees.EventOp
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5111,7 +5110,7 @@ func MozEnteredDomFullscreenEvent(callback interface{}, options ...trees.EventOp
 func MozGamepadButtonDownEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5126,8 +5125,8 @@ func MozGamepadButtonDownEvent(callback interface{}, options ...trees.EventOptio
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5148,7 +5147,7 @@ func MozGamepadButtonDownEvent(callback interface{}, options ...trees.EventOptio
 func MozGamepadButtonUpEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5163,8 +5162,8 @@ func MozGamepadButtonUpEvent(callback interface{}, options ...trees.EventOptions
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5185,7 +5184,7 @@ func MozGamepadButtonUpEvent(callback interface{}, options ...trees.EventOptions
 func MozMagnifyGestureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5200,8 +5199,8 @@ func MozMagnifyGestureEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5222,7 +5221,7 @@ func MozMagnifyGestureEvent(callback interface{}, options ...trees.EventOptions)
 func MozMagnifyGestureStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5237,8 +5236,8 @@ func MozMagnifyGestureStartEvent(callback interface{}, options ...trees.EventOpt
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5259,7 +5258,7 @@ func MozMagnifyGestureStartEvent(callback interface{}, options ...trees.EventOpt
 func MozMagnifyGestureUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5274,8 +5273,8 @@ func MozMagnifyGestureUpdateEvent(callback interface{}, options ...trees.EventOp
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5296,7 +5295,7 @@ func MozMagnifyGestureUpdateEvent(callback interface{}, options ...trees.EventOp
 func MozPressTapGestureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5311,8 +5310,8 @@ func MozPressTapGestureEvent(callback interface{}, options ...trees.EventOptions
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5333,7 +5332,7 @@ func MozPressTapGestureEvent(callback interface{}, options ...trees.EventOptions
 func MozRotateGestureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5348,8 +5347,8 @@ func MozRotateGestureEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5370,7 +5369,7 @@ func MozRotateGestureEvent(callback interface{}, options ...trees.EventOptions) 
 func MozRotateGestureStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5385,8 +5384,8 @@ func MozRotateGestureStartEvent(callback interface{}, options ...trees.EventOpti
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5407,7 +5406,7 @@ func MozRotateGestureStartEvent(callback interface{}, options ...trees.EventOpti
 func MozRotateGestureUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5422,8 +5421,8 @@ func MozRotateGestureUpdateEvent(callback interface{}, options ...trees.EventOpt
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5444,7 +5443,7 @@ func MozRotateGestureUpdateEvent(callback interface{}, options ...trees.EventOpt
 func MozScrolledAreaChangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5459,8 +5458,8 @@ func MozScrolledAreaChangedEvent(callback interface{}, options ...trees.EventOpt
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5481,7 +5480,7 @@ func MozScrolledAreaChangedEvent(callback interface{}, options ...trees.EventOpt
 func MozSwipeGestureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5496,8 +5495,8 @@ func MozSwipeGestureEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5518,7 +5517,7 @@ func MozSwipeGestureEvent(callback interface{}, options ...trees.EventOptions) *
 func MozTapGestureEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5533,8 +5532,8 @@ func MozTapGestureEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5555,7 +5554,7 @@ func MozTapGestureEvent(callback interface{}, options ...trees.EventOptions) *tr
 func MozbrowseractivitydoneEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5570,8 +5569,8 @@ func MozbrowseractivitydoneEvent(callback interface{}, options ...trees.EventOpt
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5592,7 +5591,7 @@ func MozbrowseractivitydoneEvent(callback interface{}, options ...trees.EventOpt
 func MozbrowserasyncscrollEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5607,8 +5606,8 @@ func MozbrowserasyncscrollEvent(callback interface{}, options ...trees.EventOpti
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5629,7 +5628,7 @@ func MozbrowserasyncscrollEvent(callback interface{}, options ...trees.EventOpti
 func MozbrowseraudioplaybackchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5644,8 +5643,8 @@ func MozbrowseraudioplaybackchangeEvent(callback interface{}, options ...trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5666,7 +5665,7 @@ func MozbrowseraudioplaybackchangeEvent(callback interface{}, options ...trees.E
 func MozbrowsercaretstatechangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5681,8 +5680,8 @@ func MozbrowsercaretstatechangedEvent(callback interface{}, options ...trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5703,7 +5702,7 @@ func MozbrowsercaretstatechangedEvent(callback interface{}, options ...trees.Eve
 func MozbrowsercloseEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5718,8 +5717,8 @@ func MozbrowsercloseEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5740,7 +5739,7 @@ func MozbrowsercloseEvent(callback interface{}, options ...trees.EventOptions) *
 func MozbrowsercontextmenuEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5755,8 +5754,8 @@ func MozbrowsercontextmenuEvent(callback interface{}, options ...trees.EventOpti
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5777,7 +5776,7 @@ func MozbrowsercontextmenuEvent(callback interface{}, options ...trees.EventOpti
 func MozbrowserdocumentfirstpaintEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5792,8 +5791,8 @@ func MozbrowserdocumentfirstpaintEvent(callback interface{}, options ...trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5814,7 +5813,7 @@ func MozbrowserdocumentfirstpaintEvent(callback interface{}, options ...trees.Ev
 func MozbrowsererrorEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5829,8 +5828,8 @@ func MozbrowsererrorEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5851,7 +5850,7 @@ func MozbrowsererrorEvent(callback interface{}, options ...trees.EventOptions) *
 func MozbrowserfindchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5866,8 +5865,8 @@ func MozbrowserfindchangeEvent(callback interface{}, options ...trees.EventOptio
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5888,7 +5887,7 @@ func MozbrowserfindchangeEvent(callback interface{}, options ...trees.EventOptio
 func MozbrowserfirstpaintEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5903,8 +5902,8 @@ func MozbrowserfirstpaintEvent(callback interface{}, options ...trees.EventOptio
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5925,7 +5924,7 @@ func MozbrowserfirstpaintEvent(callback interface{}, options ...trees.EventOptio
 func MozbrowsericonchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5940,8 +5939,8 @@ func MozbrowsericonchangeEvent(callback interface{}, options ...trees.EventOptio
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5962,7 +5961,7 @@ func MozbrowsericonchangeEvent(callback interface{}, options ...trees.EventOptio
 func MozbrowserloadendEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -5977,8 +5976,8 @@ func MozbrowserloadendEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -5999,7 +5998,7 @@ func MozbrowserloadendEvent(callback interface{}, options ...trees.EventOptions)
 func MozbrowserloadstartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6014,8 +6013,8 @@ func MozbrowserloadstartEvent(callback interface{}, options ...trees.EventOption
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6036,7 +6035,7 @@ func MozbrowserloadstartEvent(callback interface{}, options ...trees.EventOption
 func MozbrowserlocationchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6051,8 +6050,8 @@ func MozbrowserlocationchangeEvent(callback interface{}, options ...trees.EventO
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6073,7 +6072,7 @@ func MozbrowserlocationchangeEvent(callback interface{}, options ...trees.EventO
 func MozbrowsermanifestchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6088,8 +6087,8 @@ func MozbrowsermanifestchangeEvent(callback interface{}, options ...trees.EventO
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6110,7 +6109,7 @@ func MozbrowsermanifestchangeEvent(callback interface{}, options ...trees.EventO
 func MozbrowsermetachangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6125,8 +6124,8 @@ func MozbrowsermetachangeEvent(callback interface{}, options ...trees.EventOptio
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6147,7 +6146,7 @@ func MozbrowsermetachangeEvent(callback interface{}, options ...trees.EventOptio
 func MozbrowseropensearchEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6162,8 +6161,8 @@ func MozbrowseropensearchEvent(callback interface{}, options ...trees.EventOptio
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6184,7 +6183,7 @@ func MozbrowseropensearchEvent(callback interface{}, options ...trees.EventOptio
 func MozbrowseropentabEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6199,8 +6198,8 @@ func MozbrowseropentabEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6221,7 +6220,7 @@ func MozbrowseropentabEvent(callback interface{}, options ...trees.EventOptions)
 func MozbrowseropenwindowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6236,8 +6235,8 @@ func MozbrowseropenwindowEvent(callback interface{}, options ...trees.EventOptio
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6258,7 +6257,7 @@ func MozbrowseropenwindowEvent(callback interface{}, options ...trees.EventOptio
 func MozbrowserresizeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6273,8 +6272,8 @@ func MozbrowserresizeEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6295,7 +6294,7 @@ func MozbrowserresizeEvent(callback interface{}, options ...trees.EventOptions) 
 func MozbrowserscrollEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6310,8 +6309,8 @@ func MozbrowserscrollEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6332,7 +6331,7 @@ func MozbrowserscrollEvent(callback interface{}, options ...trees.EventOptions) 
 func MozbrowserscrollareachangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6347,8 +6346,8 @@ func MozbrowserscrollareachangedEvent(callback interface{}, options ...trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6369,7 +6368,7 @@ func MozbrowserscrollareachangedEvent(callback interface{}, options ...trees.Eve
 func MozbrowserscrollviewchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6384,8 +6383,8 @@ func MozbrowserscrollviewchangeEvent(callback interface{}, options ...trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6406,7 +6405,7 @@ func MozbrowserscrollviewchangeEvent(callback interface{}, options ...trees.Even
 func MozbrowsersecuritychangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6421,8 +6420,8 @@ func MozbrowsersecuritychangeEvent(callback interface{}, options ...trees.EventO
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6443,7 +6442,7 @@ func MozbrowsersecuritychangeEvent(callback interface{}, options ...trees.EventO
 func MozbrowserselectionstatechangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6458,8 +6457,8 @@ func MozbrowserselectionstatechangedEvent(callback interface{}, options ...trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6480,7 +6479,7 @@ func MozbrowserselectionstatechangedEvent(callback interface{}, options ...trees
 func MozbrowsershowmodalpromptEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6495,8 +6494,8 @@ func MozbrowsershowmodalpromptEvent(callback interface{}, options ...trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6517,7 +6516,7 @@ func MozbrowsershowmodalpromptEvent(callback interface{}, options ...trees.Event
 func MozbrowsertitlechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6532,8 +6531,8 @@ func MozbrowsertitlechangeEvent(callback interface{}, options ...trees.EventOpti
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6554,7 +6553,7 @@ func MozbrowsertitlechangeEvent(callback interface{}, options ...trees.EventOpti
 func MozbrowserusernameandpasswordrequiredEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6569,8 +6568,8 @@ func MozbrowserusernameandpasswordrequiredEvent(callback interface{}, options ..
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6591,7 +6590,7 @@ func MozbrowserusernameandpasswordrequiredEvent(callback interface{}, options ..
 func MozbrowservisibilitychangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6606,8 +6605,8 @@ func MozbrowservisibilitychangeEvent(callback interface{}, options ...trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6628,7 +6627,7 @@ func MozbrowservisibilitychangeEvent(callback interface{}, options ...trees.Even
 func MoztimechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6643,8 +6642,8 @@ func MoztimechangeEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6665,7 +6664,7 @@ func MoztimechangeEvent(callback interface{}, options ...trees.EventOptions) *tr
 func NoUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6680,8 +6679,8 @@ func NoUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6702,7 +6701,7 @@ func NoUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func NomatchEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6717,8 +6716,8 @@ func NomatchEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6739,7 +6738,7 @@ func NomatchEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func NotificationclickEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6754,8 +6753,8 @@ func NotificationclickEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6776,7 +6775,7 @@ func NotificationclickEvent(callback interface{}, options ...trees.EventOptions)
 func ObsoleteEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6791,8 +6790,8 @@ func ObsoleteEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6813,7 +6812,7 @@ func ObsoleteEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func OfflineEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6828,8 +6827,8 @@ func OfflineEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6850,7 +6849,7 @@ func OfflineEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func OnconnectedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6865,8 +6864,8 @@ func OnconnectedEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6887,7 +6886,7 @@ func OnconnectedEvent(callback interface{}, options ...trees.EventOptions) *tree
 func OnlineEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6902,8 +6901,8 @@ func OnlineEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6924,7 +6923,7 @@ func OnlineEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 func OpenEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6939,8 +6938,8 @@ func OpenEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6961,7 +6960,7 @@ func OpenEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func OrientationChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -6976,8 +6975,8 @@ func OrientationChangeEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -6998,7 +6997,7 @@ func OrientationChangeEvent(callback interface{}, options ...trees.EventOptions)
 func OverflowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7013,8 +7012,8 @@ func OverflowEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7035,7 +7034,7 @@ func OverflowEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func PageHideEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7050,8 +7049,8 @@ func PageHideEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7072,7 +7071,7 @@ func PageHideEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func PageShowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7087,8 +7086,8 @@ func PageShowEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7109,7 +7108,7 @@ func PageShowEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func PasteEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7124,8 +7123,8 @@ func PasteEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7146,7 +7145,7 @@ func PasteEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 func PauseEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7161,8 +7160,8 @@ func PauseEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7183,7 +7182,7 @@ func PauseEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 func PlayEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7198,8 +7197,8 @@ func PlayEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7220,7 +7219,7 @@ func PlayEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func PlayingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7235,8 +7234,8 @@ func PlayingEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7257,7 +7256,7 @@ func PlayingEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func PointerLockChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7272,8 +7271,8 @@ func PointerLockChangeEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7294,7 +7293,7 @@ func PointerLockChangeEvent(callback interface{}, options ...trees.EventOptions)
 func PointerLockErrorEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7309,8 +7308,8 @@ func PointerLockErrorEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7331,7 +7330,7 @@ func PointerLockErrorEvent(callback interface{}, options ...trees.EventOptions) 
 func PointercancelEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7346,8 +7345,8 @@ func PointercancelEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7368,7 +7367,7 @@ func PointercancelEvent(callback interface{}, options ...trees.EventOptions) *tr
 func PointerdownEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7383,8 +7382,8 @@ func PointerdownEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7405,7 +7404,7 @@ func PointerdownEvent(callback interface{}, options ...trees.EventOptions) *tree
 func PointerenterEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7420,8 +7419,8 @@ func PointerenterEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7442,7 +7441,7 @@ func PointerenterEvent(callback interface{}, options ...trees.EventOptions) *tre
 func PointerleaveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7457,8 +7456,8 @@ func PointerleaveEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7479,7 +7478,7 @@ func PointerleaveEvent(callback interface{}, options ...trees.EventOptions) *tre
 func PointermoveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7494,8 +7493,8 @@ func PointermoveEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7516,7 +7515,7 @@ func PointermoveEvent(callback interface{}, options ...trees.EventOptions) *tree
 func PointeroutEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7531,8 +7530,8 @@ func PointeroutEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7553,7 +7552,7 @@ func PointeroutEvent(callback interface{}, options ...trees.EventOptions) *trees
 func PointeroverEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7568,8 +7567,8 @@ func PointeroverEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7590,7 +7589,7 @@ func PointeroverEvent(callback interface{}, options ...trees.EventOptions) *tree
 func PointerupEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7605,8 +7604,8 @@ func PointerupEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7627,7 +7626,7 @@ func PointerupEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func PopStateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7642,8 +7641,8 @@ func PopStateEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7664,7 +7663,7 @@ func PopStateEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func PopuphiddenEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7679,8 +7678,8 @@ func PopuphiddenEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7701,7 +7700,7 @@ func PopuphiddenEvent(callback interface{}, options ...trees.EventOptions) *tree
 func PopuphidingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7716,8 +7715,8 @@ func PopuphidingEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7738,7 +7737,7 @@ func PopuphidingEvent(callback interface{}, options ...trees.EventOptions) *tree
 func PopupshowingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7753,8 +7752,8 @@ func PopupshowingEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7775,7 +7774,7 @@ func PopupshowingEvent(callback interface{}, options ...trees.EventOptions) *tre
 func PopupshownEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7790,8 +7789,8 @@ func PopupshownEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7812,7 +7811,7 @@ func PopupshownEvent(callback interface{}, options ...trees.EventOptions) *trees
 func ProgressEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7827,8 +7826,8 @@ func ProgressEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7849,7 +7848,7 @@ func ProgressEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func PushEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7864,8 +7863,8 @@ func PushEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7886,7 +7885,7 @@ func PushEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func PushsubscriptionchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7901,8 +7900,8 @@ func PushsubscriptionchangeEvent(callback interface{}, options ...trees.EventOpt
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7923,7 +7922,7 @@ func PushsubscriptionchangeEvent(callback interface{}, options ...trees.EventOpt
 func RadioStateChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7938,8 +7937,8 @@ func RadioStateChangeEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7960,7 +7959,7 @@ func RadioStateChangeEvent(callback interface{}, options ...trees.EventOptions) 
 func RateChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -7975,8 +7974,8 @@ func RateChangeEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -7997,7 +7996,7 @@ func RateChangeEvent(callback interface{}, options ...trees.EventOptions) *trees
 func ReadystateChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8012,8 +8011,8 @@ func ReadystateChangeEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8034,7 +8033,7 @@ func ReadystateChangeEvent(callback interface{}, options ...trees.EventOptions) 
 func ReceivedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8049,8 +8048,8 @@ func ReceivedEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8071,7 +8070,7 @@ func ReceivedEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func RepeatEventEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8086,8 +8085,8 @@ func RepeatEventEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8108,7 +8107,7 @@ func RepeatEventEvent(callback interface{}, options ...trees.EventOptions) *tree
 func RequestprogressEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8123,8 +8122,8 @@ func RequestprogressEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8145,7 +8144,7 @@ func RequestprogressEvent(callback interface{}, options ...trees.EventOptions) *
 func ResetEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8160,8 +8159,8 @@ func ResetEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8182,7 +8181,7 @@ func ResetEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 func ResizeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8197,8 +8196,8 @@ func ResizeEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8219,7 +8218,7 @@ func ResizeEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 func ResourcetimingbufferfullEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8234,8 +8233,8 @@ func ResourcetimingbufferfullEvent(callback interface{}, options ...trees.EventO
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8256,7 +8255,7 @@ func ResourcetimingbufferfullEvent(callback interface{}, options ...trees.EventO
 func ResponseprogressEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8271,8 +8270,8 @@ func ResponseprogressEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8293,7 +8292,7 @@ func ResponseprogressEvent(callback interface{}, options ...trees.EventOptions) 
 func ResultEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8308,8 +8307,8 @@ func ResultEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8330,7 +8329,7 @@ func ResultEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 func ResumeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8345,8 +8344,8 @@ func ResumeEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8367,7 +8366,7 @@ func ResumeEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 func ResumingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8382,8 +8381,8 @@ func ResumingEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8404,7 +8403,7 @@ func ResumingEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func SSTabClosingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8419,8 +8418,8 @@ func SSTabClosingEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8441,7 +8440,7 @@ func SSTabClosingEvent(callback interface{}, options ...trees.EventOptions) *tre
 func SSTabRestoredEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8456,8 +8455,8 @@ func SSTabRestoredEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8478,7 +8477,7 @@ func SSTabRestoredEvent(callback interface{}, options ...trees.EventOptions) *tr
 func SSTabRestoringEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8493,8 +8492,8 @@ func SSTabRestoringEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8515,7 +8514,7 @@ func SSTabRestoringEvent(callback interface{}, options ...trees.EventOptions) *t
 func SSWindowClosingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8530,8 +8529,8 @@ func SSWindowClosingEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8552,7 +8551,7 @@ func SSWindowClosingEvent(callback interface{}, options ...trees.EventOptions) *
 func SSWindowStateBusyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8567,8 +8566,8 @@ func SSWindowStateBusyEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8589,7 +8588,7 @@ func SSWindowStateBusyEvent(callback interface{}, options ...trees.EventOptions)
 func SSWindowStateReadyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8604,8 +8603,8 @@ func SSWindowStateReadyEvent(callback interface{}, options ...trees.EventOptions
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8626,7 +8625,7 @@ func SSWindowStateReadyEvent(callback interface{}, options ...trees.EventOptions
 func SVGAbortEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8641,8 +8640,8 @@ func SVGAbortEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8663,7 +8662,7 @@ func SVGAbortEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func SVGErrorEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8678,8 +8677,8 @@ func SVGErrorEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8700,7 +8699,7 @@ func SVGErrorEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func SVGLoadEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8715,8 +8714,8 @@ func SVGLoadEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8737,7 +8736,7 @@ func SVGLoadEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func SVGResizeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8752,8 +8751,8 @@ func SVGResizeEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8774,7 +8773,7 @@ func SVGResizeEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func SVGScrollEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8789,8 +8788,8 @@ func SVGScrollEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8811,7 +8810,7 @@ func SVGScrollEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func SVGUnloadEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8826,8 +8825,8 @@ func SVGUnloadEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8848,7 +8847,7 @@ func SVGUnloadEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func SVGZoomEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8863,8 +8862,8 @@ func SVGZoomEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8885,7 +8884,7 @@ func SVGZoomEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func ScrollEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8900,8 +8899,8 @@ func ScrollEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8922,7 +8921,7 @@ func ScrollEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 func SeekedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8937,8 +8936,8 @@ func SeekedEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8959,7 +8958,7 @@ func SeekedEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 func SeekingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -8974,8 +8973,8 @@ func SeekingEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -8996,7 +8995,7 @@ func SeekingEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func SelectEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9011,8 +9010,8 @@ func SelectEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9033,7 +9032,7 @@ func SelectEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 func SelectionchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9048,8 +9047,8 @@ func SelectionchangeEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9070,7 +9069,7 @@ func SelectionchangeEvent(callback interface{}, options ...trees.EventOptions) *
 func SelectstartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9085,8 +9084,8 @@ func SelectstartEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9107,7 +9106,7 @@ func SelectstartEvent(callback interface{}, options ...trees.EventOptions) *tree
 func SentEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9122,8 +9121,8 @@ func SentEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9144,7 +9143,7 @@ func SentEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func ShowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9159,8 +9158,8 @@ func ShowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9181,7 +9180,7 @@ func ShowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event
 func SizemodechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9196,8 +9195,8 @@ func SizemodechangeEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9218,7 +9217,7 @@ func SizemodechangeEvent(callback interface{}, options ...trees.EventOptions) *t
 func SmartCardInsertEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9233,8 +9232,8 @@ func SmartCardInsertEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9255,7 +9254,7 @@ func SmartCardInsertEvent(callback interface{}, options ...trees.EventOptions) *
 func SmartCardRemoveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9270,8 +9269,8 @@ func SmartCardRemoveEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9292,7 +9291,7 @@ func SmartCardRemoveEvent(callback interface{}, options ...trees.EventOptions) *
 func SoundendEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9307,8 +9306,8 @@ func SoundendEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9329,7 +9328,7 @@ func SoundendEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func SoundstartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9344,8 +9343,8 @@ func SoundstartEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9366,7 +9365,7 @@ func SoundstartEvent(callback interface{}, options ...trees.EventOptions) *trees
 func SpeechendEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9381,8 +9380,8 @@ func SpeechendEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9403,7 +9402,7 @@ func SpeechendEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func SpeechstartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9418,8 +9417,8 @@ func SpeechstartEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9440,7 +9439,7 @@ func SpeechstartEvent(callback interface{}, options ...trees.EventOptions) *tree
 func StalledEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9455,8 +9454,8 @@ func StalledEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9477,7 +9476,7 @@ func StalledEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func StartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9492,8 +9491,8 @@ func StartEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9514,7 +9513,7 @@ func StartEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 func StatechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9529,8 +9528,8 @@ func StatechangeEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9551,7 +9550,7 @@ func StatechangeEvent(callback interface{}, options ...trees.EventOptions) *tree
 func StatuschangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9566,8 +9565,8 @@ func StatuschangeEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9588,7 +9587,7 @@ func StatuschangeEvent(callback interface{}, options ...trees.EventOptions) *tre
 func StkcommandEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9603,8 +9602,8 @@ func StkcommandEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9625,7 +9624,7 @@ func StkcommandEvent(callback interface{}, options ...trees.EventOptions) *trees
 func StksessionendEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9640,8 +9639,8 @@ func StksessionendEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9662,7 +9661,7 @@ func StksessionendEvent(callback interface{}, options ...trees.EventOptions) *tr
 func StorageEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9677,8 +9676,8 @@ func StorageEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9699,7 +9698,7 @@ func StorageEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func SubmitEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9714,8 +9713,8 @@ func SubmitEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9736,7 +9735,7 @@ func SubmitEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 func SuccessEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9751,8 +9750,8 @@ func SuccessEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9773,7 +9772,7 @@ func SuccessEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func SuspendEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9788,8 +9787,8 @@ func SuspendEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9810,7 +9809,7 @@ func SuspendEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func TabCloseEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9825,8 +9824,8 @@ func TabCloseEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9847,7 +9846,7 @@ func TabCloseEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func TabHideEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9862,8 +9861,8 @@ func TabHideEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9884,7 +9883,7 @@ func TabHideEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func TabOpenEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9899,8 +9898,8 @@ func TabOpenEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9921,7 +9920,7 @@ func TabOpenEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func TabPinnedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9936,8 +9935,8 @@ func TabPinnedEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9958,7 +9957,7 @@ func TabPinnedEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func TabSelectEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -9973,8 +9972,8 @@ func TabSelectEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -9995,7 +9994,7 @@ func TabSelectEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func TabShowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10010,8 +10009,8 @@ func TabShowEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10032,7 +10031,7 @@ func TabShowEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func TabUnpinnedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10047,8 +10046,8 @@ func TabUnpinnedEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10069,7 +10068,7 @@ func TabUnpinnedEvent(callback interface{}, options ...trees.EventOptions) *tree
 func TimeUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10084,8 +10083,8 @@ func TimeUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10106,7 +10105,7 @@ func TimeUpdateEvent(callback interface{}, options ...trees.EventOptions) *trees
 func TimeoutEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10121,8 +10120,8 @@ func TimeoutEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10143,7 +10142,7 @@ func TimeoutEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func TouchCancelEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10158,8 +10157,8 @@ func TouchCancelEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10180,7 +10179,7 @@ func TouchCancelEvent(callback interface{}, options ...trees.EventOptions) *tree
 func TouchEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10195,8 +10194,8 @@ func TouchEndEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10217,7 +10216,7 @@ func TouchEndEvent(callback interface{}, options ...trees.EventOptions) *trees.E
 func TouchEnterEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10232,8 +10231,8 @@ func TouchEnterEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10254,7 +10253,7 @@ func TouchEnterEvent(callback interface{}, options ...trees.EventOptions) *trees
 func TouchLeaveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10269,8 +10268,8 @@ func TouchLeaveEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10291,7 +10290,7 @@ func TouchLeaveEvent(callback interface{}, options ...trees.EventOptions) *trees
 func TouchMoveEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10306,8 +10305,8 @@ func TouchMoveEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10328,7 +10327,7 @@ func TouchMoveEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func TouchStartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10343,8 +10342,8 @@ func TouchStartEvent(callback interface{}, options ...trees.EventOptions) *trees
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10365,7 +10364,7 @@ func TouchStartEvent(callback interface{}, options ...trees.EventOptions) *trees
 func TransitionEndEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10380,8 +10379,8 @@ func TransitionEndEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10402,7 +10401,7 @@ func TransitionEndEvent(callback interface{}, options ...trees.EventOptions) *tr
 func TransitioncancelEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10417,8 +10416,8 @@ func TransitioncancelEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10439,7 +10438,7 @@ func TransitioncancelEvent(callback interface{}, options ...trees.EventOptions) 
 func TransitionrunEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10454,8 +10453,8 @@ func TransitionrunEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10476,7 +10475,7 @@ func TransitionrunEvent(callback interface{}, options ...trees.EventOptions) *tr
 func TransitionstartEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10491,8 +10490,8 @@ func TransitionstartEvent(callback interface{}, options ...trees.EventOptions) *
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10513,7 +10512,7 @@ func TransitionstartEvent(callback interface{}, options ...trees.EventOptions) *
 func UnderflowEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10528,8 +10527,8 @@ func UnderflowEvent(callback interface{}, options ...trees.EventOptions) *trees.
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10550,7 +10549,7 @@ func UnderflowEvent(callback interface{}, options ...trees.EventOptions) *trees.
 func UnloadEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10565,8 +10564,8 @@ func UnloadEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10587,7 +10586,7 @@ func UnloadEvent(callback interface{}, options ...trees.EventOptions) *trees.Eve
 func UpdateReadyEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10602,8 +10601,8 @@ func UpdateReadyEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10624,7 +10623,7 @@ func UpdateReadyEvent(callback interface{}, options ...trees.EventOptions) *tree
 func UpgradeNeededEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10639,8 +10638,8 @@ func UpgradeNeededEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10661,7 +10660,7 @@ func UpgradeNeededEvent(callback interface{}, options ...trees.EventOptions) *tr
 func UserProximityEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10676,8 +10675,8 @@ func UserProximityEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10698,7 +10697,7 @@ func UserProximityEvent(callback interface{}, options ...trees.EventOptions) *tr
 func UssdreceivedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10713,8 +10712,8 @@ func UssdreceivedEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10735,7 +10734,7 @@ func UssdreceivedEvent(callback interface{}, options ...trees.EventOptions) *tre
 func ValueChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10750,8 +10749,8 @@ func ValueChangeEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10772,7 +10771,7 @@ func ValueChangeEvent(callback interface{}, options ...trees.EventOptions) *tree
 func VersionChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10787,8 +10786,8 @@ func VersionChangeEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10809,7 +10808,7 @@ func VersionChangeEvent(callback interface{}, options ...trees.EventOptions) *tr
 func VisibilityChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10824,8 +10823,8 @@ func VisibilityChangeEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10846,7 +10845,7 @@ func VisibilityChangeEvent(callback interface{}, options ...trees.EventOptions) 
 func VoicechangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10861,8 +10860,8 @@ func VoicechangeEvent(callback interface{}, options ...trees.EventOptions) *tree
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10883,7 +10882,7 @@ func VoicechangeEvent(callback interface{}, options ...trees.EventOptions) *tree
 func VoiceschangedEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10898,8 +10897,8 @@ func VoiceschangedEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10920,7 +10919,7 @@ func VoiceschangedEvent(callback interface{}, options ...trees.EventOptions) *tr
 func VolumeChangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10935,8 +10934,8 @@ func VolumeChangeEvent(callback interface{}, options ...trees.EventOptions) *tre
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10957,7 +10956,7 @@ func VolumeChangeEvent(callback interface{}, options ...trees.EventOptions) *tre
 func VrdisplayactivateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -10972,8 +10971,8 @@ func VrdisplayactivateEvent(callback interface{}, options ...trees.EventOptions)
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -10994,7 +10993,7 @@ func VrdisplayactivateEvent(callback interface{}, options ...trees.EventOptions)
 func VrdisplayblurEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -11009,8 +11008,8 @@ func VrdisplayblurEvent(callback interface{}, options ...trees.EventOptions) *tr
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -11031,7 +11030,7 @@ func VrdisplayblurEvent(callback interface{}, options ...trees.EventOptions) *tr
 func VrdisplayconnectEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -11046,8 +11045,8 @@ func VrdisplayconnectEvent(callback interface{}, options ...trees.EventOptions) 
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -11068,7 +11067,7 @@ func VrdisplayconnectEvent(callback interface{}, options ...trees.EventOptions) 
 func VrdisplaydeactivateEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -11083,8 +11082,8 @@ func VrdisplaydeactivateEvent(callback interface{}, options ...trees.EventOption
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -11105,7 +11104,7 @@ func VrdisplaydeactivateEvent(callback interface{}, options ...trees.EventOption
 func VrdisplaydisconnectEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -11120,8 +11119,8 @@ func VrdisplaydisconnectEvent(callback interface{}, options ...trees.EventOption
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -11142,7 +11141,7 @@ func VrdisplaydisconnectEvent(callback interface{}, options ...trees.EventOption
 func VrdisplayfocusEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -11157,8 +11156,8 @@ func VrdisplayfocusEvent(callback interface{}, options ...trees.EventOptions) *t
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -11179,7 +11178,7 @@ func VrdisplayfocusEvent(callback interface{}, options ...trees.EventOptions) *t
 func VrdisplaypresentchangeEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -11194,8 +11193,8 @@ func VrdisplaypresentchangeEvent(callback interface{}, options ...trees.EventOpt
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -11216,7 +11215,7 @@ func VrdisplaypresentchangeEvent(callback interface{}, options ...trees.EventOpt
 func WaitingEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -11231,8 +11230,8 @@ func WaitingEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 
@@ -11253,7 +11252,7 @@ func WaitingEvent(callback interface{}, options ...trees.EventOptions) *trees.Ev
 func WheelEvent(callback interface{}, options ...trees.EventOptions) *trees.Event {
 	var handler EventHandler
 
-	switch cb := callback.(type){
+	switch cb := callback.(type) {
 	case func():
 		handler = WrapHandler(cb)
 	case func(common.EventObject):
@@ -11268,8 +11267,8 @@ func WheelEvent(callback interface{}, options ...trees.EventOptions) *trees.Even
 
 	ev := trees.NewEvent(ops...)
 
-	eventHandler := common.NewEventBroadcastHandler(func (evm common.EventBroadcast){
-		if ev.ID() != evm.EventID{
+	eventHandler := common.NewEventBroadcastHandler(func(evm common.EventBroadcast) {
+		if ev.ID() != evm.EventID {
 			return
 		}
 

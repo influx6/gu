@@ -372,16 +372,6 @@ func (v *NView) UUID() string {
 	return v.uuid
 }
 
-// Do calls the giving function providing it with the NApp instance.
-func (v *NView) Do(viewFun func(*NView)) *NView {
-	if viewFun != nil {
-		viewFun(v)
-		return v
-	}
-
-	return v
-}
-
 // totalComponents returns the total component list.
 func (v *NView) totalComponents() int {
 	return len(v.beginComponents) + len(v.anyComponents) + len(v.lastComponents)

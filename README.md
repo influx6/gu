@@ -21,7 +21,7 @@ Once done, then `go get` this package and you are ready to go.
 go get github.com/gu-io/gu/...
 ```
 
-Do check out the [Concept](#Concept) section to get to know how Gu works.
+Do check out the [Concepts](#concepts) section to get to know how Gu works.
 
 Example
 -------

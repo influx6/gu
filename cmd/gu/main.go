@@ -11,8 +11,8 @@ import (
 	"github.com/gu-io/gu/generators"
 	"github.com/influx6/faux/metrics"
 	"github.com/influx6/faux/metrics/custom"
-	"github.com/influx6/moz/annotations"
 	"github.com/influx6/moz/ast"
+	assetgen "github.com/gokit/assetkit/generators"
 	"github.com/influx6/moz/gen"
 	cli "gopkg.in/urfave/cli.v2"
 )
@@ -298,17 +298,15 @@ func initCommands() {
 			generators.RegisterGenerators(register)
 
 			// Register @assets annotation for our registery as well.
-			register.Register("assets", annotations.AssetsAnnotationGenerator)
+			register.Register("assets", assetgen.TrailFiles)
 
 			events := metrics.New(custom.BlockDisplay(os.Stdout))
 			pkg, err := ast.ParseAnnotations(events, indir)
 			if err != nil {
-				events.Emit(metrics.Error(err).With("dir", indir).With("message", "Failed to parse package annotations"))
 				return err
 			}
 
 			if err := ast.Parse("", events, register, false, pkg...); err != nil {
-				events.Emit(metrics.Error(err).With("dir", indir).With("message", "Failed to parse package annotations"))
 				return err
 			}
 

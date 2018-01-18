@@ -10,7 +10,7 @@ Install
 -------
 
 ```
-go get -u github.com/gu-io/gu/...
+go get github.com/gu-io/gu/...
 ```
 
 Example

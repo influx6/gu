@@ -300,7 +300,7 @@ func initCommands() {
 			// Register @assets annotation for our registery as well.
 			register.Register("assets", assetgen.TrailFiles)
 
-			events := metrics.New(custom.BlockDisplay(os.Stdout))
+			events := metrics.New(custom.FlatDisplay(os.Stdout))
 			pkg, err := ast.ParseAnnotations(events, indir)
 			if err != nil {
 				return err

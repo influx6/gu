@@ -9,9 +9,19 @@ A component rendering library for Go. It efficiently renders standard HTML both 
 Install
 -------
 
+First `go get` gopherjs, has we can not bundle it due to certain restrictions in the way gopherjs works.
+
+```bash
+go get github.com/gopherjs/gopherjs
 ```
+
+Once done, then `go get` this package and you are ready to go.
+
+```bash
 go get github.com/gu-io/gu/...
 ```
+
+Do check out the [Concept](#Concept) section to get to know how Gu works.
 
 Example
 -------

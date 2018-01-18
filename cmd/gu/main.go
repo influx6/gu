@@ -280,9 +280,15 @@ func initCommands() {
 				Aliases: []string{"dir"},
 				Usage:   "dir=./my-gu-project",
 			},
+			&cli.BoolFlag{
+				Name: "verbose",
+				Aliases: []string{"v"},
+				Usage: "-v to be verbose",
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			indir := ctx.String("inputdir")
+			verbose := ctx.Bool("verbose")
 
 			if indir == "" {
 				cdir, err := os.Getwd()
@@ -300,7 +306,11 @@ func initCommands() {
 			// Register @assets annotation for our registery as well.
 			register.Register("assets", assetgen.TrailFiles)
 
-			events := metrics.New(custom.FlatDisplay(os.Stdout))
+			events := metrics.New()
+			if verbose{
+				events = metrics.New(custom.FlatDisplay(os.Stdout))
+			}
+			
 			pkg, err := ast.ParseAnnotations(events, indir)
 			if err != nil {
 				return err

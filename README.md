@@ -9,7 +9,7 @@ A component rendering library for Go. It efficiently renders standard HTML both 
 Install
 -------
 
-First `go get` gopherjs, has we can not bundle it due to certain restrictions in the way gopherjs works.
+First `go get` gopherjs, as we can not bundle it due to certain restrictions in the way gopherjs works.
 
 ```bash
 go get github.com/gopherjs/gopherjs
@@ -33,7 +33,7 @@ Example
 CLI
 ---
 
-Gu provides an cli tooling which is installed when `go get` is done for this package, the tooling provides easier means of generating a project and components using the gu project, among other features.
+Gu provides a cli tooling which is installed when `go get` is done for this package, the tooling provides easier means of generating a project and components using the gu project, among other features.
 
 It is provided to both improve the workflow of the user, as well as to provide quick setup of your project. Provided below are examples of workflows which are generally done when developing with Gu.
 
@@ -134,7 +134,7 @@ Please read the contribution guidelines [Contribution Guidelines](./docs/concept
 Limitations
 -----------
 
-Gu by it's very design and architecture is "Simple". It lacks the bells and whistles of similar frameworks and libraries. It's geared to solve your rendering needs and due to this, certain limitations exists with it.
+Gu by it's very design and architecture is "Simple". It lacks the bells and whistles of similar frameworks and libraries. It's geared towards solving your rendering needs and due to this, certain limitations exist with it.
 
 -	Gu provides no react like flux structure.
 

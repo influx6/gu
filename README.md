@@ -1,4 +1,4 @@
-## I would encourage you to use [Vecty](github.com/gopherjs/vecty) instead.
+## I would encourage you to use [Vecty](https://github.com/gopherjs/vecty) instead.
 
 Gu [DEPRECATED]
 =================

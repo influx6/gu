@@ -1,5 +1,7 @@
-Gu
-==
+# I would encourage you to use [Vecty](github.com/gopherjs/vecty] instead.
+
+Gu [DEPRECATED]
+=================
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/gu-io/gu)](https://goreportcard.com/report/github.com/gu-io/gu)
 [![Build Status](https://travis-ci.org/gu-io/gu.svg?branch=master)](https://travis-ci.org/gu-io/gu)
